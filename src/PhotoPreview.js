@@ -1,13 +1,15 @@
 import * as THREE from 'three'
 import { tween } from 'popmotion'
 
-export default class PhotoPreview extends THREE.Object3D {
+export default class PhotoPreview {
+
+  static SCALE_FACTOR_MAX = 1
+  static SCALE_FACTOR_MIN = 0.9
+
   constructor ({
     width,
     height,
   }) {
-    super()
-
     this._diffVector = new THREE.Vector2(0, 0)
     this._diffVectorTarget = new THREE.Vector2(0, 0)
 
@@ -55,19 +57,52 @@ export default class PhotoPreview extends THREE.Object3D {
 
   _makePhotoMesh (width, height) {
     const photoGeometry = new THREE.PlaneGeometry(width + 100, height + 100)
-    const photoMaterial = new THREE.MeshBasicMaterial()
+    const photoMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        u_planeSize: { value: new THREE.Vector2(width + 100, height + 100) },
+        u_imageSize: { value: new THREE.Vector2(960, 1440) },
+        u_diffuse: { value: null },
+      },
+      vertexShader: `
+        varying vec2 v_uv;
+
+        void main () {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          v_uv = uv;
+        }
+      `,
+      fragmentShader: `
+        uniform vec2 u_planeSize;
+        uniform vec2 u_imageSize;
+        uniform sampler2D u_diffuse;
+
+        varying vec2 v_uv;
+        
+        void main () {
+          vec2 s = u_planeSize; // Screen
+          vec2 i = u_imageSize; // Image
+
+          float rs = s.x / s.y;
+          float ri = i.x / i.y;
+          vec2 new = rs < ri ? vec2(i.x * s.y / i.y, s.y) : vec2(s.x, i.y * s.x / i.x);
+          vec2 offset = (rs < ri ? vec2((new.x - s.x) / 2.0, 0.0) : vec2(0.0, (new.y - s.y) / 2.0)) / new;
+          vec2 uv = v_uv * s / new + offset;
+          gl_FragColor = texture2D(u_diffuse, uv);
+        }
+      `
+    })
     this._photoMesh = new THREE.Mesh(photoGeometry, photoMaterial)
   }
 
   addPhotoTexture (texture) {
-    this._photoMesh.material.map = texture
-    this._photoMesh.material.needsUpdate = true
+    this._photoMesh.material.uniforms.u_diffuse.value = texture
+    // this._photoMesh.material.needsUpdate = true
   }
 
   onSceneDragStart () {
     tween({
-      from: 1,
-      to: 0.9,
+      from: PhotoPreview.SCALE_FACTOR_MAX,
+      to: PhotoPreview.SCALE_FACTOR_MIN,
       duration: 250
     })
     .start(v => this._photoMesh.scale.set(v, v, 1))
@@ -80,8 +115,8 @@ export default class PhotoPreview extends THREE.Object3D {
 
   onSceneDragEnd () {
     tween({
-      from: 0.9,
-      to: 1,
+      from: PhotoPreview.SCALE_FACTOR_MIN,
+      to: PhotoPreview.SCALE_FACTOR_MAX,
       duration: 250
     })
     .start(v => this._photoMesh.scale.set(v, v, 1))
