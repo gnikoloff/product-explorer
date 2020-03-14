@@ -12,6 +12,7 @@
     "parcel": "^1.12.4"
   },
   "dependencies": {
+    "popmotion": "^8.7.1",
     "three": "^0.114.0"
   }
 }

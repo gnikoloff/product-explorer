@@ -1,0 +1,12 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  cursor: grab;
+}
+
+body.dragging {
+  cursor: grabbing;
+}
