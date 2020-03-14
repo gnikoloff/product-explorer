@@ -25,6 +25,15 @@ export default class PhotoPreview {
     return this._photoMesh
   }
 
+  get diffVectorTarget () {
+    return this._diffVectorTarget
+  }
+
+  set position (newPosition) {
+    this._clipMesh.position.copy(newPosition)
+    this._photoMesh.position.copy(newPosition)
+  }
+
   _makeClipMesh (width, height) {
     const clipGeometryVertCount = 20
 
