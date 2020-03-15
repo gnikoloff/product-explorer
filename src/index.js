@@ -1,17 +1,24 @@
 import * as THREE from 'three'
+import styler from 'stylefire'
 
 import PhotoPreview from './PhotoPreview'
 
-import styles from './style.css'
+import './style.css'
 
 import arrowLeft from './assets/arrow.png'
 
 import { WOLRD_WIDTH, WORLD_HEIGHT } from './constants'
-
-import photoInfo from '../data'
+import { tween, chain, delay } from 'popmotion'
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
+
+const webglContainer = document.getElementsByClassName('webgl-scene')[0]
+const singlePageWrapper = document.getElementsByClassName('single-page-wrapper')[0]
+const singlePage = singlePageWrapper.getElementsByClassName('single-page')[0]
+const singlePageScrollIndicator = singlePageWrapper.getElementsByClassName('scroll-indicator')[0]
+const singlePageScrollIndicatorStyler = styler(singlePageScrollIndicator)
+
 const dpr = window.devicePixelRatio || 1
 
 const mousePos = new THREE.Vector2(0, 0)
@@ -62,20 +69,22 @@ let isDragging = false
 let cursorSizeScaleFactorTarget = 0.1
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
+let cursorVizorOpacityTarget = 1
+let projectsData = []
 
 clipCamera.position.set(...originalCameraPos)
 clipCamera.lookAt(cameraLookAt)
 clipScene.add(clipCamera)
 
-clipCamera.zoom = 0.2
-clipCamera.updateProjectionMatrix()
+// clipCamera.zoom = 0.2
+// clipCamera.updateProjectionMatrix()
 
 photoCamera.position.set(...originalCameraPos)
 photoCamera.lookAt(cameraLookAt)
 photoScene.add(photoCamera)
 
-photoCamera.zoom = 0.2
-photoCamera.updateProjectionMatrix()
+// photoCamera.zoom = 0.2
+// photoCamera.updateProjectionMatrix()
 
 postFXCamera.position.set(...originalCameraPos)
 postFXCamera.lookAt(cameraLookAt)
@@ -92,13 +101,14 @@ renderer.setSize(appWidth, appHeight)
 renderer.setPixelRatio(dpr)
 // renderer.setClearColor(0xe5e5e5)
 renderer.setClearAlpha(0)
-document.body.appendChild(renderer.domElement)
+webglContainer.appendChild(renderer.domElement)
 
 let photoPreviews = []
 
 fetch('/get_data')
   .then(res => res.json())
   .then(res => {
+    projectsData = res.projects
     photoPreviews = res.projects.map(info => {
       const photoPreview = new PhotoPreview({
         width: 250,
@@ -115,7 +125,7 @@ fetch('/get_data')
     })
   })
 
-document.body.addEventListener('mousedown', e => {
+webglContainer.addEventListener('mousedown', e => {
   isDragging = true
   cursorSizeScaleFactorTarget = 0.09
   cursorArrowOffsetTarget = 1
@@ -123,9 +133,78 @@ document.body.addEventListener('mousedown', e => {
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart())
   mousePos.x = e.pageX
   mousePos.y = e.pageY
+
+  webglContainer.classList.add('non-interactable')
+
+  
+  const singlePageStyler = styler(singlePage)
+  
+  const singlePageIntroImage = singlePageWrapper.getElementsByClassName('intro-img')[0]
+  const singlePageIntroImageStyler = styler(singlePageIntroImage)
+
+  const singlePageIntroTitle = singlePageWrapper.getElementsByClassName('intro-title')[0]
+  const singlePageIntroTitleStyler = styler(singlePageIntroTitle)
+
+  const singlePageBigHeadlineWrapper = singlePageWrapper.getElementsByClassName('single-page-big-headline')[0]
+  const singlePageBigHeadline = singlePageBigHeadlineWrapper.getElementsByClassName('single-page-big-headline-text')[0]
+
+  const singlePageIntroSubheading = singlePageWrapper.getElementsByClassName('intro-subheading')[0]
+  const singlePageIntroSubheadingStyler = styler(singlePageIntroSubheading)
+
+  const singlePageDescription = singlePageWrapper.getElementsByClassName('single-page-desc')[0]
+  const singlePageFabricTechnologies = singlePageWrapper.getElementsByClassName('single-page-tech')[0]
+
+  const singlePageSectionLink = singlePageWrapper.getElementsByClassName('single-page-section-link')[0]
+  
+  singlePageIntroImageStyler.set({ backgroundImage: `url(${projectsData[0].previewSrc})` })
+  
+  tween({
+    from: 0,
+    to: 1,
+  }).start(v => {
+    singlePageIntroImageStyler.set({ opacity: v })
+  })
+  tween({
+    from: 100,
+    to: 0,
+  }).start(v => {
+    singlePageStyler.set({ y: `${v}%` })
+  })
+  tween({
+    from: 0,
+    to: 1,
+  }).start(v => singlePageIntroTitleStyler.set({ opacity: v }))
+
+  chain(
+    delay(1000),
+    tween({
+      from: 0,
+      to: 1,
+    })
+  ).start(v => singlePageScrollIndicatorStyler.set({ opacity: v }))
+  
+
+  singlePageIntroTitle.textContent = projectsData[0].modelName
+  
+  singlePageBigHeadlineWrapper.setAttribute('viewBox', projectsData[0].bigHeadingViewBox)
+  singlePageBigHeadline.setAttribute('y', projectsData[0].bigHeadingTextY)
+  singlePageBigHeadline.textContent = projectsData[0].modelName
+  singlePageBigHeadline.style.fontSize = projectsData[0].bigHeadingFontSize
+
+  singlePageIntroSubheading.textContent = projectsData[2].subheading
+  singlePageDescription.innerHTML = projectsData[0].description
+
+  projectsData[0].fabricTechnologies.forEach(tech => {
+    const li = document.createElement('li')
+    li.innerText = tech
+    singlePageFabricTechnologies.appendChild(li)
+  })
+
+  singlePageSectionLink.setAttribute('href', projectsData[0].websiteURL)
+
 }, false)
 
-document.body.addEventListener('mousemove', e => {
+webglContainer.addEventListener('mousemove', e => {
   raycastMouse.x = (e.clientX / window.innerWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / window.innerHeight) * 2 + 1
 
@@ -162,7 +241,7 @@ document.body.addEventListener('mousemove', e => {
   mousePos.y = e.pageY
 }, false)
 
-document.body.addEventListener('mouseup', () => {
+webglContainer.addEventListener('mouseup', () => {
   isDragging = false
   cursorSizeScaleFactorTarget = 0.1
   cursorArrowOffsetTarget = 0
@@ -170,11 +249,17 @@ document.body.addEventListener('mouseup', () => {
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
 }, false)
 
-document.body.addEventListener('mouseleave', () => {
+webglContainer.addEventListener('mouseenter', () => {
+  cursorVizorOpacityTarget = 1
+})
+
+webglContainer.addEventListener('mouseleave', () => {
   photoPreviews.forEach(photoPreview => {
     photoPreview._diffVectorTarget.x = 0
     photoPreview._diffVectorTarget.y = 0
   })
+  cursorVizorOpacityTarget = 0
+  cursorArrowOffsetTarget = 0
 })
 
 window.addEventListener('resize', () => {
@@ -200,6 +285,39 @@ window.addEventListener('resize', () => {
   resizeCamera(cursorCamera)
   // resizeCamera(postFXCamera)
 
+})
+
+let scrollIndicatorFadedScroll = false
+let scrollIndicatorFadedScrollTransition = false
+
+singlePage.addEventListener('scroll', () => {
+  if (singlePage.scrollTop > 20) {
+    if (scrollIndicatorFadedScroll || scrollIndicatorFadedScrollTransition) {
+      return
+    }
+    scrollIndicatorFadedScrollTransition = true
+    tween({ from: 1, to: 0, duration: 250 })
+      .start({
+        update: v => singlePageScrollIndicatorStyler.set({ opacity: v }),
+        complete: () => {
+          scrollIndicatorFadedScroll = true
+          scrollIndicatorFadedScrollTransition = false
+        },
+      })
+  } else {
+    if (!scrollIndicatorFadedScroll || scrollIndicatorFadedScrollTransition) {
+      return
+    }
+    scrollIndicatorFadedScrollTransition = true
+    tween({ from: 0, to: 1, duration: 250 })
+      .start({
+        update: v => singlePageScrollIndicatorStyler.set({ opacity: v }),
+        complete: () => {
+          scrollIndicatorFadedScroll = false
+          scrollIndicatorFadedScrollTransition = false
+        },
+      })
+  }
 })
 
 const postFXGeometry = new THREE.PlaneGeometry(appWidth, appHeight)
@@ -291,7 +409,11 @@ cursorScene.add(cursorArrowBottom)
 
 const cursorVizor = new THREE.Mesh(
   new THREE.PlaneGeometry(50, 50),
-  new THREE.MeshBasicMaterial({ map: makeVizorTexture() })
+  new THREE.MeshBasicMaterial({
+    map: makeVizorTexture(),
+    transparent: true,
+    opacity: cursorVizorOpacityTarget,
+  })
 )
 cursorScene.add(cursorVizor)
 
@@ -378,6 +500,8 @@ function updateFrame(ts) {
 
   cursorVizor.position.x = cursorBasePosX
   cursorVizor.position.y = cursorBasePosY
+
+  cursorVizor.material.opacity += (cursorVizorOpacityTarget - cursorVizor.material.opacity) * (dt * 15)
 
   // // console.log(cursorArrowLeft.position.x, cursorArrowLeft.position.y)
 
