@@ -6,6 +6,7 @@ const compression = require('compression')
 const PORT = process.env.PORT || 1102
 
 app.use(compression())
+app.use(express.static('public'))
 app.use(express.static('dist'))
 
 app.route('/').get((req, res) => {
@@ -17,4 +18,4 @@ app.route('/get_data').get((req, res) => {
   res.json(data)
 })
 
-app.listen(PORT, () => { console.log(`App is listening on port: ${PORT}`) })
+app.listen(PORT, () => console.log(`App is listening on port: ${PORT}`))

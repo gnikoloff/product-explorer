@@ -191,6 +191,31 @@ document.body.addEventListener("mouseleave", () => {
   });
 });
 
+window.addEventListener('resize', () => {
+  appWidth = window.innerWidth
+  appHeight = window.innerHeight
+
+  renderer.setSize(appWidth, appHeight)
+  clipRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+  photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+  cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+
+  const resizeCamera = camera => {
+    camera.left = -appWidth / 2
+    camera.right = appWidth / 2
+    camera.top = -appHeight / 2
+    camera.bottom = appHeight / 2
+    camera.aspect = appWidth / appHeight
+    camera.updateProjectionMatrix()
+  }
+
+  resizeCamera(clipCamera)
+  resizeCamera(photoCamera)
+  resizeCamera(cursorCamera)
+  // resizeCamera(postFXCamera)
+
+})
+
 const postFXGeometry = new THREE.PlaneGeometry(appWidth, appHeight);
 const postFXMaterial = new THREE.ShaderMaterial({
   uniforms: {

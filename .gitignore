@@ -1,4 +1,4 @@
 node_modules
-dist/output
+dist
 .cache
 .DS_Store

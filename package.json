@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server-dev": "nodemon server.js",
-    "client-dev": "parcel watch index.html --out-dir dist/output",
+    "client-dev": "parcel watch index.html",
     "start": "run-p server-dev client-dev"
   },
   "author": "Georgi Nikoloff",
