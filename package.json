@@ -4,16 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server-dev": "nodemon server.js",
+    "client-dev": "parcel watch index.html --out-dir dist/output",
+    "start": "run-p server-dev client-dev"
   },
   "author": "Georgi Nikoloff",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.8.7",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "npm-run-all": "^4.1.5",
     "parcel": "^1.12.4"
   },
   "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.17.1",
     "popmotion": "^8.7.1",
     "three": "^0.114.0"
   }

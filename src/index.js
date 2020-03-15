@@ -9,7 +9,7 @@ import arrowLeft from "./assets/arrow.png";
 
 import { WOLRD_WIDTH, WORLD_HEIGHT } from "./constants";
 
-import photoInfo from "./photoInfo";
+import photoInfo from "../data";
 
 let appWidth = window.innerWidth;
 let appHeight = window.innerHeight;
@@ -95,16 +95,21 @@ renderer.setPixelRatio(dpr);
 renderer.setClearAlpha(0);
 document.body.appendChild(renderer.domElement);
 
-const photoPreviews = photoInfo.map(info => {
-  const photoPreview = new PhotoPreview({
-    width: 250,
-    height: 400
+let photoPreviews = []
+
+fetch('/get_data').then(res => res.json()).then(res => {
+  console.log(res)
+  photoPreviews = res.projects.map(info => {
+    const photoPreview = new PhotoPreview({
+      width: 250,
+      height: 400
+    });
+    photoPreview.position = new THREE.Vector3(info.posX, info.posY);
+    clipScene.add(photoPreview.clipMesh);
+    photoScene.add(photoPreview.photoMesh);
+    return photoPreview;
   });
-  photoPreview.position = new THREE.Vector3(info.x, info.y);
-  clipScene.add(photoPreview.clipMesh);
-  photoScene.add(photoPreview.photoMesh);
-  return photoPreview;
-});
+})
 
 new THREE.TextureLoader().load(ninja, texture => {
   texture.flipY = false;
