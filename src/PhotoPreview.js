@@ -118,8 +118,8 @@ export default class PhotoPreview {
   }
 
   onSceneDrag (dragDiffX, dragDiffY) {
-    this._diffVectorTarget.x = dragDiffX * -2
-    this._diffVectorTarget.y = dragDiffY * -2
+    this._diffVectorTarget.x = dragDiffX * -5
+    this._diffVectorTarget.y = dragDiffY * -5
   }
 
   onSceneDragEnd () {

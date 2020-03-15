@@ -27,6 +27,7 @@ const photoScene = new THREE.Scene();
 const postFXScene = new THREE.Scene();
 const cursorScene = new THREE.Scene();
 
+const aspect = appWidth / appHeight
 const clipCamera = new THREE.OrthographicCamera(
   -appWidth / 2,
   appWidth / 2,
@@ -85,6 +86,9 @@ cursorCamera.position.set(...originalCameraPos);
 cursorCamera.lookAt(cameraLookAt);
 cursorScene.add(cursorCamera);
 
+// cursorCamera.zoom = 0.2
+// cursorCamera.updateProjectionMatrix()
+
 renderer.setSize(appWidth, appHeight);
 renderer.setPixelRatio(dpr);
 // renderer.setClearColor(0xe5e5e5)
@@ -126,6 +130,12 @@ document.body.addEventListener(
   e => {
     raycastMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     raycastMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(raycastMouse, photoCamera);
+    const intersectsTests = photoPreviews.map(({ photoMesh }) => photoMesh);
+    const intersects = raycaster.intersectObjects(photoScene.children);
+
+    console.log(intersects.length)
 
     cursorTargetPos.x = e.pageX * 2;
     cursorTargetPos.y = window.innerHeight * 2 - e.pageY * 2;
@@ -222,18 +232,19 @@ const postFXMaterial = new THREE.ShaderMaterial({
 
       vec4 color = mix(clipColor, photoColor, clipColor.r);
 
-      vec4 vizorFillColor = vec4(color.rgb, cursorColor.r);
+      // vec4 vizorFillColor = vec4(color.rgb, cursorColor.r);
+      vec4 vizorFillColor = cursorColor;
       // vizorFillColor = mix(baseColor, vizorFillColor, color.a);
-      vec2 uvRandom = uv;
-      uvRandom.y *= random(vec2(uvRandom.y, u_time));
-      vizorFillColor.rgb += random(uvRandom) * 0.25;
+      // vec2 uvRandom = uv;
+      // uvRandom.y *= random(vec2(uvRandom.y, u_time));
+      // vizorFillColor.rgb += random(uvRandom) * 0.25;
 
-      vec4 vizorStrokeColor = vec4(color.rgb, cursorColor.b);
-      vizorStrokeColor.rgb += random(uvRandom) * 2.0;
+      // vec4 vizorStrokeColor = vec4(color.rgb, cursorColor.b);
+      // vizorStrokeColor.rgb += random(uvRandom) * 2.0;
       
       color = mix(baseColor, color, color.a);
       color = mix(color, vizorFillColor, cursorColor.a);
-      color = mix(color, vizorStrokeColor, cursorColor.b);
+      // color = mix(color, vizorStrokeColor, cursorColor.b);
       // vec4 color = vizorFillColor;
       gl_FragColor = color;
     }
@@ -299,13 +310,10 @@ function updateFrame(ts) {
 
   photoPreviews.forEach(photoPreview => photoPreview.onSceneUpdate(ts, dt));
 
-  clipCamera.updateMatrixWorld();
+  // photoCamera.lookAt(cameraLookAt)
+  // photoCamera.updateMatrixWorld()
 
-  raycaster.setFromCamera(raycastMouse, clipCamera);
-  const intersectsTests = photoPreviews.map(({ photoMesh }) => photoMesh);
-  const intersects = raycaster.intersectObjects(intersectsTests, false);
-
-  // console.log(intersects.length)
+  
 
   // intersects.forEach(intersect => {
   //   // debugger
@@ -377,11 +385,11 @@ function makeVizorTexture () {
   ctx.beginPath()
   ctx.arc(0, 0, canvas.width / 2 - ctx.lineWidth / 2, 0, Math.PI * 2)
   ctx.stroke()
-  document.body.appendChild(canvas)
-  canvas.style.position = 'fixed'
-  canvas.style.zIndex = '999'
-  canvas.style.top = '0px'
-  canvas.style.left = '0px'
+  // document.body.appendChild(canvas)
+  // canvas.style.position = 'fixed'
+  // canvas.style.zIndex = '999'
+  // canvas.style.top = '0px'
+  // canvas.style.left = '0px'
   const texture = new THREE.CanvasTexture(canvas)
   texture.flipY = true
   return texture
