@@ -68,15 +68,15 @@ clipCamera.position.set(...originalCameraPos);
 clipCamera.lookAt(cameraLookAt);
 clipScene.add(clipCamera);
 
-// clipCamera.zoom = 0.2
-// clipCamera.updateProjectionMatrix()
+clipCamera.zoom = 0.2
+clipCamera.updateProjectionMatrix()
 
 photoCamera.position.set(...originalCameraPos);
 photoCamera.lookAt(cameraLookAt);
 photoScene.add(photoCamera);
 
-// photoCamera.zoom = 0.2
-// photoCamera.updateProjectionMatrix()
+photoCamera.zoom = 0.2
+photoCamera.updateProjectionMatrix()
 
 postFXCamera.position.set(...originalCameraPos);
 postFXCamera.lookAt(cameraLookAt);
@@ -107,14 +107,15 @@ fetch('/get_data').then(res => res.json()).then(res => {
     photoPreview.position = new THREE.Vector3(info.posX, info.posY);
     clipScene.add(photoPreview.clipMesh);
     photoScene.add(photoPreview.photoMesh);
+    new THREE.TextureLoader().load(info.previewSrc, texture => {
+      texture.flipY = false
+      photoPreview.addPhotoTexture(texture)
+    })
     return photoPreview;
   });
 })
 
-new THREE.TextureLoader().load(ninja, texture => {
-  texture.flipY = false;
-  photoPreviews.forEach(photoPreview => photoPreview.addPhotoTexture(texture));
-});
+
 
 document.body.addEventListener(
   "mousedown",

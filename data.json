@@ -2,31 +2,45 @@
   "projects": [
     {
       "posX": -300,
-      "posY": 100
+      "posY": 100,
+      "previewSrc": "photos/01/preview.jpg",
+      "src": "https://acrnm.com/products/J61-GTV_FW1920"
     },
     {
       "posX": 300,
-      "posY": -100
+      "posY": -100,
+      "previewSrc": "photos/02/preview.jpg",
+      "src": "https://acrnm.com/products/J59-GT_SS19"
     },
     {
       "posX": 700,
-      "posY": -500
+      "posY": -500,
+      "previewSrc": "photos/03/preview.jpg",
+      "src": "https://acrnm.com/products/J82-WS_SS20"
     },
     {
       "posX": 800,
-      "posY": 500
+      "posY": 500,
+      "previewSrc": "photos/04/preview.jpg",
+      "src": "https://acrnm.com/products/J27-GT_FW1920"
     },
     {
       "posX": -1100,
-      "posY": -400
+      "posY": -400,
+      "previewSrc": "photos/05/preview.jpg",
+      "src": "https://acrnm.com/products/H5-AJ_FW1920"
     },
     {
       "posX": 1100,
-      "posY": 400
+      "posY": 400,
+      "previewSrc": "photos/06/preview.jpg",
+      "src": "https://acrnm.com/products/P32-S_SS19"
     },
     {
       "posX": 1000,
-      "posY": -400
+      "posY": -400,
+      "previewSrc": "photos/07/preview.jpg",
+      "src": "https://acrnm.com/products/P32-S_SS19"
     }
   ]
 }
