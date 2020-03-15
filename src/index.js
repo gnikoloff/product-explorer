@@ -1,31 +1,30 @@
-import * as THREE from "three";
+import * as THREE from 'three'
 
-import PhotoPreview from "./PhotoPreview";
+import PhotoPreview from './PhotoPreview'
 
-import styles from "./style.css";
+import styles from './style.css'
 
-import ninja from "./assets/ninja.jpg";
-import arrowLeft from "./assets/arrow.png";
+import arrowLeft from './assets/arrow.png'
 
-import { WOLRD_WIDTH, WORLD_HEIGHT } from "./constants";
+import { WOLRD_WIDTH, WORLD_HEIGHT } from './constants'
 
-import photoInfo from "../data";
+import photoInfo from '../data'
 
-let appWidth = window.innerWidth;
-let appHeight = window.innerHeight;
-const dpr = window.devicePixelRatio || 1;
+let appWidth = window.innerWidth
+let appHeight = window.innerHeight
+const dpr = window.devicePixelRatio || 1
 
-const mousePos = new THREE.Vector2(0, 0);
-const raycastMouse = new THREE.Vector2(0, 0);
-const cameraTargetPos = new THREE.Vector2(0, 0);
-const cursorTargetPos = new THREE.Vector2(0, 0);
+const mousePos = new THREE.Vector2(0, 0)
+const raycastMouse = new THREE.Vector2(0, 0)
+const cameraTargetPos = new THREE.Vector2(0, 0)
+const cursorTargetPos = new THREE.Vector2(0, 0)
 
-const renderer = new THREE.WebGLRenderer({ alpha: true });
+const renderer = new THREE.WebGLRenderer({ alpha: true })
 
-const clipScene = new THREE.Scene();
-const photoScene = new THREE.Scene();
-const postFXScene = new THREE.Scene();
-const cursorScene = new THREE.Scene();
+const clipScene = new THREE.Scene()
+const photoScene = new THREE.Scene()
+const postFXScene = new THREE.Scene()
+const cursorScene = new THREE.Scene()
 
 const aspect = appWidth / appHeight
 const clipCamera = new THREE.OrthographicCamera(
@@ -35,161 +34,148 @@ const clipCamera = new THREE.OrthographicCamera(
   appHeight / 2,
   1,
   1000
-);
-const photoCamera = clipCamera.clone();
-const postFXCamera = clipCamera.clone();
-const cursorCamera = clipCamera.clone();
+)
+const photoCamera = clipCamera.clone()
+const postFXCamera = clipCamera.clone()
+const cursorCamera = clipCamera.clone()
 
 const clipRenderTarget = new THREE.WebGLRenderTarget(
   appWidth * dpr,
   appHeight * dpr
-);
+)
 const photoRenderTarget = new THREE.WebGLRenderTarget(
   appWidth * dpr,
   appHeight * dpr
-);
+)
 const cursorRenderTarget = new THREE.WebGLRenderTarget(
   appWidth * dpr,
   appHeight * dpr
-);
+)
 
-const raycaster = new THREE.Raycaster();
+const raycaster = new THREE.Raycaster()
 
-const originalCameraPos = [0, 0, -50];
-const cameraLookAt = new THREE.Vector3(0, 0, 0);
+const originalCameraPos = [0, 0, -50]
+const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
-let oldTime = 0;
-let isDragging = false;
-let cursorSizeScaleFactorTarget = 0.1;
-let cursorArrowOffset = 0;
-let cursorArrowOffsetTarget = 0;
+let oldTime = 0
+let isDragging = false
+let cursorSizeScaleFactorTarget = 0.1
+let cursorArrowOffset = 0
+let cursorArrowOffsetTarget = 0
 
-clipCamera.position.set(...originalCameraPos);
-clipCamera.lookAt(cameraLookAt);
-clipScene.add(clipCamera);
+clipCamera.position.set(...originalCameraPos)
+clipCamera.lookAt(cameraLookAt)
+clipScene.add(clipCamera)
 
 clipCamera.zoom = 0.2
 clipCamera.updateProjectionMatrix()
 
-photoCamera.position.set(...originalCameraPos);
-photoCamera.lookAt(cameraLookAt);
-photoScene.add(photoCamera);
+photoCamera.position.set(...originalCameraPos)
+photoCamera.lookAt(cameraLookAt)
+photoScene.add(photoCamera)
 
 photoCamera.zoom = 0.2
 photoCamera.updateProjectionMatrix()
 
-postFXCamera.position.set(...originalCameraPos);
-postFXCamera.lookAt(cameraLookAt);
-postFXScene.add(postFXCamera);
+postFXCamera.position.set(...originalCameraPos)
+postFXCamera.lookAt(cameraLookAt)
+postFXScene.add(postFXCamera)
 
-cursorCamera.position.set(...originalCameraPos);
-cursorCamera.lookAt(cameraLookAt);
-cursorScene.add(cursorCamera);
+cursorCamera.position.set(...originalCameraPos)
+cursorCamera.lookAt(cameraLookAt)
+cursorScene.add(cursorCamera)
 
 // cursorCamera.zoom = 0.2
 // cursorCamera.updateProjectionMatrix()
 
-renderer.setSize(appWidth, appHeight);
-renderer.setPixelRatio(dpr);
+renderer.setSize(appWidth, appHeight)
+renderer.setPixelRatio(dpr)
 // renderer.setClearColor(0xe5e5e5)
-renderer.setClearAlpha(0);
-document.body.appendChild(renderer.domElement);
+renderer.setClearAlpha(0)
+document.body.appendChild(renderer.domElement)
 
 let photoPreviews = []
 
-fetch('/get_data').then(res => res.json()).then(res => {
-  console.log(res)
-  photoPreviews = res.projects.map(info => {
-    const photoPreview = new PhotoPreview({
-      width: 250,
-      height: 400
-    });
-    photoPreview.position = new THREE.Vector3(info.posX, info.posY);
-    clipScene.add(photoPreview.clipMesh);
-    photoScene.add(photoPreview.photoMesh);
-    new THREE.TextureLoader().load(info.previewSrc, texture => {
-      texture.flipY = false
-      photoPreview.addPhotoTexture(texture)
+fetch('/get_data')
+  .then(res => res.json())
+  .then(res => {
+    photoPreviews = res.projects.map(info => {
+      const photoPreview = new PhotoPreview({
+        width: 250,
+        height: 400
+      })
+      photoPreview.position = new THREE.Vector3(info.posX, info.posY)
+      clipScene.add(photoPreview.clipMesh)
+      photoScene.add(photoPreview.photoMesh)
+      new THREE.TextureLoader().load(info.previewSrc, texture => {
+        texture.flipY = false
+        photoPreview.addPhotoTexture(texture)
+      })
+      return photoPreview
     })
-    return photoPreview;
-  });
-})
+  })
 
+document.body.addEventListener('mousedown', e => {
+  isDragging = true
+  cursorSizeScaleFactorTarget = 0.09
+  cursorArrowOffsetTarget = 1
+  document.body.classList.add('dragging')
+  photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart())
+  mousePos.x = e.pageX
+  mousePos.y = e.pageY
+}, false)
 
+document.body.addEventListener('mousemove', e => {
+  raycastMouse.x = (e.clientX / window.innerWidth) * 2 - 1
+  raycastMouse.y = -(e.clientY / window.innerHeight) * 2 + 1
 
-document.body.addEventListener(
-  "mousedown",
-  e => {
-    isDragging = true;
-    cursorSizeScaleFactorTarget = 0.09;
-    cursorArrowOffsetTarget = 1;
-    document.body.classList.add("dragging");
-    photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart());
-    mousePos.x = e.pageX;
-    mousePos.y = e.pageY;
-  },
-  false
-);
+  raycaster.setFromCamera(raycastMouse, photoCamera)
+  const intersectsTests = photoPreviews.map(({ photoMesh }) => photoMesh)
+  const intersects = raycaster.intersectObjects(photoScene.children)
 
-document.body.addEventListener(
-  "mousemove",
-  e => {
-    raycastMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    raycastMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  console.log(intersects.length)
 
-    raycaster.setFromCamera(raycastMouse, photoCamera);
-    const intersectsTests = photoPreviews.map(({ photoMesh }) => photoMesh);
-    const intersects = raycaster.intersectObjects(photoScene.children);
+  cursorTargetPos.x = e.pageX * 2
+  cursorTargetPos.y = window.innerHeight * 2 - e.pageY * 2
 
-    console.log(intersects.length)
+  if (isDragging) {
+    const diffx = e.pageX - mousePos.x
+    const diffy = e.pageY - mousePos.y
 
-    cursorTargetPos.x = e.pageX * 2;
-    cursorTargetPos.y = window.innerHeight * 2 - e.pageY * 2;
-
-    if (isDragging) {
-      const diffx = e.pageX - mousePos.x;
-      const diffy = e.pageY - mousePos.y;
-
-      photoPreviews.forEach(photoPreview =>
-        photoPreview.onSceneDrag(diffx, diffy)
-      );
-      // TODO: Why????
-      cameraTargetPos.x += diffx * 0.5 * -1;
-      cameraTargetPos.y += diffy * 0.5 * -1;
-      if (clipCamera.position.x > WOLRD_WIDTH / 2) {
-        clipCamera.position.x = WOLRD_WIDTH / 2;
-      } else if (clipCamera.position.x < -WOLRD_WIDTH / 2) {
-        clipCamera.position.x = -WOLRD_WIDTH / 2;
-      } else if (clipCamera.position.y > WORLD_HEIGHT / 2) {
-        clipCamera.position.y = WORLD_HEIGHT / 2;
-      } else if (clipCamera.position.y < -WORLD_HEIGHT / 2) {
-        clipCamera.position.y = -WORLD_HEIGHT / 2;
-      }
+    photoPreviews.forEach(photoPreview =>
+      photoPreview.onSceneDrag(diffx, diffy)
+    )
+    // TODO: Why????
+    cameraTargetPos.x += diffx * 0.5 * -1
+    cameraTargetPos.y += diffy * 0.5 * -1
+    if (clipCamera.position.x > WOLRD_WIDTH / 2) {
+      clipCamera.position.x = WOLRD_WIDTH / 2
+    } else if (clipCamera.position.x < -WOLRD_WIDTH / 2) {
+      clipCamera.position.x = -WOLRD_WIDTH / 2
+    } else if (clipCamera.position.y > WORLD_HEIGHT / 2) {
+      clipCamera.position.y = WORLD_HEIGHT / 2
+    } else if (clipCamera.position.y < -WORLD_HEIGHT / 2) {
+      clipCamera.position.y = -WORLD_HEIGHT / 2
     }
-    mousePos.x = e.pageX;
-    mousePos.y = e.pageY;
-  },
-  false
-);
+  }
+  mousePos.x = e.pageX
+  mousePos.y = e.pageY
+}, false)
 
-document.body.addEventListener(
-  "mouseup",
-  () => {
-    isDragging = false;
-    cursorSizeScaleFactorTarget = 0.1;
-    cursorArrowOffsetTarget = 0;
-    document.body.classList.remove("dragging");
-    photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd());
-  },
-  false
-);
+document.body.addEventListener('mouseup', () => {
+  isDragging = false
+  cursorSizeScaleFactorTarget = 0.1
+  cursorArrowOffsetTarget = 0
+  document.body.classList.remove('dragging')
+  photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
+}, false)
 
-document.body.addEventListener("mouseleave", () => {
+document.body.addEventListener('mouseleave', () => {
   photoPreviews.forEach(photoPreview => {
-    photoPreview._diffVectorTarget.x = 0;
-    photoPreview._diffVectorTarget.y = 0;
-  });
-});
+    photoPreview._diffVectorTarget.x = 0
+    photoPreview._diffVectorTarget.y = 0
+  })
+})
 
 window.addEventListener('resize', () => {
   appWidth = window.innerWidth
@@ -216,7 +202,7 @@ window.addEventListener('resize', () => {
 
 })
 
-const postFXGeometry = new THREE.PlaneGeometry(appWidth, appHeight);
+const postFXGeometry = new THREE.PlaneGeometry(appWidth, appHeight)
 const postFXMaterial = new THREE.ShaderMaterial({
   uniforms: {
     u_time: { value: 0.0 },
@@ -280,28 +266,28 @@ const postFXMaterial = new THREE.ShaderMaterial({
       gl_FragColor = color;
     }
   `
-});
-const postFXMesh = new THREE.Mesh(postFXGeometry, postFXMaterial);
-postFXScene.add(postFXMesh);
+})
+const postFXMesh = new THREE.Mesh(postFXGeometry, postFXMaterial)
+postFXScene.add(postFXMesh)
 
 const cursorArrowLeft = new THREE.Mesh(
   new THREE.PlaneGeometry(10, 10),
   new THREE.MeshBasicMaterial({ opacity: 1 })
-);
-cursorArrowLeft.rotation.z = Math.PI;
-cursorScene.add(cursorArrowLeft);
+)
+cursorArrowLeft.rotation.z = Math.PI
+cursorScene.add(cursorArrowLeft)
 
-const cursorArrowRight = cursorArrowLeft.clone();
-cursorArrowRight.rotation.z = 0;
-cursorScene.add(cursorArrowRight);
+const cursorArrowRight = cursorArrowLeft.clone()
+cursorArrowRight.rotation.z = 0
+cursorScene.add(cursorArrowRight)
 
-const cursorArrowTop = cursorArrowLeft.clone();
-cursorArrowTop.rotation.z = Math.PI / 2;
-cursorScene.add(cursorArrowTop);
+const cursorArrowTop = cursorArrowLeft.clone()
+cursorArrowTop.rotation.z = Math.PI / 2
+cursorScene.add(cursorArrowTop)
 
-const cursorArrowBottom = cursorArrowLeft.clone();
-cursorArrowBottom.rotation.z = -Math.PI / 2;
-cursorScene.add(cursorArrowBottom);
+const cursorArrowBottom = cursorArrowLeft.clone()
+cursorArrowBottom.rotation.z = -Math.PI / 2
+cursorScene.add(cursorArrowBottom)
 
 const cursorVizor = new THREE.Mesh(
   new THREE.PlaneGeometry(50, 50),
@@ -310,36 +296,36 @@ const cursorVizor = new THREE.Mesh(
 cursorScene.add(cursorVizor)
 
 new THREE.TextureLoader().load(arrowLeft, texture => {
-  cursorArrowLeft.material.map = texture;
-  cursorArrowLeft.material.needsUpdate = true;
-});
+  cursorArrowLeft.material.map = texture
+  cursorArrowLeft.material.needsUpdate = true
+})
 
 clipScene.add(
   new THREE.Mesh(
     new THREE.PlaneGeometry(WOLRD_WIDTH * 2, WORLD_HEIGHT * 2),
     new THREE.MeshBasicMaterial({ wireframe: true, color: 0xff0000 })
   )
-);
+)
 
-updateFrame();
+updateFrame()
 
 function updateFrame(ts) {
   if (!ts) {
-    ts = 0;
+    ts = 0
   }
-  ts /= 1000;
-  ts = Math.max(ts, 1);
-  const dt = ts - oldTime;
-  oldTime = ts;
+  ts /= 1000
+  ts = Math.max(ts, 1)
+  const dt = ts - oldTime
+  oldTime = ts
 
   clipCamera.position.x +=
-    (cameraTargetPos.x - clipCamera.position.x) * (dt * 0.92);
+    (cameraTargetPos.x - clipCamera.position.x) * (dt * 0.92)
   clipCamera.position.y +=
-    (cameraTargetPos.y - clipCamera.position.y) * (dt * 0.92);
-  photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt;
-  photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt;
+    (cameraTargetPos.y - clipCamera.position.y) * (dt * 0.92)
+  photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
+  photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
 
-  photoPreviews.forEach(photoPreview => photoPreview.onSceneUpdate(ts, dt));
+  photoPreviews.forEach(photoPreview => photoPreview.onSceneUpdate(ts, dt))
 
   // photoCamera.lookAt(cameraLookAt)
   // photoCamera.updateMatrixWorld()
@@ -350,10 +336,10 @@ function updateFrame(ts) {
   //   // debugger
   // })
 
-  renderer.autoClear = true;
+  renderer.autoClear = true
 
   renderer.setRenderTarget(cursorRenderTarget)
-  renderer.render(cursorScene, cursorCamera);
+  renderer.render(cursorScene, cursorCamera)
 
   renderer.setRenderTarget(clipRenderTarget)
   renderer.render(clipScene, clipCamera)
@@ -399,7 +385,7 @@ function updateFrame(ts) {
   renderer.setRenderTarget(null)
   renderer.render(postFXScene, postFXCamera)
 
-  window.requestAnimationFrame(updateFrame);
+  window.requestAnimationFrame(updateFrame)
 }
 
 function makeVizorTexture () {
