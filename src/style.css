@@ -4,15 +4,16 @@
 }
 
 body {
-  cursor: grab;
+  /* cursor: none; */
   background: #e5e5e5;
 }
 
 body.dragging {
-  cursor: grabbing;
+  /* cursor: grabbing; */
 }
 
 .app-header {
+  z-index: 1;
   position: fixed;
   top: 0;
   right: 0;

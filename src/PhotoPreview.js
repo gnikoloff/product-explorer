@@ -118,8 +118,8 @@ export default class PhotoPreview {
   }
 
   onSceneDrag (dragDiffX, dragDiffY) {
-    this._diffVectorTarget.x = dragDiffX * -5
-    this._diffVectorTarget.y = dragDiffY * -5
+    this._diffVectorTarget.x = dragDiffX * -2
+    this._diffVectorTarget.y = dragDiffY * -2
   }
 
   onSceneDragEnd () {
@@ -129,6 +129,8 @@ export default class PhotoPreview {
       duration: 250
     })
     .start(v => this._photoMesh.scale.set(v, v, 1))
+    this._diffVectorTarget.x = 0
+    this._diffVectorTarget.y = 0
   }
 
   onSceneUpdate (ts, dt) {
