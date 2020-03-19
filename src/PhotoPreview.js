@@ -1,20 +1,37 @@
 import * as THREE from 'three'
 import { tween } from 'popmotion'
 
+import {
+  clampNumber,
+} from './helpers'
+
 export default class PhotoPreview {
 
   static SCALE_FACTOR_MAX = 1
   static SCALE_FACTOR_MIN = 0.9
 
   constructor ({
+    modelName,
     width,
     height,
   }) {
+    this._modelName = modelName
+    this._width = width
+    this._height = height
+
     this._diffVector = new THREE.Vector2(0, 0)
     this._diffVectorTarget = new THREE.Vector2(0, 0)
 
-    this._makeClipMesh(width, height)
-    this._makePhotoMesh(width, height)
+    this._makeClipMesh()
+    this._makePhotoMesh()
+
+    this._x = 0
+    this._y = 0
+    this._z = 0
+  }
+
+  get modelName () {
+    return this._modelName
   }
   
   get clipMesh () {
@@ -29,15 +46,34 @@ export default class PhotoPreview {
     return this._diffVectorTarget
   }
 
-  set position (newPosition) {
-    this._clipMesh.position.copy(newPosition)
-    this._photoMesh.position.copy(newPosition)
+  get x () { return this._x }
+
+  set x (x) {
+    this._x = x
+    this._clipMesh.position.x = x
+    this._photoMesh.position.x = x
   }
 
-  _makeClipMesh (width, height) {
+  get y () { return this._y }
+
+  set y (y) {
+    this._y = y
+    this._clipMesh.position.y = y
+    this._photoMesh.position.y = y
+  }
+
+  get z () { return this._z }
+
+  set z (z) {
+    this._z = z
+    this._clipMesh.position.z = z
+    this._photoMesh.position.z = z
+  }
+
+  _makeClipMesh () {
     const clipGeometryVertCount = 20
 
-    const clipGeometry = new THREE.PlaneGeometry(width, height, clipGeometryVertCount, clipGeometryVertCount)
+    const clipGeometry = new THREE.PlaneGeometry(this._width, this._height, clipGeometryVertCount, clipGeometryVertCount)
     const clipMaterial = new THREE.ShaderMaterial({
       uniforms: {
         u_dragOffsetVec: { value: this._diffVector },
@@ -62,13 +98,14 @@ export default class PhotoPreview {
     })
 
     this._clipMesh = new THREE.Mesh(clipGeometry, clipMaterial)
+    this._clipMesh.modelName = this._modelName
   }
 
   _makePhotoMesh (width, height) {
-    const photoGeometry = new THREE.PlaneGeometry(width + 100, height + 100)
+    const photoGeometry = new THREE.PlaneGeometry(this._width + 100, this._height + 100)
     const photoMaterial = new THREE.ShaderMaterial({
       uniforms: {
-        u_planeSize: { value: new THREE.Vector2(width + 100, height + 100) },
+        u_planeSize: { value: new THREE.Vector2(this._width + 100, this._height + 100) },
         u_imageSize: { value: new THREE.Vector2(960, 1440) },
         u_diffuse: { value: null },
       },
@@ -105,7 +142,7 @@ export default class PhotoPreview {
 
   addPhotoTexture (texture) {
     this._photoMesh.material.uniforms.u_diffuse.value = texture
-    // this._photoMesh.material.needsUpdate = true
+    this._photoMesh.material.needsUpdate = true
   }
 
   onSceneDragStart () {
@@ -118,8 +155,8 @@ export default class PhotoPreview {
   }
 
   onSceneDrag (dragDiffX, dragDiffY) {
-    this._diffVectorTarget.x = dragDiffX * -5
-    this._diffVectorTarget.y = dragDiffY * -5
+    this._diffVectorTarget.x = clampNumber(dragDiffX * 5, -25, 25)
+    this._diffVectorTarget.y = clampNumber(dragDiffY * 5, -25, 25)
   }
 
   onSceneDragEnd () {

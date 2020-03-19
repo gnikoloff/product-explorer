@@ -41,6 +41,20 @@ body.dragging {
   /* cursor: grabbing; */
 }
 
+.hover-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hover-cursor span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-5px) translateY(-5px) scale(0.5);
+}
+
 .app-header {
   z-index: 1;
   position: fixed;
@@ -63,7 +77,7 @@ body.dragging {
 }
 
 .webgl-scene {
-  cursor: none;
+  /* cursor: none; */
 }
 
 .webgl-scene.non-interactable {
