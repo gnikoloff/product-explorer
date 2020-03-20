@@ -14,6 +14,9 @@ export default class Cursor {
     this._domElStyler = styler(this._domEl)
     this._tweens = []
   }
+  get position () {
+    return this._position
+  }
   onMouseMove (pageX, pageY) {
     this._mousePos.set(pageX, pageY)
   }

@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import PhotoPreview from './PhotoPreview'
 import Cursor from './Cursor'
 import SinglePage from './SinglePage'
+import PostProcessing from './PostProcessing'
 
 import './style.css'
 
@@ -67,11 +68,8 @@ const singlePage = new SinglePage()
 
 let oldTime = 0
 let isDragging = false
-let cursorSizeTarget = 50
-let cursorScanlineTarget = 0
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
-let cursorVizorOpacityTarget = 1
 let projectsData = []
 let hoveredElement = null
 
@@ -86,8 +84,8 @@ photoCamera.position.set(...originalCameraPos)
 photoCamera.lookAt(cameraLookAt)
 photoScene.add(photoCamera)
 
-// photoCamera.zoom = 1
-photoCamera.updateProjectionMatrix()
+// photoCamera.zoom = 0.2
+// photoCamera.updateProjectionMatrix()
 
 postFXCamera.position.set(...originalCameraPos)
 postFXCamera.lookAt(cameraLookAt)
@@ -132,7 +130,7 @@ fetch('/get_data')
 
 webglContainer.addEventListener('mousedown', e => {
   isDragging = true
-  cursorSizeTarget = 55
+  postFXMesh.onDragStart()
   cursorArrowOffsetTarget = 1
   document.body.classList.add('dragging')
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart())
@@ -150,12 +148,27 @@ webglContainer.addEventListener('mousedown', e => {
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
 
     tween({
-      from: { x: hoveredPreview.x, y: hoveredPreview.y, z: hoveredPreview.z },
-      to: clipCamera.position,
+      from: {
+        x: hoveredPreview.x,
+        y: hoveredPreview.y,
+        z: hoveredPreview.z,
+        maskCutoff: 1,
+        opacity: 1,
+      },
+      to: {
+        ...clipCamera.position,
+        maskCutoff: 0,
+        opacity: 0,
+      },
       duration: 1000,
     }).start(v => {
       hoveredPreview.x = v.x
       hoveredPreview.y = v.y
+      postFXMesh.material.uniforms.u_cutOffFactor.value = v.maskCutoff
+      const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+      unclicked.forEach(item => {
+        item.opacity = v.opacity
+      })
     })
 
   }
@@ -190,14 +203,14 @@ webglContainer.addEventListener('mousemove', e => {
 
 webglContainer.addEventListener('mouseup', () => {
   isDragging = false
-  cursorSizeTarget = 50
+  postFXMesh.onDragEnd()
   cursorArrowOffsetTarget = 0
   document.body.classList.remove('dragging')
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
 }, false)
 
 webglContainer.addEventListener('mouseenter', () => {
-  cursorVizorOpacityTarget = 1
+  // ...
 })
 
 webglContainer.addEventListener('mouseleave', () => {
@@ -205,7 +218,6 @@ webglContainer.addEventListener('mouseleave', () => {
     photoPreview._diffVectorTarget.x = 0
     photoPreview._diffVectorTarget.y = 0
   })
-  cursorVizorOpacityTarget = 0
   cursorArrowOffsetTarget = 0
 })
 
@@ -234,113 +246,11 @@ window.addEventListener('resize', () => {
 
 })
 
-const postFXGeometry = new THREE.PlaneGeometry(appWidth, appHeight)
-const postFXMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-    u_time: { value: 0.0 },
-    u_tDiffuseClip: { value: clipRenderTarget.texture },
-    u_tDiffusePhoto: { value: photoRenderTarget.texture },
-    u_tDiffuseCursor: { value: cursorRenderTarget.texture },
-    u_tDiffuseMask: { value: null },
-    u_resolution: { value: new THREE.Vector2(appWidth, appHeight) },
-    u_mouse: { value: mousePos.clone() },
-    u_cursorSize: { value: cursorSizeTarget },
-    u_hoverMixFactor: { value: cursorScanlineTarget },
-  },
-  transparent: true,
-  vertexShader: `
-    varying vec2 v_uv;
-
-    void main () {
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      v_uv = uv;
-    }
-  `,
-  fragmentShader: `
-    uniform float u_time;
-    uniform sampler2D u_tDiffuseClip;
-    uniform sampler2D u_tDiffusePhoto;
-    uniform sampler2D u_tDiffuseCursor;
-    uniform sampler2D u_tDiffuseMask;
-
-    uniform vec2 u_resolution;
-    uniform vec2 u_mouse;
-    uniform float u_cursorSize;
-    uniform float u_hoverMixFactor;
-
-    varying vec2 v_uv;
-
-    float random (vec2 p) {
-      vec2 K1 = vec2(
-        23.14069263277926, // e^pi (Gelfond's constant)
-        2.665144142690225 // 2^sqrt(2) (Gelfond–Schneider constant)
-      );
-      return fract( cos( dot(p,K1) ) * 12345.6789 );
-    }
-
-    float circle (vec2 uv, vec2 pos, float rad) {
-      float d = length(pos - uv) - rad;
-      float t = clamp(d, 0.0, 1.0);
-      return 1.0 - t;
-    }
-
-    vec4 blur9 (sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
-      vec4 color = vec4(0.0);
-      vec2 off1 = vec2(1.3846153846) * direction;
-      vec2 off2 = vec2(3.2307692308) * direction;
-      color += texture2D(image, uv) * 0.2270270270;
-      color += texture2D(image, uv + (off1 / resolution)) * 0.3162162162;
-      color += texture2D(image, uv - (off1 / resolution)) * 0.3162162162;
-      color += texture2D(image, uv + (off2 / resolution)) * 0.0702702703;
-      color += texture2D(image, uv - (off2 / resolution)) * 0.0702702703;
-      return color;
-    }
-
-    void main () {
-      vec2 uv = v_uv;
-      vec4 baseColor = vec4(vec3(0.89), 1.0);
-      vec4 clipColor = texture2D(u_tDiffuseClip, uv);
-      vec4 photoColor = texture2D(u_tDiffusePhoto, uv);
-      vec4 cursorColor = texture2D(u_tDiffuseCursor, uv);
-      vec4 maskColor = texture2D(u_tDiffuseMask, uv);
-
-      vec4 color = mix(clipColor, photoColor, clipColor.r);
-      color = mix(baseColor, color, color.a);
-
-      vec2 mouse = vec2(u_mouse.x, u_resolution.y - u_mouse.y);
-      float cursorAlpha = circle(gl_FragCoord.xy, u_mouse, u_cursorSize);
-
-      vec4 cursorCircleColor = color;
-      vec2 uvRandom = uv;
-      uvRandom.y *= random(vec2(uvRandom.y, u_time));
-      cursorCircleColor.rgb += random(uvRandom) * 0.25;
-
-      color = mix(color, cursorColor, cursorColor.a);
-
-      float fmin = 0.8;
-      float fmod = mod(u_time * 3.0 + uv.y * 150.0, 1.3);
-      float fstep = fmin + (1.0 - fmin) * fmod;
-
-      vec4 hoverColor = cursorCircleColor;
-      cursorCircleColor.rgb *= fstep;
-
-      hoverColor = mix(hoverColor, cursorCircleColor, u_hoverMixFactor);
-
-      // gl_FragColor = maskColor;
-      if (maskColor.r < 0.5) {
-        gl_FragColor = mix(color, hoverColor, cursorAlpha);
-      } else {
-        gl_FragColor = vec4(1.0);
-      }
-      
-    }
-  `
+const postFXMesh = new PostProcessing({
+  width: appWidth,
+  height: appHeight,
 })
-new THREE.TextureLoader().load('/mask.png', texture => {
-  postFXMaterial.uniforms.u_tDiffuseMask.value = texture
-})
-
-const postFXMesh = new THREE.Mesh(postFXGeometry, postFXMaterial)
+postFXMesh.mousePos = mousePos
 postFXScene.add(postFXMesh)
 
 const cursorArrowLeft = new THREE.Mesh(
@@ -367,13 +277,6 @@ new THREE.TextureLoader().load(arrowLeft, texture => {
   cursorArrowLeft.material.needsUpdate = true
 })
 
-// clipScene.add(
-//   new THREE.Mesh(
-//     new THREE.PlaneGeometry(WOLRD_WIDTH * 2, WORLD_HEIGHT * 2),
-//     new THREE.MeshBasicMaterial({ wireframe: true, color: 0xff0000 })
-//   )
-// )
-
 updateFrame()
 
 function updateFrame(ts) {
@@ -394,16 +297,16 @@ function updateFrame(ts) {
       const intersect = intersects[0]
       const { object, object: { modelName } } = intersect
       if (!hoveredElement) {
-        // cursor.setText(modelName).show()
+        // cursor.show()
         hoveredElement = object
+        
       }
-      cursorSizeTarget = 120
-      cursorScanlineTarget = 1
+
+      postFXMesh.hover()
     } else {
       cursor.hide()
       hoveredElement = null
-      cursorSizeTarget = 50
-      cursorScanlineTarget = 0
+      postFXMesh.unHover()
     }
   }
 
@@ -438,14 +341,12 @@ function updateFrame(ts) {
 
   photoPreviews.forEach(photoPreview => photoPreview.onSceneUpdate(ts, dt))
   
-  postFXMaterial.uniforms.u_time.value = ts
-  postFXMaterial.uniforms.u_tDiffuseClip.value = clipRenderTarget.texture
-  postFXMaterial.uniforms.u_tDiffusePhoto.value = photoRenderTarget.texture
-  postFXMaterial.uniforms.u_tDiffuseCursor.value = cursorRenderTarget.texture
-  postFXMaterial.uniforms.u_mouse.value.x += (cursorTargetPos.x - postFXMaterial.uniforms.u_mouse.value.x) * (dt * 12)
-  postFXMaterial.uniforms.u_mouse.value.y += (cursorTargetPos.y - postFXMaterial.uniforms.u_mouse.value.y) * (dt * 12)
-  postFXMaterial.uniforms.u_cursorSize.value += (cursorSizeTarget - postFXMaterial.uniforms.u_cursorSize.value) * (dt * 10)
-  postFXMaterial.uniforms.u_hoverMixFactor.value += (cursorScanlineTarget - postFXMaterial.uniforms.u_hoverMixFactor.value) * (dt * 10)
+  postFXMesh.material.uniforms.u_time.value = ts
+  postFXMesh.material.uniforms.u_tDiffuseClip.value = clipRenderTarget.texture
+  postFXMesh.material.uniforms.u_tDiffusePhoto.value = photoRenderTarget.texture
+  postFXMesh.material.uniforms.u_tDiffuseCursor.value = cursorRenderTarget.texture
+  postFXMesh.material.uniforms.u_mouse.value.x += (cursorTargetPos.x - postFXMesh.material.uniforms.u_mouse.value.x) * (dt * 12)
+  postFXMesh.material.uniforms.u_mouse.value.y += (cursorTargetPos.y - postFXMesh.material.uniforms.u_mouse.value.y) * (dt * 12)
 
   const cursorBasePosX = (raycastMouse.x * appWidth) / 2
   const cursorBasePosY = (raycastMouse.y * appHeight) / 2
@@ -465,6 +366,9 @@ function updateFrame(ts) {
   cursorArrowBottom.position.x = cursorBasePosX
   cursorArrowBottom.position.y = cursorBasePosY + 30 + cursorArrowOffset
 
+  cursor.onUpdate(ts, dt)
+  postFXMesh.onUpdate(ts, dt)
+
   renderer.setRenderTarget(cursorRenderTarget)
   renderer.render(cursorScene, cursorCamera)
   
@@ -476,8 +380,6 @@ function updateFrame(ts) {
 
   renderer.setRenderTarget(null)
   renderer.render(postFXScene, postFXCamera)
-
-  cursor.onUpdate(ts, dt)
 
   window.requestAnimationFrame(updateFrame)
 }

@@ -3,9 +3,15 @@ import { tween } from 'popmotion'
 
 import {
   clampNumber,
-} from './helpers'
+} from '../helpers'
 
-export default class PhotoPreview {
+import photoVertexShader from './photo-vertexShader.glsl'
+import photoFragmentShader from './photo-fragmentShader.glsl'
+
+import clipVertexShader from './clip-vertexShader.glsl'
+import clipFragmentShader from './clip-fragmentShader.glsl'
+
+export default class PhotoPreview {clipFragmentShader
 
   static SCALE_FACTOR_MAX = 1
   static SCALE_FACTOR_MIN = 0.9
@@ -70,6 +76,10 @@ export default class PhotoPreview {
     this._photoMesh.position.z = z
   }
 
+  set opacity (opacity) {
+    this._clipMesh.material.uniforms.u_opacity.value = opacity
+  }
+
   _makeClipMesh () {
     const clipGeometryVertCount = 20
 
@@ -77,24 +87,11 @@ export default class PhotoPreview {
     const clipMaterial = new THREE.ShaderMaterial({
       uniforms: {
         u_dragOffsetVec: { value: this._diffVector },
+        u_opacity: { value: 1 },
       },
-      vertexShader: `
-        uniform vec2 u_dragOffsetVec;
-
-        void main () {
-          vec3 newPosition = position;
-
-          float distFromCenter = distance(newPosition, vec3(0.0));
-          newPosition.xy += u_dragOffsetVec * distFromCenter * 0.002;
-
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-        }
-      `,
-      fragmentShader: `
-        void main () {
-          gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        }
-      `
+      transparent: true,
+      vertexShader: clipVertexShader,
+      fragmentShader: clipFragmentShader,
     })
 
     this._clipMesh = new THREE.Mesh(clipGeometry, clipMaterial)
@@ -109,33 +106,8 @@ export default class PhotoPreview {
         u_imageSize: { value: new THREE.Vector2(960, 1440) },
         u_diffuse: { value: null },
       },
-      vertexShader: `
-        varying vec2 v_uv;
-
-        void main () {
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          v_uv = uv;
-        }
-      `,
-      fragmentShader: `
-        uniform vec2 u_planeSize;
-        uniform vec2 u_imageSize;
-        uniform sampler2D u_diffuse;
-
-        varying vec2 v_uv;
-        
-        void main () {
-          vec2 s = u_planeSize; // Screen
-          vec2 i = u_imageSize; // Image
-
-          float rs = s.x / s.y;
-          float ri = i.x / i.y;
-          vec2 new = rs < ri ? vec2(i.x * s.y / i.y, s.y) : vec2(s.x, i.y * s.x / i.x);
-          vec2 offset = (rs < ri ? vec2((new.x - s.x) / 2.0, 0.0) : vec2(0.0, (new.y - s.y) / 2.0)) / new;
-          vec2 uv = v_uv * s / new + offset;
-          gl_FragColor = texture2D(u_diffuse, uv);
-        }
-      `
+      vertexShader: photoVertexShader,
+      fragmentShader: photoFragmentShader,
     })
     this._photoMesh = new THREE.Mesh(photoGeometry, photoMaterial)
   }
