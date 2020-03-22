@@ -11,6 +11,9 @@ import {
 import {
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
+  EVT_SLIDER_BUTTON_NEXT_CLICK,
+  EVT_SLIDER_BUTTON_MOUSE_LEAVE,
+  EVT_SLIDER_BUTTON_MOUSE_ENTER,
 } from './constants'
 
 export default class SinglePage {
@@ -46,9 +49,21 @@ export default class SinglePage {
     this.$els.sliderButtonPrev.addEventListener('click', () => {
       eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
     }, false)
-    this.$els.sliderButtonPrev.addEventListener('click', () => {
+    this.$els.sliderButtonNext.addEventListener('click', () => {
       eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
     }, false)
+    this.$els.sliderButtonPrev.addEventListener('mouseenter', () => {
+      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
+    })
+    this.$els.sliderButtonNext.addEventListener('mouseenter', () => {
+      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
+    })
+    this.$els.sliderButtonPrev.addEventListener('mouseleave', () => {
+      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
+    })
+    this.$els.sliderButtonNext.addEventListener('mouseleave', () => {
+      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
+    })
 
     const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
     const sizerDimensions = sizer.getBoundingClientRect()
@@ -122,7 +137,7 @@ export default class SinglePage {
   }
 
   open (project) {
-    this.stylers.wrapper.set('pointerEvents', 'auto')
+    // this.stylers.wrapper.set('pointerEvents', 'auto')
     this.$els.title.textContent = project.modelName
     this.$els.subtitle.textContent = project.subheading
     this.$els.description.innerHTML = project.description
@@ -130,6 +145,21 @@ export default class SinglePage {
       const li = document.createElement('li')
       li.textContent = desc
       this.$els.descriptionList.appendChild(li)
+    })
+
+    const fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
+    fadeInEls.forEach((child, i) => {
+      const childStyler = styler(child)
+      chain(
+        delay(i * 150),
+        tween({
+          from: { opacity: 0, y: 100 },
+          to: { opacity: 1, y: 0, },
+        })
+      ).start({
+        update: childStyler.set,
+        complete: () => childStyler.set('pointer-events', 'auto')
+      })
     })
 
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)

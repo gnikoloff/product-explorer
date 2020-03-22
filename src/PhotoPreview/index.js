@@ -1,9 +1,15 @@
 import * as THREE from 'three'
 import { tween } from 'popmotion'
 
+import eventEmitter from '../event-emitter'
+
 import {
   clampNumber,
 } from '../helpers'
+
+import {
+  EVT_RAF_UPDATE_APP,
+} from '../constants'
 
 import photoVertexShader from './photo-vertexShader.glsl'
 import photoFragmentShader from './photo-fragmentShader.glsl'
@@ -34,6 +40,10 @@ export default class PhotoPreview {clipFragmentShader
     this._x = 0
     this._y = 0
     this._z = 0
+
+    this._onUpdate = this._onUpdate.bind(this)
+
+    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
   }
 
   get modelName () {
@@ -142,7 +152,7 @@ export default class PhotoPreview {clipFragmentShader
     this._diffVectorTarget.y = 0
   }
 
-  onSceneUpdate (ts, dt) {
+  _onUpdate (ts, dt) {
     this._diffVector.x += (this._diffVectorTarget.x - this._diffVector.x) * dt * 6
     this._diffVector.y += (this._diffVectorTarget.y - this._diffVector.y) * dt * 6
   } 

@@ -1,5 +1,12 @@
 import * as THREE from 'three'
 
+import eventEmitter from '../event-emitter'
+
+import {
+  EVT_SLIDER_BUTTON_MOUSE_ENTER,
+  EVT_SLIDER_BUTTON_MOUSE_LEAVE,
+} from '../constants'
+
 import vertexShader from './vertexShader.glsl'
 import fragmentShader from './fragmentShader.glsl'
 
@@ -38,28 +45,53 @@ export default class PostProcessing extends THREE.Mesh {
 
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
+
+    this._hideCursor = this._hideCursor.bind(this)
+    this._showCursor = this._showCursor.bind(this)
+
+    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
+    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
+
+    this._isHidden = false
+    this._cachedHiddenSize = 0
   }
   onDragStart () {
+    if (this._isHidden) {
+      return
+    }
     this._cursorSizeTarget = PostProcessing.DRAG_CURSOR_SIZE
   }
   onDragEnd () {
+    if (this._isHidden) {
+      return
+    }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
   }
   hover () {
+    if (this._isHidden) {
+      return
+    }
     this._cursorSizeTarget = PostProcessing.HOVER_CURSOR_SIZE
     this._cursorScanlineTarget = 1
   }
   unHover () {
+    if (this._isHidden) {
+      return
+    }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
   }
-  hideCursor () {
+  _hideCursor () {
+    this._cachedHiddenSize = this._cursorSizeTarget
     this._cursorSizeTarget = PostProcessing.HIDDEN_CURSOR_SIZE
+    this._isHidden = true
   }
-  showCursor () {
-    this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
+  _showCursor () {
+    this._cursorSizeTarget = this._cachedHiddenSize
+    this._isHidden = false
   }
   onUpdate (ts, dt) {
+    console.log(this._cursorSizeTarget)
     this.material.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this.material.uniforms.u_cursorSize.value) * (dt * 10)
     this.material.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this.material.uniforms.u_hoverMixFactor.value) * (dt * 10)
   }

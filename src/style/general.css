@@ -13,6 +13,7 @@ body {
   font-family: 'Fira Sans', sans-serif;
   font-size: 16px;
   line-height: 24px;
+  cursor: none;
 }
 body.dragging {
   /* cursor: grabbing; */
@@ -20,4 +21,9 @@ body.dragging {
 
 li {
   list-style: square;
+}
+
+.fade-in {
+  opacity: 0;
+  pointer-events: none;
 }

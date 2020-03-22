@@ -79,6 +79,7 @@ let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let projectsData = []
 let hoveredElement = null
+let clickedElement = null
 
 clipCamera.position.set(...originalCameraPos)
 clipCamera.lookAt(cameraLookAt)
@@ -147,11 +148,13 @@ webglContainer.addEventListener('mousedown', e => {
   // webglContainer.classList.add('non-interactable')
 
   if (hoveredElement) {
+    clickedElement = hoveredElement
+
     const { modelName } = hoveredElement
     const project = projectsData.find(({ modelName: projectModelName }) => projectModelName === modelName)
 
     singlePage.open(project)
-    postFXMesh.hideCursor()
+    // postFXMesh.hideCursor()
 
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
 
@@ -363,7 +366,6 @@ function updateFrame(ts) {
         // cursor.show()
         hoveredElement = object
       }
-
       postFXMesh.hover()
     } else {
       cursor.hide()
@@ -400,8 +402,6 @@ function updateFrame(ts) {
     photoCamera.position.y = -WORLD_HEIGHT / 2
     photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
   }
-
-  photoPreviews.forEach(photoPreview => photoPreview.onSceneUpdate(ts, dt))
   
   postFXMesh.material.uniforms.u_time.value = ts
   postFXMesh.material.uniforms.u_tDiffuseClip.value = clipRenderTarget.texture

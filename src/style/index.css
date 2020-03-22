@@ -2,11 +2,3 @@
 @import './header.css';
 @import './single-page.css';
 @import './slider.css';
-
-.webgl-scene {
-  /* cursor: none; */
-}
-
-.webgl-scene.non-interactable {
-  pointer-events: none;
-}

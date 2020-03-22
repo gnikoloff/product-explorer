@@ -48,7 +48,7 @@ void main () {
   vec4 maskColor = texture2D(u_tDiffuseMask, uv);
 
   if (maskColor.r < u_cutOffFactor) {
-    baseColor = vec4(1.0); 
+    baseColor = vec4(vec3(0.4), 1.0); 
   }
 
   vec4 color = mix(clipColor, photoColor, clipColor.r);

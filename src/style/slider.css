@@ -5,7 +5,6 @@
   top: 50%;
   left: 50%;
   margin: -200px 0 0 calc(-125px - 25vw);
-  /* background: green; */
 }
 
 .slider-btn {
@@ -17,6 +16,7 @@
   background: #111;
   border-radius: 50%;
   border: none;
+  pointer-events: auto;
 }
 .slider-btn:focus { outline: 0; }
 .slider-btn:hover { cursor: pointer; }

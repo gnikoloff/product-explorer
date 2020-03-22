@@ -24,6 +24,7 @@
   padding: 120px 42px 24px 42px;
   box-sizing: border-box;
   background: red;
+  cursor: initial;
 }
 
 .single-page-title {
