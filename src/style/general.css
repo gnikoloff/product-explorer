@@ -1,0 +1,23 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  overflow: hidden;
+}
+
+body {
+  background: #e5e5e5;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+body.dragging {
+  /* cursor: grabbing; */
+}
+
+li {
+  list-style: square;
+}

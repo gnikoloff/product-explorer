@@ -7,7 +7,7 @@ import Cursor from './Cursor'
 import SinglePage from './SinglePage'
 import PostProcessing from './PostProcessing'
 
-import './style.css'
+import './style'
 
 import arrowLeft from './assets/arrow.png'
 

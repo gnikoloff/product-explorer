@@ -1,0 +1,39 @@
+.single-page-wrapper {
+  z-index: 2;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: auto;
+}
+
+.single-page-wrapper h2 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.single-page-info {
+  position: absolute;
+  width: 50vw;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 120px 42px 24px 42px;
+  box-sizing: border-box;
+  background: red;
+}
+
+.single-page-title {
+  margin-bottom: 12px;
+}
+
+.single-page-subheading {
+  font-size: 10px;
+}
+
+.single-page-section {
+  padding: 0 0 24px 0;
+}

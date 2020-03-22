@@ -1,0 +1,52 @@
+.hover-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hover-cursor span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-5px) translateY(-5px) scale(0.5);
+}
+
+.app-header {
+  z-index: 1;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  padding: 0 16px;
+  pointer-events: none;
+  /* background: #fff; */
+}
+
+.app-logo {
+  max-width: 200px;
+  width: 100%;
+}
+
+.button {
+  font-family: inherit;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  padding: 5px 14px;
+  pointer-events: auto;
+  border: none;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+button:focus {
+  outline: 0;
+}
+button:hover {
+  cursor: pointer;
+}
