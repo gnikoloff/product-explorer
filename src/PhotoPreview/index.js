@@ -8,6 +8,7 @@ import {
 } from '../helpers'
 
 import {
+  EVT_CLICKED_SINGLE_PROJECT,
   EVT_RAF_UPDATE_APP,
 } from '../constants'
 
@@ -43,7 +44,18 @@ export default class PhotoPreview {clipFragmentShader
 
     this._onUpdate = this._onUpdate.bind(this)
 
+    this._preventDragging = false
+
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, () => {
+      this._preventDragging = true
+      tween({
+        from: PhotoPreview.SCALE_FACTOR_MAX,
+        to: PhotoPreview.SCALE_FACTOR_MIN,
+        duration: 250
+      })
+      .start(v => this._photoMesh.scale.set(v, v, 1))
+    })
   }
 
   get modelName () {
@@ -128,6 +140,9 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   onSceneDragStart () {
+    if (this._preventDragging) {
+      return
+    }
     tween({
       from: PhotoPreview.SCALE_FACTOR_MAX,
       to: PhotoPreview.SCALE_FACTOR_MIN,
@@ -137,11 +152,17 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   onSceneDrag (dragDiffX, dragDiffY) {
+    if (this._preventDragging) {
+      return
+    }
     this._diffVectorTarget.x = clampNumber(dragDiffX * 5, -25, 25)
     this._diffVectorTarget.y = clampNumber(dragDiffY * 5, -25, 25)
   }
 
   onSceneDragEnd () {
+    if (this._preventDragging) {
+      return
+    }
     tween({
       from: PhotoPreview.SCALE_FACTOR_MIN,
       to: PhotoPreview.SCALE_FACTOR_MAX,

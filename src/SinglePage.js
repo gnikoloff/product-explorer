@@ -11,15 +11,19 @@ import {
 import {
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
+  EVT_CLICKED_SINGLE_PROJECT,
+  EVT_FADE_IN_SINGLE_VIEW,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
+  EVT_LOADED_PROJECTS,
 } from './constants'
 
 export default class SinglePage {
   static SCROLL_INDICATOR_THRESHOLD = 200
   static SCROLL_INTRO_AREA_HEIGHT = 1500
 
+  static SIDE_ARROW_RADIUS = 50
   static SIDE_ARROW_PADDING = 50
   static ARROW_INTERACTION_DIST_THRESHOLD = 50
 
@@ -35,6 +39,8 @@ export default class SinglePage {
       descriptionList: wrapper.getElementsByClassName('single-page-features')[0],
       sliderButtonPrev: wrapper.getElementsByClassName('slider-btn-prev')[0],
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
+      prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
+      nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
     }
 
     this.stylers = {
@@ -43,8 +49,26 @@ export default class SinglePage {
       sliderButtonNext: styler(this.$els.sliderButtonNext),
     }
 
+    this._prevModelName = null
+    this._nextModelName = null
+
     this._onUpdate = this._onUpdate.bind(this)
     this._onMouseMove = this._onMouseMove.bind(this)
+    this._open = this._open.bind(this)
+    this._fadeIn = this._fadeIn.bind(this)
+    
+    eventEmitter.on(EVT_LOADED_PROJECTS, projectsData => {
+      this._projectsData = projectsData
+    })
+    eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, this._open)
+    eventEmitter.on(EVT_FADE_IN_SINGLE_VIEW, this._fadeIn)
+
+    this.$els.prevProductButton.addEventListener('click', () => {
+      eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._prevModelName)
+    })
+    this.$els.nextProductButton.addEventListener('click', () => {
+      eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._nextModelName)
+    })
 
     this.$els.sliderButtonPrev.addEventListener('click', () => {
       eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
@@ -69,19 +93,19 @@ export default class SinglePage {
     const sizerDimensions = sizer.getBoundingClientRect()
 
     this.$els.sliderButtonPrev.pos = {
-      radius: 60,
+      radius: SinglePage.SIDE_ARROW_RADIUS,
       x: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
-      y: sizerDimensions.top + 200,
+      y: sizerDimensions.top + sizerDimensions.height / 2,
       origX: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
-      origY: sizerDimensions.top + 200,
+      origY: sizerDimensions.top + sizerDimensions.height / 2,
       vx: 0, vy: 0,
     }
     this.$els.sliderButtonNext.pos = {
-      radius: 60,
+      radius: SinglePage.SIDE_ARROW_RADIUS,
       x: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
-      y: sizerDimensions.top + 200,
+      y: sizerDimensions.top + sizerDimensions.height / 2,
       origX: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
-      origY: sizerDimensions.top + 200,
+      origY: sizerDimensions.top + sizerDimensions.height / 2,
       vx: 0, vy: 0,
     }
 
@@ -117,8 +141,8 @@ export default class SinglePage {
       }
       buttonEl.pos.x += buttonEl.pos.vx
       buttonEl.pos.y += buttonEl.pos.vy
-      buttonEl.pos.x *= 0.82
-      buttonEl.pos.y *= 0.82
+      buttonEl.pos.x *= 0.72
+      buttonEl.pos.y *= 0.72
 
     })
     this.stylers.sliderButtonPrev.set({
@@ -136,7 +160,9 @@ export default class SinglePage {
     this._mousePos.y = mouseY
   }
 
-  open (project) {
+  _open (modelName) {
+    const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
+    const project = this._projectsData.find(project => project.modelName === modelName)
     // this.stylers.wrapper.set('pointerEvents', 'auto')
     this.$els.title.textContent = project.modelName
     this.$els.subtitle.textContent = project.subheading
@@ -147,13 +173,28 @@ export default class SinglePage {
       this.$els.descriptionList.appendChild(li)
     })
 
+    this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
+    this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
+    this.$els.prevProductButton.textContent = this._prevModelName
+    this.$els.nextProductButton.textContent = this._nextModelName
+
+    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
+  }
+
+  _fadeIn () {
+    const {
+      sliderButtonPrev,
+      sliderButtonNext,
+    } = this.$els
+    
     const fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)
       chain(
         delay(i * 150),
         tween({
-          from: { opacity: 0, y: 100 },
+          from: { opacity: 0, y: 10 },
           to: { opacity: 1, y: 0, },
         })
       ).start({
@@ -162,10 +203,23 @@ export default class SinglePage {
       })
     })
 
-    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
-  }
+    const sliderBtns = [sliderButtonPrev, sliderButtonNext]
+    sliderBtns.forEach((button, i) => {
+      const buttonStyler = styler(button)
+      chain(
+        delay(i * 150),
+        tween({
+          from: {
+            opacity: 0,
+          },
+          to: {
+            opacity: 1,
+          },
+        })
+      ).start(buttonStyler.set)
+    })
 
+  }
   
 
 }

@@ -3,7 +3,6 @@ import * as THREE from 'three'
 import eventEmitter from './event-emitter'
 
 import PhotoPreview from './PhotoPreview'
-import Cursor from './Cursor'
 import SinglePage from './SinglePage'
 import PostProcessing from './PostProcessing'
 
@@ -15,7 +14,10 @@ import {
   WOLRD_WIDTH,
   WORLD_HEIGHT,
   EVT_RAF_UPDATE_APP,
+  EVT_CLICKED_SINGLE_PROJECT,
   EVT_MOUSEMOVE_APP,
+  EVT_FADE_IN_SINGLE_VIEW,
+  EVT_LOADED_PROJECTS,
 } from './constants'
 import { tween, chain, mouse } from 'popmotion'
 
@@ -70,7 +72,6 @@ const raycaster = new THREE.Raycaster()
 const originalCameraPos = [0, 0, 50]
 const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
-const cursor = new Cursor()
 const singlePage = new SinglePage()
 
 let oldTime = 0
@@ -79,7 +80,7 @@ let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let projectsData = []
 let hoveredElement = null
-let clickedElement = null
+let isSinglePageOpen = false
 
 clipCamera.position.set(...originalCameraPos)
 clipCamera.lookAt(cameraLookAt)
@@ -118,6 +119,9 @@ fetch('/get_data')
   .then(res => res.json())
   .then(res => {
     projectsData = res.projects
+
+    eventEmitter.emit(EVT_LOADED_PROJECTS, projectsData)
+
     photoPreviews = res.projects.map(info => {
       const photoPreview = new PhotoPreview({
         modelName: info.modelName,
@@ -139,8 +143,6 @@ fetch('/get_data')
 webglContainer.addEventListener('mousedown', e => {
   isDragging = true
   postFXMesh.onDragStart()
-  cursorArrowOffsetTarget = 1
-  document.body.classList.add('dragging')
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart())
   mousePos.x = e.pageX
   mousePos.y = e.pageY
@@ -148,22 +150,17 @@ webglContainer.addEventListener('mousedown', e => {
   // webglContainer.classList.add('non-interactable')
 
   if (hoveredElement) {
-    clickedElement = hoveredElement
-
+    if (isSinglePageOpen) {
+      return
+    }
+    isSinglePageOpen = true
     const { modelName } = hoveredElement
     const project = projectsData.find(({ modelName: projectModelName }) => projectModelName === modelName)
 
-    singlePage.open(project)
-    // postFXMesh.hideCursor()
+    eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, modelName)
 
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
 
-    // const toPosition = {
-    //   x: clipCamera.position.x,
-    //   y: clipCamera.position.y,
-    //   z: clipCamera.position.y
-    // }
-    
     tween({
       from: {
         x: hoveredPreview.x,
@@ -186,6 +183,7 @@ webglContainer.addEventListener('mousedown', e => {
         })
       },
       complete: () => {
+        eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
         tween({
           from: 0,
           to: 1,
@@ -204,31 +202,11 @@ webglContainer.addEventListener('mousedown', e => {
       },
     })
 
-    // tween({
-    //   from: {
-    //     x: hoveredPreview.x,
-    //     y: hoveredPreview.y,
-    //     z: hoveredPreview.z,
-    //     maskCutoff: 1,
-    //     opacity: 1,
-    //   },
-    //   to: {
-    //     ...clipCamera.position,
-    //     maskCutoff: 0,
-    //     opacity: 0,
-    //   },
-    //   duration: 1000,
-    // }).start(v => {
-    //   hoveredPreview.x = v.x
-    //   hoveredPreview.y = v.y
-    //   postFXMesh.material.uniforms.u_cutOffFactor.value = v.maskCutoff
-    //   const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
-    //   unclicked.forEach(item => {
-    //     item.opacity = v.opacity
-    //   })
-    //   // photoPreview.onSceneDrag(diffx, diffy)
-    // })
+  }
 
+  if (!isSinglePageOpen) {
+    cursorArrowOffsetTarget = 1
+    document.body.classList.add('dragging')
   }
 
 }, false)
@@ -244,13 +222,11 @@ webglContainer.addEventListener('mousemove', e => {
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
-  cursor.onMouseMove(e.pageX, e.pageY)
-
   cursorTargetPos.x = e.pageX
   cursorTargetPos.y = window.innerHeight - e.pageY
 
 
-  if (isDragging) {
+  if (isDragging && !isSinglePageOpen) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
 
@@ -363,12 +339,10 @@ function updateFrame(ts) {
       const intersect = intersects[0]
       const { object, object: { modelName } } = intersect
       if (!hoveredElement) {
-        // cursor.show()
         hoveredElement = object
       }
       postFXMesh.hover()
     } else {
-      cursor.hide()
       hoveredElement = null
       postFXMesh.unHover()
     }
@@ -416,20 +390,17 @@ function updateFrame(ts) {
   cursorArrowOffset += (cursorArrowOffsetTarget * 12 - cursorArrowOffset) * (dt * 5)
   cursorArrowLeft.material.opacity += (cursorArrowOffsetTarget * 0.5 - cursorArrowLeft.material.opacity) * (dt * 10)
 
-  cursorArrowLeft.position.x = cursorBasePosX + 30 + cursorArrowOffset
+  cursorArrowLeft.position.x = cursorBasePosX + 50 + cursorArrowOffset
   cursorArrowLeft.position.y = cursorBasePosY
 
-  cursorArrowRight.position.x = cursorBasePosX - 30 - cursorArrowOffset
+  cursorArrowRight.position.x = cursorBasePosX - 50 - cursorArrowOffset
   cursorArrowRight.position.y = cursorBasePosY
 
   cursorArrowTop.position.x = cursorBasePosX
-  cursorArrowTop.position.y = cursorBasePosY - 30 - cursorArrowOffset
+  cursorArrowTop.position.y = cursorBasePosY - 50 - cursorArrowOffset
 
   cursorArrowBottom.position.x = cursorBasePosX
-  cursorArrowBottom.position.y = cursorBasePosY + 30 + cursorArrowOffset
-
-  cursor.onUpdate(ts, dt)
-  postFXMesh.onUpdate(ts, dt)
+  cursorArrowBottom.position.y = cursorBasePosY + 50 + cursorArrowOffset
 
   renderer.setRenderTarget(cursorRenderTarget)
   renderer.render(cursorScene, cursorCamera)

@@ -23,7 +23,6 @@
   bottom: 0;
   padding: 120px 42px 24px 42px;
   box-sizing: border-box;
-  background: red;
   cursor: initial;
 }
 
@@ -37,4 +36,21 @@
 
 .single-page-section {
   padding: 0 0 24px 0;
+}
+
+.single-page-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0; 
+  display: flex;
+}
+
+.single-page-btn {
+  width: 50%;
+  height: 62px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
 }

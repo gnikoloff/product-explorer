@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import eventEmitter from '../event-emitter'
 
 import {
+  EVT_RAF_UPDATE_APP,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
 } from '../constants'
@@ -14,7 +15,7 @@ export default class PostProcessing extends THREE.Mesh {
   static HIDDEN_CURSOR_SIZE = 0
   static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio || 1)
   static HOVER_CURSOR_SIZE = 80 * (devicePixelRatio || 1)
-  static DRAG_CURSOR_SIZE = 55 * (devicePixelRatio || 1)
+  static DRAG_CURSOR_SIZE = 45 * (devicePixelRatio || 1)
 
   constructor ({
     width,
@@ -48,9 +49,11 @@ export default class PostProcessing extends THREE.Mesh {
 
     this._hideCursor = this._hideCursor.bind(this)
     this._showCursor = this._showCursor.bind(this)
+    this._onUpdate = this._onUpdate.bind(this)
 
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
+    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
 
     this._isHidden = false
     this._cachedHiddenSize = 0
@@ -90,8 +93,7 @@ export default class PostProcessing extends THREE.Mesh {
     this._cursorSizeTarget = this._cachedHiddenSize
     this._isHidden = false
   }
-  onUpdate (ts, dt) {
-    console.log(this._cursorSizeTarget)
+  _onUpdate (ts, dt) {
     this.material.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this.material.uniforms.u_cursorSize.value) * (dt * 10)
     this.material.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this.material.uniforms.u_hoverMixFactor.value) * (dt * 10)
   }
