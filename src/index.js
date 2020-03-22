@@ -11,8 +11,13 @@ import './style.css'
 
 import arrowLeft from './assets/arrow.png'
 
-import { WOLRD_WIDTH, WORLD_HEIGHT } from './constants'
-import { tween, chain } from 'popmotion'
+import {
+  WOLRD_WIDTH,
+  WORLD_HEIGHT,
+  EVT_RAF_UPDATE_APP,
+  EVT_MOUSEMOVE_APP,
+} from './constants'
+import { tween, chain, mouse } from 'popmotion'
 
 
 let appWidth = window.innerWidth
@@ -163,7 +168,7 @@ webglContainer.addEventListener('mousedown', e => {
         opacity: 1,
       },
       to: {
-        x: photoCamera.position.x,
+        x: photoCamera.position.x - appWidth * 0.25,
         y: photoCamera.position.y,
         opacity: 0,
       },
@@ -181,7 +186,7 @@ webglContainer.addEventListener('mousedown', e => {
         tween({
           from: 0,
           to: 1,
-          duration: 750,
+          duration: 1000,
         }).start({
           update: v => {
             postFXMesh.material.uniforms.u_cutOffFactor.value = v
@@ -190,11 +195,7 @@ webglContainer.addEventListener('mousedown', e => {
             // singlePage.introScrollFactor
 
             const clicked = photoPreviews.find(project => project.modelName === modelName)
-
-            eventEmitter.on('msg', scrollFactor => {
-              clicked.opacity = 1.0 - scrollFactor
-            })
-
+            // ...
           },
         })
       },
@@ -229,6 +230,13 @@ webglContainer.addEventListener('mousedown', e => {
 
 }, false)
 
+document.body.addEventListener('mousemove', e => {
+
+  mousePos.x = e.pageX
+  mousePos.y = e.pageY
+  eventEmitter.emit(EVT_MOUSEMOVE_APP, mousePos.x, mousePos.y)
+})
+
 webglContainer.addEventListener('mousemove', e => {
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
@@ -237,6 +245,7 @@ webglContainer.addEventListener('mousemove', e => {
 
   cursorTargetPos.x = e.pageX
   cursorTargetPos.y = window.innerHeight - e.pageY
+
 
   if (isDragging) {
     const diffx = e.pageX - mousePos.x
@@ -251,8 +260,6 @@ webglContainer.addEventListener('mousemove', e => {
     
   }
 
-  mousePos.x = e.pageX
-  mousePos.y = e.pageY
 }, false)
 
 webglContainer.addEventListener('mouseup', () => {
@@ -341,6 +348,8 @@ function updateFrame(ts) {
   ts = Math.max(ts, 1)
   const dt = ts - oldTime
   oldTime = ts
+
+  eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
 
   if (!isDragging) {
     raycaster.setFromCamera(raycastMouse, photoCamera)

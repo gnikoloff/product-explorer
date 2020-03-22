@@ -94,16 +94,34 @@ body.dragging {
   overflow: auto;
 }
 
-.single-page {
-  padding-top: 1500px;
-  /* padding-bottom: 2000px; */
-  overflow: auto;
+.single-page-info {
+  position: absolute;
+  width: 50vw;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: red;
 }
 
-.scroll-indicator {
-  position: fixed;
-  bottom: 24px;
+.single-page-slider-sizer {
+  position: absolute;
+  width: 250px;
+  height: 400px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  text-transform: uppercase;
+  margin: -200px 0 0 calc(-125px - 25vw);
+  /* background: green; */
 }
+
+.slider-btn {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  background: #111;
+  border-radius: 50%;
+  border: none;
+}
+.slider-btn:focus { outline: 0; }
+.slider-btn:hover { cursor: pointer; }
