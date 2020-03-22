@@ -27,3 +27,8 @@ li {
   opacity: 0;
   pointer-events: none;
 }
+
+::selection {
+  background-color: #111;
+  color: white;
+}

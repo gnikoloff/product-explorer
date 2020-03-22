@@ -51,6 +51,8 @@ export default class SinglePage {
 
     this._prevModelName = null
     this._nextModelName = null
+    this._sliderPrevBtnHovered = false
+    this._sliderNextBtnHovered = false
 
     this._onUpdate = this._onUpdate.bind(this)
     this._onMouseMove = this._onMouseMove.bind(this)
@@ -63,31 +65,44 @@ export default class SinglePage {
     eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, this._open)
     eventEmitter.on(EVT_FADE_IN_SINGLE_VIEW, this._fadeIn)
 
-    this.$els.prevProductButton.addEventListener('click', () => {
-      eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._prevModelName)
-    })
-    this.$els.nextProductButton.addEventListener('click', () => {
-      eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._nextModelName)
-    })
+    document.body.addEventListener('click', e => {
+      if (this._sliderPrevBtnHovered) {
+        eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
+      }
+      if (this._sliderNextBtnHovered) {
+        eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
+      }
+    }, false)
 
-    this.$els.sliderButtonPrev.addEventListener('click', () => {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
-    }, false)
-    this.$els.sliderButtonNext.addEventListener('click', () => {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
-    }, false)
-    this.$els.sliderButtonPrev.addEventListener('mouseenter', () => {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
-    })
-    this.$els.sliderButtonNext.addEventListener('mouseenter', () => {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
-    })
-    this.$els.sliderButtonPrev.addEventListener('mouseleave', () => {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
-    })
-    this.$els.sliderButtonNext.addEventListener('mouseleave', () => {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
-    })
+    // this.$els.prevProductButton.addEventListener('click', e => {
+    //   e.preventDefault()
+    //   e.stopPropagation()
+    //   eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._prevModelName)
+    // })
+    // this.$els.nextProductButton.addEventListener('click', e => {
+    //   e.preventDefault()
+    //   e.stopPropagation()
+    //   eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._nextModelName)
+    // })
+
+    // this.$els.sliderButtonPrev.addEventListener('click', () => {
+    //   eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
+    // }, false)
+    // this.$els.sliderButtonNext.addEventListener('click', () => {
+    //   eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
+    // }, false)
+    // this.$els.sliderButtonPrev.addEventListener('mouseenter', () => {
+    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
+    // })
+    // this.$els.sliderButtonNext.addEventListener('mouseenter', () => {
+    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
+    // })
+    // this.$els.sliderButtonPrev.addEventListener('mouseleave', () => {
+    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
+    // })
+    // this.$els.sliderButtonNext.addEventListener('mouseleave', () => {
+    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
+    // })
 
     const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
     const sizerDimensions = sizer.getBoundingClientRect()
@@ -125,9 +140,9 @@ export default class SinglePage {
       sliderButtonPrev,
       sliderButtonNext,
     } = this.$els
-
+    
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
-    sliderBtns.forEach(buttonEl => {
+    sliderBtns.forEach((buttonEl, i) => {
       const dx = buttonEl.pos.origX - this._mousePos.x
       const dy = buttonEl.pos.origY - this._mousePos.y
       const dist = Math.sqrt(dx * dx + dy * dy)
@@ -135,6 +150,13 @@ export default class SinglePage {
       if (dist < SinglePage.ARROW_INTERACTION_DIST_THRESHOLD) {
         buttonEl.pos.vx += (this._mousePos.x - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
         buttonEl.pos.vy += (this._mousePos.y - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
+        if (i === 0) {
+          this._sliderPrevBtnHovered = true
+          this._sliderNextBtnHovered = false
+        } else {
+          this._sliderPrevBtnHovered = false
+          this._sliderNextBtnHovered = true
+        }
       } else {
         buttonEl.pos.vx += (buttonEl.pos.origX - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
         buttonEl.pos.vy += (buttonEl.pos.origY - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
@@ -163,7 +185,6 @@ export default class SinglePage {
   _open (modelName) {
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     const project = this._projectsData.find(project => project.modelName === modelName)
-    // this.stylers.wrapper.set('pointerEvents', 'auto')
     this.$els.title.textContent = project.modelName
     this.$els.subtitle.textContent = project.subheading
     this.$els.description.innerHTML = project.description
@@ -188,6 +209,8 @@ export default class SinglePage {
       sliderButtonNext,
     } = this.$els
     
+    // this.stylers.wrapper.set('pointerEvents', 'auto')
+
     const fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)
@@ -216,7 +239,9 @@ export default class SinglePage {
             opacity: 1,
           },
         })
-      ).start(buttonStyler.set)
+      ).start({
+        update: buttonStyler.set,
+      })
     })
 
   }

@@ -17,6 +17,16 @@ top: 50%;
   border-radius: 50%;
   border: 2px solid rgba(0, 0, 0, 0.12);
   opacity: 0;
+  background-size: 50%;
+  background-repeat: no-repeat;
 }
 .slider-btn:focus { outline: 0; }
 .slider-btn:hover { cursor: pointer; }
+.slider-btn-prev {
+  background-position: 48% 50%;
+  background-image: url('../assets/arrow-left.svg');
+}
+.slider-btn-next {
+  background-position: 52% 50%;
+  background-image: url('../assets/arrow-right.svg');
+}

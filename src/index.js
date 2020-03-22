@@ -150,14 +150,11 @@ webglContainer.addEventListener('mousedown', e => {
   // webglContainer.classList.add('non-interactable')
 
   if (hoveredElement) {
-    if (isSinglePageOpen) {
-      return
-    }
-    isSinglePageOpen = true
     const { modelName } = hoveredElement
     const project = projectsData.find(({ modelName: projectModelName }) => projectModelName === modelName)
 
     eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, modelName)
+    isSinglePageOpen = true
 
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
 
@@ -168,8 +165,8 @@ webglContainer.addEventListener('mousedown', e => {
         opacity: 1,
       },
       to: {
-        x: photoCamera.position.x - appWidth * 0.25,
-        y: photoCamera.position.y,
+        x: clipCamera.position.x - appWidth * 0.25,
+        y: clipCamera.position.y,
         opacity: 0,
       },
       duration: 500,
@@ -348,33 +345,35 @@ function updateFrame(ts) {
     }
   }
 
-  clipCamera.position.x +=
-    (cameraTargetPos.x - clipCamera.position.x) * (dt * 0.92)
-  clipCamera.position.y +=
-    (cameraTargetPos.y - clipCamera.position.y) * (dt * 0.92)
-  photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
-  photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
+  if (!isSinglePageOpen) {
+    clipCamera.position.x +=
+      (cameraTargetPos.x - clipCamera.position.x) * (dt * 0.92)
+    clipCamera.position.y +=
+      (cameraTargetPos.y - clipCamera.position.y) * (dt * 0.92)
+    photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
+    photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
 
-  if (clipCamera.position.x > WOLRD_WIDTH / 2) {
-    clipCamera.position.x = WOLRD_WIDTH / 2
-    cameraTargetPos.x = WOLRD_WIDTH / 2
-    photoCamera.position.x = WOLRD_WIDTH / 2
-    photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
-  } else if (clipCamera.position.x < -WOLRD_WIDTH / 2) {
-    clipCamera.position.x = -WOLRD_WIDTH / 2
-    cameraTargetPos.x = -WOLRD_WIDTH / 2
-    photoCamera.position.x = -WOLRD_WIDTH / 2
-    photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
-  } else if (clipCamera.position.y > WORLD_HEIGHT / 2) {
-    clipCamera.position.y = WORLD_HEIGHT / 2
-    cameraTargetPos.y = WORLD_HEIGHT / 2
-    photoCamera.position.y = WORLD_HEIGHT / 2
-    photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
-  } else if (clipCamera.position.y < -WORLD_HEIGHT / 2) {
-    clipCamera.position.y = -WORLD_HEIGHT / 2
-    cameraTargetPos.y = -WORLD_HEIGHT / 2
-    photoCamera.position.y = -WORLD_HEIGHT / 2
-    photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    if (clipCamera.position.x > WOLRD_WIDTH / 2) {
+      clipCamera.position.x = WOLRD_WIDTH / 2
+      cameraTargetPos.x = WOLRD_WIDTH / 2
+      photoCamera.position.x = WOLRD_WIDTH / 2
+      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    } else if (clipCamera.position.x < -WOLRD_WIDTH / 2) {
+      clipCamera.position.x = -WOLRD_WIDTH / 2
+      cameraTargetPos.x = -WOLRD_WIDTH / 2
+      photoCamera.position.x = -WOLRD_WIDTH / 2
+      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    } else if (clipCamera.position.y > WORLD_HEIGHT / 2) {
+      clipCamera.position.y = WORLD_HEIGHT / 2
+      cameraTargetPos.y = WORLD_HEIGHT / 2
+      photoCamera.position.y = WORLD_HEIGHT / 2
+      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    } else if (clipCamera.position.y < -WORLD_HEIGHT / 2) {
+      clipCamera.position.y = -WORLD_HEIGHT / 2
+      cameraTargetPos.y = -WORLD_HEIGHT / 2
+      photoCamera.position.y = -WORLD_HEIGHT / 2
+      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    }
   }
   
   postFXMesh.material.uniforms.u_time.value = ts

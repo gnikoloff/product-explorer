@@ -4,6 +4,7 @@ import eventEmitter from '../event-emitter'
 
 import {
   EVT_RAF_UPDATE_APP,
+  EVT_CLICKED_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
 } from '../constants'
@@ -51,21 +52,25 @@ export default class PostProcessing extends THREE.Mesh {
     this._showCursor = this._showCursor.bind(this)
     this._onUpdate = this._onUpdate.bind(this)
 
+    eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, () => {
+      this._preventClick = true
+    })
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
 
     this._isHidden = false
+    this._preventClick = false
     this._cachedHiddenSize = 0
   }
   onDragStart () {
-    if (this._isHidden) {
+    if (this._isHidden || this._preventClick) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DRAG_CURSOR_SIZE
   }
   onDragEnd () {
-    if (this._isHidden) {
+    if (this._isHidden || this._preventClick) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
