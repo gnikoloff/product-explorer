@@ -4,6 +4,7 @@ import vertexShader from './vertexShader.glsl'
 import fragmentShader from './fragmentShader.glsl'
 
 export default class PostProcessing extends THREE.Mesh {
+  static HIDDEN_CURSOR_SIZE = 0
   static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio || 1)
   static HOVER_CURSOR_SIZE = 80 * (devicePixelRatio || 1)
   static DRAG_CURSOR_SIZE = 55 * (devicePixelRatio || 1)
@@ -24,13 +25,13 @@ export default class PostProcessing extends THREE.Mesh {
         u_mouse: { value: new THREE.Vector2(0, 0) },
         u_cursorSize: { value: PostProcessing.DEFAULT_CURSOR_SIZE },
         u_hoverMixFactor: { value: 1.0 },
-        u_cutOffFactor: { value: 1.0 },
+        u_cutOffFactor: { value: 0.0 },
       },
       transparent: true,
       vertexShader,
       fragmentShader,
     })
-    new THREE.TextureLoader().load('/mask.png', texture => {
+    new THREE.TextureLoader().load('/mask3.png', texture => {
       material.uniforms.u_tDiffuseMask.value = texture
     })
     super(geometry, material)
@@ -51,6 +52,12 @@ export default class PostProcessing extends THREE.Mesh {
   unHover () {
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
+  }
+  hideCursor () {
+    this._cursorSizeTarget = PostProcessing.HIDDEN_CURSOR_SIZE
+  }
+  showCursor () {
+    this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
   }
   onUpdate (ts, dt) {
     this.material.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this.material.uniforms.u_cursorSize.value) * (dt * 10)

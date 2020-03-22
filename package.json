@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "compression": "^1.7.4",
+    "events": "^3.1.0",
     "express": "^4.17.1",
     "popmotion": "^8.7.1",
     "three": "^0.114.0"

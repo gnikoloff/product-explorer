@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 
+import eventEmitter from './event-emitter'
+
 import PhotoPreview from './PhotoPreview'
 import Cursor from './Cursor'
 import SinglePage from './SinglePage'
@@ -10,7 +12,7 @@ import './style.css'
 import arrowLeft from './assets/arrow.png'
 
 import { WOLRD_WIDTH, WORLD_HEIGHT } from './constants'
-import { tween } from 'popmotion'
+import { tween, chain } from 'popmotion'
 
 
 let appWidth = window.innerWidth
@@ -143,33 +145,85 @@ webglContainer.addEventListener('mousedown', e => {
     const { modelName } = hoveredElement
     const project = projectsData.find(({ modelName: projectModelName }) => projectModelName === modelName)
 
-    // singlePage.open(project)
+    singlePage.open(project)
+    postFXMesh.hideCursor()
 
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
 
+    // const toPosition = {
+    //   x: clipCamera.position.x,
+    //   y: clipCamera.position.y,
+    //   z: clipCamera.position.y
+    // }
+    
     tween({
       from: {
         x: hoveredPreview.x,
         y: hoveredPreview.y,
-        z: hoveredPreview.z,
-        maskCutoff: 1,
         opacity: 1,
       },
       to: {
-        ...clipCamera.position,
-        maskCutoff: 0,
+        x: photoCamera.position.x,
+        y: photoCamera.position.y,
         opacity: 0,
       },
-      duration: 1000,
-    }).start(v => {
-      hoveredPreview.x = v.x
-      hoveredPreview.y = v.y
-      postFXMesh.material.uniforms.u_cutOffFactor.value = v.maskCutoff
-      const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
-      unclicked.forEach(item => {
-        item.opacity = v.opacity
-      })
+      duration: 500,
+    }).start({
+      update: v => {
+        hoveredPreview.x = v.x
+        hoveredPreview.y = v.y
+        const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+        unclicked.forEach(item => {
+          item.opacity = v.opacity
+        })
+      },
+      complete: () => {
+        tween({
+          from: 0,
+          to: 1,
+          duration: 750,
+        }).start({
+          update: v => {
+            postFXMesh.material.uniforms.u_cutOffFactor.value = v
+          },
+          complete: () => {
+            // singlePage.introScrollFactor
+
+            const clicked = photoPreviews.find(project => project.modelName === modelName)
+
+            eventEmitter.on('msg', scrollFactor => {
+              clicked.opacity = 1.0 - scrollFactor
+            })
+
+          },
+        })
+      },
     })
+
+    // tween({
+    //   from: {
+    //     x: hoveredPreview.x,
+    //     y: hoveredPreview.y,
+    //     z: hoveredPreview.z,
+    //     maskCutoff: 1,
+    //     opacity: 1,
+    //   },
+    //   to: {
+    //     ...clipCamera.position,
+    //     maskCutoff: 0,
+    //     opacity: 0,
+    //   },
+    //   duration: 1000,
+    // }).start(v => {
+    //   hoveredPreview.x = v.x
+    //   hoveredPreview.y = v.y
+    //   postFXMesh.material.uniforms.u_cutOffFactor.value = v.maskCutoff
+    //   const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+    //   unclicked.forEach(item => {
+    //     item.opacity = v.opacity
+    //   })
+    //   // photoPreview.onSceneDrag(diffx, diffy)
+    // })
 
   }
 
@@ -181,8 +235,8 @@ webglContainer.addEventListener('mousemove', e => {
 
   cursor.onMouseMove(e.pageX, e.pageY)
 
-  cursorTargetPos.x = e.pageX * 2
-  cursorTargetPos.y = window.innerHeight * 2 - e.pageY * 2
+  cursorTargetPos.x = e.pageX
+  cursorTargetPos.y = window.innerHeight - e.pageY
 
   if (isDragging) {
     const diffx = e.pageX - mousePos.x
@@ -299,7 +353,6 @@ function updateFrame(ts) {
       if (!hoveredElement) {
         // cursor.show()
         hoveredElement = object
-        
       }
 
       postFXMesh.hover()

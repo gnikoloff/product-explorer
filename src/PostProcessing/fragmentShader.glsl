@@ -41,14 +41,14 @@ vec4 blur9 (sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 
 void main () {
   vec2 uv = v_uv;
-  vec4 baseColor = vec4(1.0);
+  vec4 baseColor = vec4(vec3(0.89), 1.0);
   vec4 clipColor = texture2D(u_tDiffuseClip, uv);
   vec4 photoColor = texture2D(u_tDiffusePhoto, uv);
   vec4 cursorColor = texture2D(u_tDiffuseCursor, uv);
   vec4 maskColor = texture2D(u_tDiffuseMask, uv);
 
-  if (1.0 - maskColor.r < u_cutOffFactor) {
-    baseColor = vec4(vec3(0.89), 1.0); 
+  if (maskColor.r < u_cutOffFactor) {
+    baseColor = vec4(1.0); 
   }
 
   vec4 color = mix(clipColor, photoColor, clipColor.r);
@@ -60,12 +60,12 @@ void main () {
   vec4 cursorCircleColor = color;
   vec2 uvRandom = uv;
   uvRandom.y *= random(vec2(uvRandom.y, u_time));
-  cursorCircleColor.rgb += random(uvRandom) * 0.25;
+  cursorCircleColor.rgb += random(uvRandom) * 0.075;
 
   color = mix(color, cursorColor, cursorColor.a);
 
-  float fmin = 0.8;
-  float fmod = mod(u_time * 3.0 + uv.y * 150.0, 1.3);
+  float fmin = 0.9;
+  float fmod = mod(u_time * 3.0 + uv.y * 200.0, 1.75);
   float fstep = fmin + (1.0 - fmin) * fmod;
 
   vec4 hoverColor = cursorCircleColor;

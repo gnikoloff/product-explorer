@@ -77,7 +77,7 @@ body.dragging {
 }
 
 .webgl-scene {
-  cursor: none;
+  /* cursor: none; */
 }
 
 .webgl-scene.non-interactable {
@@ -91,110 +91,19 @@ body.dragging {
   bottom: 0;
   left: 0;
   pointer-events: none;
+  overflow: auto;
 }
 
 .single-page {
-  pointer-events: auto;
-  width: 100vw;
-  padding-bottom: 320px;
-  box-sizing: border-box;
-  height: calc(100vh - 110px);
-  position: absolute;
-  top: 110px;
-  background: #fff;
+  padding-top: 1500px;
+  /* padding-bottom: 2000px; */
   overflow: auto;
-  transform: translateY(100%);
-}
-
-.single-page-intro {
-  position: relative;
-  width: 250px;
-  height: 350px;
-  /* background: yellow; */
-  margin: 0 auto 800px auto;
-}
-
-.intro-img {
-  z-index: 1;
-  position: fixed;
-  top: 60px;
-  left: calc(50% - 250px / 2);
-  width: 300px;
-  height: 500px;
-  background-color: red;
-  background-size: cover;
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.intro-title {
-  position: absolute;
-  bottom: -18px;
-  right: -60px;
-  opacity: 0;
-}
-
-.intro-subheading {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.72);
-  white-space: nowrap;
-  position: absolute;
-  left: 50%;
-  bottom: -50px;
-  transform: translateX(-50%);
-}
-
-.single-page-big-headline {
-  font-size: 266px;
-  white-space: nowrap;
-  color: rgba(0, 0, 0, 0.05);
-  position: absolute;
-  top: 480px;
-}
-
-.single-page-section {
-  display: flex;
-  justify-content: space-between;
-  margin: 0 auto;
-  max-width: 1200px;
-}
-
-.single-page-subsection {
-  width: 400px;
-}
-
-.single-page-subsection section {
-  padding: 48px 0;
-}
-
-.single-page-big-headline {
-  user-select: none;
-}
-
-.single-page-big-headline-text {
-  fill: rgba(0, 0, 0, 0.05);
-}
-
-.single-page-section-link-wrapper {
-  min-height: 300px;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.section-heading {
-  margin-bottom: 24px;
 }
 
 .scroll-indicator {
   position: fixed;
-  bottom: 20px;
+  bottom: 24px;
   left: 50%;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.62);
   transform: translateX(-50%);
-  opacity: 0;
+  text-transform: uppercase;
 }
