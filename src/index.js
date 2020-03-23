@@ -81,7 +81,7 @@ let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let projectsData = []
 let hoveredElement = null
-let isSinglePageOpen = false
+let clickedElement = null
 
 const IS_ZOOMED = false
 
@@ -161,13 +161,24 @@ webglContainer.addEventListener('mousedown', e => {
   // webglContainer.classList.add('non-interactable')
 
   if (hoveredElement) {
+    if (clickedElement) {
+      return  
+    }
+
+    cursorArrowOffsetTarget = 1
+    document.body.classList.add('dragging')
+
     const { modelName } = hoveredElement
     const project = projectsData.find(({ modelName: projectModelName }) => projectModelName === modelName)
 
     eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, modelName)
-    isSinglePageOpen = true
+    clickedElement = hoveredElement
 
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
+
+    photoPreviews.filter(preview => preview.modelName !== modelName).forEach(preview => {
+      preview.isInteractable = false
+    })
 
     tween({
       from: {
@@ -220,11 +231,6 @@ webglContainer.addEventListener('mousedown', e => {
     })
 
   }
-
-  if (!isSinglePageOpen) {
-    cursorArrowOffsetTarget = 1
-    document.body.classList.add('dragging')
-  }
 }, false)
 
 document.body.addEventListener('mousemove', e => {
@@ -241,7 +247,7 @@ webglContainer.addEventListener('mousemove', e => {
   cursorTargetPos.y = window.innerHeight - e.pageY
 
 
-  if (isDragging && !isSinglePageOpen) {
+  if (isDragging && !clickedElement) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
 
@@ -352,7 +358,9 @@ function updateFrame(ts) {
 
   if (!isDragging) {
     raycaster.setFromCamera(raycastMouse, photoCamera)
-    const intersectsTests = photoPreviews.map(({ clipMesh }) => clipMesh)
+    const intersectsTests = photoPreviews
+      .filter(a => a.isInteractable)
+      .map(({ clipMesh }) => clipMesh)
     const intersects = raycaster.intersectObjects(intersectsTests)
 
     if (intersects.length > 0) {
@@ -368,7 +376,7 @@ function updateFrame(ts) {
     }
   }
 
-  if (!isSinglePageOpen) {
+  if (!clickedElement) {
     // clipCamera.position.x +=
     //   (cameraTargetPos.x - clipCamera.position.x) * dt
     // clipCamera.position.y +=
