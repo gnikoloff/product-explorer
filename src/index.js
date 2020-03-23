@@ -392,30 +392,46 @@ function updateFrame(ts) {
     const bounceOffFactor = 0.1
 
     if (clipCamera.position.x > WOLRD_WIDTH / 2) {
-      clipCamera.position.x = WOLRD_WIDTH / 2
-      photoCamera.position.x = WOLRD_WIDTH / 2
-      cameraVelocity.x *= -1
-      cameraVelocity.x *= bounceOffFactor
-      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+      cameraTargetPos.x *= -1
+      cameraTargetPos.x *= bounceOffFactor
+      // cameraVelocity.x *= -1
     } else if (clipCamera.position.x < -WOLRD_WIDTH / 2) {
-      clipCamera.position.x = -WOLRD_WIDTH / 2
-      photoCamera.position.x = -WOLRD_WIDTH / 2
-      cameraVelocity.x *= -1
-      cameraVelocity.x *= bounceOffFactor
-      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+      // cameraTargetPos.x = -WOLRD_WIDTH / 2
+      cameraTargetPos.x *= -1
+      cameraTargetPos.x *= bounceOffFactor
     } else if (clipCamera.position.y > WORLD_HEIGHT / 2) {
-      clipCamera.position.y = WORLD_HEIGHT / 2
-      photoCamera.position.y = WORLD_HEIGHT / 2
-      cameraVelocity.y *= -1
-      cameraVelocity.y *= bounceOffFactor
-      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+      cameraTargetPos.y *= -1
+      cameraTargetPos.y *= bounceOffFactor
     } else if (clipCamera.position.y < -WORLD_HEIGHT / 2) {
-      clipCamera.position.y = -WORLD_HEIGHT / 2
-      photoCamera.position.y = -WORLD_HEIGHT / 2
-      cameraVelocity.y *= -1
-      photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
-      cameraVelocity.y *= bounceOffFactor
+      cameraTargetPos.y *= -1
+      cameraTargetPos.y *= bounceOffFactor
     }
+
+    // if (clipCamera.position.x > WOLRD_WIDTH / 2) {
+    //   clipCamera.position.x = WOLRD_WIDTH / 2
+    //   photoCamera.position.x = WOLRD_WIDTH / 2
+    //   cameraVelocity.x *= -1
+    //   cameraVelocity.x *= bounceOffFactor
+    //   photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    // } else if (clipCamera.position.x < -WOLRD_WIDTH / 2) {
+    //   clipCamera.position.x = -WOLRD_WIDTH / 2
+    //   photoCamera.position.x = -WOLRD_WIDTH / 2
+    //   cameraVelocity.x *= -1
+    //   cameraVelocity.x *= bounceOffFactor
+    //   photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    // } else if (clipCamera.position.y > WORLD_HEIGHT / 2) {
+    //   clipCamera.position.y = WORLD_HEIGHT / 2
+    //   photoCamera.position.y = WORLD_HEIGHT / 2
+    //   cameraVelocity.y *= -1
+    //   cameraVelocity.y *= bounceOffFactor
+    //   photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    // } else if (clipCamera.position.y < -WORLD_HEIGHT / 2) {
+    //   clipCamera.position.y = -WORLD_HEIGHT / 2
+    //   photoCamera.position.y = -WORLD_HEIGHT / 2
+    //   cameraVelocity.y *= -1
+    //   photoPreviews.forEach(preview => preview.onSceneDrag(0, 0))
+    //   cameraVelocity.y *= bounceOffFactor
+    // }
   }
   
   postFXMesh.material.uniforms.u_time.value = ts
