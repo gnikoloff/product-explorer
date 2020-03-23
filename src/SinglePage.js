@@ -217,11 +217,11 @@ export default class SinglePage {
       chain(
         delay(i * 150),
         tween({
-          from: { opacity: 0, y: 10 },
-          to: { opacity: 1, y: 0, },
+          from: 0,
+          to: 1,
         })
       ).start({
-        update: childStyler.set,
+        update: v => childStyler.set('opacity', v),
         complete: () => childStyler.set('pointer-events', 'auto')
       })
     })

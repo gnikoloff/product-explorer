@@ -102,6 +102,10 @@ export default class PhotoPreview {clipFragmentShader
     this._clipMesh.material.uniforms.u_opacity.value = opacity
   }
 
+  get diffVector () {
+    return this._diffVectorTarget
+  }
+
   _makeClipMesh () {
     const clipGeometryVertCount = 20
 
@@ -152,9 +156,9 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   onSceneDrag (dragDiffX, dragDiffY) {
-    if (this._preventDragging) {
-      return
-    }
+    // if (this._preventDragging) {
+    //   return
+    // }
     this._diffVectorTarget.x = clampNumber(dragDiffX * 5, -25, 25)
     this._diffVectorTarget.y = clampNumber(dragDiffY * 5, -25, 25)
   }
