@@ -36,7 +36,7 @@ export default class PhotoPreview {clipFragmentShader
     this._height = height
     this._photos = photos
 
-    this.isInteractable = true
+    this._isInteractable = true
 
     this._diffVector = new THREE.Vector2(0, 0)
     this._diffVectorTarget = new THREE.Vector2(0, 0)
@@ -157,6 +157,14 @@ export default class PhotoPreview {clipFragmentShader
 
   get modelName () {
     return this._modelName
+  }
+
+  get isInteractable () {
+    return this._isInteractable
+  }
+
+  set isInteractable (isInteractable) {
+    this._isInteractable = isInteractable
   }
   
   get clipMesh () {

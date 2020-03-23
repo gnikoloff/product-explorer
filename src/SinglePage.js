@@ -161,6 +161,11 @@ export default class SinglePage {
       } else {
         buttonEl.pos.vx += (buttonEl.pos.origX - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
         buttonEl.pos.vy += (buttonEl.pos.origY - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
+        if (i === 0) {
+          this._sliderPrevBtnHovered = false
+        } else {
+          this._sliderNextBtnHovered = false
+        }
       }
       buttonEl.pos.x += buttonEl.pos.vx
       buttonEl.pos.y += buttonEl.pos.vy
