@@ -184,11 +184,13 @@ webglContainer.addEventListener('mousedown', e => {
       from: {
         x: hoveredPreview.x,
         y: hoveredPreview.y,
+        scale: 1,
         opacity: 1,
       },
       to: {
         x: clipCamera.position.x - appWidth * 0.25,
         y: clipCamera.position.y,
+        scale: 1.75,
         opacity: 0,
       },
       duration: 500,
@@ -199,6 +201,7 @@ webglContainer.addEventListener('mousedown', e => {
         hoveredPreview.onSceneDrag(diffx, diffy)
         hoveredPreview.x = v.x
         hoveredPreview.y = v.y
+        hoveredPreview.scale = v.scale
         const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
         unclicked.forEach(item => {
           item.opacity = v.opacity

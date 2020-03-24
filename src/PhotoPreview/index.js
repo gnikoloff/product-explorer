@@ -203,6 +203,11 @@ export default class PhotoPreview {clipFragmentShader
     this._photoMesh.position.z = z
   }
 
+  set scale (scale) {
+    this._clipMesh.scale.x = this._clipMesh.scale.y = scale
+    this._photoMesh.scale.x = this._photoMesh.scale.y = scale
+  }
+
   set opacity (opacity) {
     this._clipMesh.material.uniforms.u_opacity.value = opacity
     this._photoMesh.material.uniforms.u_opacity.value = opacity

@@ -47,7 +47,8 @@ void main () {
   vec4 cursorColor = texture2D(u_tDiffuseCursor, uv);
   vec4 maskColor = texture2D(u_tDiffuseMask, uv);
 
-  if (uv.x > 0.5 && maskColor.r < u_cutOffFactor) {
+  // if (uv.x > 0.5 && maskColor.r < u_cutOffFactor) {
+    if (maskColor.r < u_cutOffFactor) {
     baseColor = vec4(vec3(0.99), 1.0); 
   }
 

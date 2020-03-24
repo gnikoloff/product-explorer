@@ -42,5 +42,5 @@ void main () {
   vec4 texColor1 = getTexture(u_texIdx1, uv);
   // gl_FragColor = mix(texColor0, texColor1, u_photoMixFactor);
   gl_FragColor = transition(u_texIdx0, u_texIdx1, uv, u_photoMixFactor);
-  // gl_FragColor.a = u_opacity;
+  gl_FragColor.a *= u_opacity;
 }
