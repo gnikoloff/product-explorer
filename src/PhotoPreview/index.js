@@ -8,7 +8,7 @@ import {
 } from '../helpers'
 
 import {
-  EVT_CLICKED_SINGLE_PROJECT,
+  EVT_OPEN_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
   EVT_RAF_UPDATE_APP,
@@ -48,7 +48,7 @@ export default class PhotoPreview {clipFragmentShader
     this._y = 0
     this._z = 0
 
-    this._onUpdate = this._onUpdate.bind(this)
+    this._scale = 1
 
     this._preventDragging = false
     this._allTexturesLoaded = false
@@ -56,7 +56,7 @@ export default class PhotoPreview {clipFragmentShader
     this._isCurrentlyTransitioning = false
 
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, modelName => {
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, modelName => {
       if (this._modelName !== modelName) {
         return
       }
@@ -204,8 +204,13 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   set scale (scale) {
+    this._scale = scale
     this._clipMesh.scale.x = this._clipMesh.scale.y = scale
     this._photoMesh.scale.x = this._photoMesh.scale.y = scale
+  }
+
+  get scale () {
+    return this._scale
   }
 
   set opacity (opacity) {
@@ -302,7 +307,7 @@ export default class PhotoPreview {clipFragmentShader
     this._diffVectorTarget.y = 0
   }
 
-  _onUpdate (ts, dt) {
+  _onUpdate = (ts, dt) => {
     this._diffVector.x += (this._diffVectorTarget.x - this._diffVector.x) * dt * 6
     this._diffVector.y += (this._diffVectorTarget.y - this._diffVector.y) * dt * 6
   } 

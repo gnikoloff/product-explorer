@@ -14,12 +14,12 @@ import {
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
-  EVT_CLICKED_SINGLE_PROJECT,
+  EVT_OPEN_SINGLE_PROJECT,
+  EVT_CLOSE_SINGLE_PROJECT,
   EVT_FADE_IN_SINGLE_VIEW,
+  EVT_FADE_OUT_SINGLE_VIEW,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
-  EVT_SLIDER_BUTTON_MOUSE_LEAVE,
-  EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_LOADED_PROJECTS,
 } from './constants'
 
@@ -34,6 +34,12 @@ export default class SinglePage {
   constructor () {
     this._mousePos = { x: 0, y: 0 }
 
+    this._prevModelName = null
+    this._currModelName = null
+    this._nextModelName = null
+    this._sliderPrevBtnHovered = false
+    this._sliderNextBtnHovered = false
+
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
       wrapper,
@@ -45,6 +51,7 @@ export default class SinglePage {
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
       nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
+      closeButton: wrapper.getElementsByClassName('close-single-page')[0],
     }
 
     this.stylers = {
@@ -53,60 +60,12 @@ export default class SinglePage {
       sliderButtonNext: styler(this.$els.sliderButtonNext),
     }
 
-    this._prevModelName = null
-    this._nextModelName = null
-    this._sliderPrevBtnHovered = false
-    this._sliderNextBtnHovered = false
-
-    this._onUpdate = this._onUpdate.bind(this)
-    this._onMouseMove = this._onMouseMove.bind(this)
-    this._open = this._open.bind(this)
-    this._fadeIn = this._fadeIn.bind(this)
     
     eventEmitter.on(EVT_LOADED_PROJECTS, projectsData => {
       this._projectsData = projectsData
     })
-    eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, this._open)
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._open)
     eventEmitter.on(EVT_FADE_IN_SINGLE_VIEW, this._fadeIn)
-
-    document.body.addEventListener('click', e => {
-      if (this._sliderPrevBtnHovered) {
-        eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
-      }
-      if (this._sliderNextBtnHovered) {
-        eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
-      }
-    }, false)
-
-    // this.$els.prevProductButton.addEventListener('click', e => {
-    //   e.preventDefault()
-    //   e.stopPropagation()
-    //   eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._prevModelName)
-    // })
-    // this.$els.nextProductButton.addEventListener('click', e => {
-    //   e.preventDefault()
-    //   e.stopPropagation()
-    //   eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, this._nextModelName)
-    // })
-
-    // this.$els.sliderButtonPrev.addEventListener('click', () => {
-    //   eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
-    // }, false)
-    // this.$els.sliderButtonNext.addEventListener('click', () => {
-    //   eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
-    // }, false)
-    // this.$els.sliderButtonPrev.addEventListener('mouseenter', () => {
-    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
-    // })
-    // this.$els.sliderButtonNext.addEventListener('mouseenter', () => {
-    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_ENTER)
-    // })
-    // this.$els.sliderButtonPrev.addEventListener('mouseleave', () => {
-    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
-    // })
-    // this.$els.sliderButtonNext.addEventListener('mouseleave', () => {
-    //   eventEmitter.emit(EVT_SLIDER_BUTTON_MOUSE_LEAVE)
-    // })
 
     const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
@@ -147,11 +106,17 @@ export default class SinglePage {
 
   }
 
-  _onUpdate (ts, dt) {
-    const {
-      sliderButtonPrev,
-      sliderButtonNext,
-    } = this.$els
+  _checkSliderClick = e => {
+    if (this._sliderPrevBtnHovered) {
+      eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
+    }
+    if (this._sliderNextBtnHovered) {
+      eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
+    }
+  }
+
+  _onUpdate = (ts, dt) => {
+    const { sliderButtonPrev, sliderButtonNext } = this.$els
     
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
     sliderBtns.forEach((buttonEl, i) => {
@@ -194,12 +159,12 @@ export default class SinglePage {
     })
   }
   
-  _onMouseMove (mouseX, mouseY) {
+  _onMouseMove = (mouseX, mouseY) => {
     this._mousePos.x = mouseX
     this._mousePos.y = mouseY
   }
 
-  _open (modelName) {
+  _open = (modelName) => {
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     const project = this._projectsData.find(project => project.modelName === modelName)
     this.$els.title.textContent = project.modelName
@@ -212,23 +177,67 @@ export default class SinglePage {
     })
 
     this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
+    this._currModelName = modelName
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
+
     this.$els.prevProductButton.textContent = this._prevModelName
     this.$els.nextProductButton.textContent = this._nextModelName
 
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
+    document.body.addEventListener('click', this._checkSliderClick, false)
+    this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
   }
 
-  _fadeIn () {
-    const {
-      sliderButtonPrev,
-      sliderButtonNext,
-    } = this.$els
+  _closeButtonClick = () => {
+    console.log(this._currModelName)
+    eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, this._currModelName)
+
+    const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
+    const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
+
+    fadeInEls.forEach((child, i) => {
+      const childStyler = styler(child)
+      tween({
+        from: { opacity: 1 },
+        to: { opacity: 0 },
+      }).start({
+        update: childStyler.set,
+        complete: () => {
+          childStyler.set('pointer-events', 'none')
+        }
+      })
+    })
+
+    const sliderBtns = [sliderButtonPrev, sliderButtonNext]
+    sliderBtns.forEach((button, i) => {
+      const buttonStyler = styler(button)
+      tween({
+        from: { opacity: 1 },
+        to: { opacity: 0 },
+      }).start({
+        update: buttonStyler.set,
+        complete: () => {
+          if (i === 0) {
+            this.$els.descriptionList.innerHTML = ''
+            eventEmitter.emit(EVT_FADE_OUT_SINGLE_VIEW, this._currModelName)
+          }
+        },
+      })
+    })
+    
+    document.body.removeEventListener('click', this._checkSliderClick)
+    this.$els.closeButton.removeEventListener('click', this._closeButtonClick, false)
+    eventEmitter.off(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.off(EVT_MOUSEMOVE_APP, this._onMouseMove)
+  }
+
+  _fadeIn = () => {
+    const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
     
     // this.stylers.wrapper.set('pointerEvents', 'auto')
 
-    const fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
+    const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)
       chain(

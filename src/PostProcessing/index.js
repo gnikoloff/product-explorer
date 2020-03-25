@@ -4,7 +4,7 @@ import eventEmitter from '../event-emitter'
 
 import {
   EVT_RAF_UPDATE_APP,
-  EVT_CLICKED_SINGLE_PROJECT,
+  EVT_OPEN_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
 } from '../constants'
@@ -48,11 +48,7 @@ export default class PostProcessing extends THREE.Mesh {
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
 
-    this._hideCursor = this._hideCursor.bind(this)
-    this._showCursor = this._showCursor.bind(this)
-    this._onUpdate = this._onUpdate.bind(this)
-
-    eventEmitter.on(EVT_CLICKED_SINGLE_PROJECT, () => {
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this._preventClick = true
     })
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
@@ -89,16 +85,16 @@ export default class PostProcessing extends THREE.Mesh {
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
   }
-  _hideCursor () {
+  _hideCursor = () => {
     this._cachedHiddenSize = this._cursorSizeTarget
     this._cursorSizeTarget = PostProcessing.HIDDEN_CURSOR_SIZE
     this._isHidden = true
   }
-  _showCursor () {
+  _showCursor = () => {
     this._cursorSizeTarget = this._cachedHiddenSize
     this._isHidden = false
   }
-  _onUpdate (ts, dt) {
+  _onUpdate = (ts, dt) => {
     this.material.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this.material.uniforms.u_cursorSize.value) * (dt * 10)
     this.material.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this.material.uniforms.u_hoverMixFactor.value) * (dt * 10)
   }

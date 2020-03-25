@@ -59,7 +59,13 @@
 }
 
 .single-page-prev-button {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
   border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-
+.close-single-page {
+  position: fixed;
+  top: 48px;
+  left: 50%;
+  pointer-events: auto;
+}

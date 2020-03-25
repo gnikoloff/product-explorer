@@ -13,9 +13,10 @@ import {
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
-  EVT_CLICKED_SINGLE_PROJECT,
+  EVT_OPEN_SINGLE_PROJECT,
   EVT_MOUSEMOVE_APP,
   EVT_FADE_IN_SINGLE_VIEW,
+  EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
 } from './constants'
 
@@ -113,36 +114,159 @@ if (IS_ZOOMED) {
   cursorCamera.updateProjectionMatrix()
 }
 
-renderer.setSize(appWidth, appHeight)
-renderer.setPixelRatio(dpr)
-// renderer.setClearColor(0xe5e5e5)
-renderer.setClearAlpha(0)
-webglContainer.appendChild(renderer.domElement)
+const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
+postFXMesh.mousePos = mousePos
+postFXScene.add(postFXMesh)
 
-fetch('/get_data')
-  .then(res => res.json())
-  .then(res => {
-    projectsData = res.projects
+const cursorArrowLeft = new THREE.Mesh(
+  new THREE.PlaneGeometry(15, 15),
+  new THREE.MeshBasicMaterial({ opacity: 1 })
+)
+cursorArrowLeft.rotation.z = Math.PI
+cursorScene.add(cursorArrowLeft)
 
-    eventEmitter.emit(EVT_LOADED_PROJECTS, projectsData)
+cursorScene.add(new THREE.Mesh(
+  new THREE.PlaneGeometry(WOLRD_WIDTH * 2, WORLD_HEIGHT * 2),
+  new THREE.MeshBasicMaterial({ wireframe: true })
+))
 
-    photoPreviews = res.projects.map(info => {
-      const photoPreview = new PhotoPreview({
-        modelName: info.modelName,
-        width: PREVIEW_PHOTO_REF_WIDTH,
-        height: PREVIEW_PHOTO_REF_HEIGHT,
-        photos: info.sliderPhotos || [],
-      })
-      photoPreview.x = info.posX
-      photoPreview.y = info.posY
-      clipScene.add(photoPreview.clipMesh)
-      photoScene.add(photoPreview.photoMesh)
-      photoPreview.loadPreview()
-      return photoPreview
+const cursorArrowRight = cursorArrowLeft.clone()
+cursorArrowRight.rotation.z = 0
+cursorScene.add(cursorArrowRight)
+
+const cursorArrowTop = cursorArrowLeft.clone()
+cursorArrowTop.rotation.z = Math.PI / 2
+cursorScene.add(cursorArrowTop)
+
+const cursorArrowBottom = cursorArrowLeft.clone()
+cursorArrowBottom.rotation.z = -Math.PI / 2
+cursorScene.add(cursorArrowBottom)
+
+new THREE.TextureLoader().load(arrowLeft, texture => {
+  cursorArrowLeft.material.map = texture
+  cursorArrowLeft.material.needsUpdate = true
+})
+
+init()
+
+function init () {
+  fetch('/get_data').then(res => res.json()).then(onProjectsLoad)
+
+  renderer.setSize(appWidth, appHeight)
+  renderer.setPixelRatio(dpr)
+  renderer.setClearAlpha(0)
+  webglContainer.appendChild(renderer.domElement)
+
+  webglContainer.addEventListener('mousedown', onMouseDown, false)
+  document.body.addEventListener('mousemove', onMouseMove, false)
+  webglContainer.addEventListener('mouseup', onMouseUp, false)
+  webglContainer.addEventListener('mouseleave', onMouseLeave, false)
+  window.addEventListener('resize', onResize)
+  
+  eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
+  
+  updateFrame()
+}
+
+function onProjectsLoad (res) {
+  projectsData = res.projects
+
+  eventEmitter.emit(EVT_LOADED_PROJECTS, projectsData)
+
+  photoPreviews = res.projects.map(info => {
+    const photoPreview = new PhotoPreview({
+      modelName: info.modelName,
+      width: PREVIEW_PHOTO_REF_WIDTH,
+      height: PREVIEW_PHOTO_REF_HEIGHT,
+      photos: info.sliderPhotos || [],
     })
+    photoPreview.x = info.posX
+    photoPreview.y = info.posY
+    clipScene.add(photoPreview.clipMesh)
+    photoScene.add(photoPreview.photoMesh)
+    photoPreview.loadPreview()
+    return photoPreview
   })
+}
 
-webglContainer.addEventListener('mousedown', e => {
+function onCloseSingleView (modelName) {
+  console.log(modelName)
+  const openedPreview = photoPreviews.find(preview => preview.modelName === modelName)
+  const targetX = openedPreview.x - openedPreview.diffX
+  const targetY = openedPreview.y - openedPreview.diffY
+  closeModelTween = tween({
+    from: {
+      cutOffFactor: 1,
+      opacity: 0,
+      x: openedPreview.x,
+      y: openedPreview.y,
+      scale: openedPreview.scale,
+    },
+    to: {
+      cutOffFactor: 0,
+      opacity: 1,
+      x: targetX,
+      y: targetY,
+      scale: 1,
+    },
+    duration: 700,
+  }).start({
+    update: v => {
+      openModelTweenFactor = v.cutOffFactor
+      postFXMesh.material.uniforms.u_cutOffFactor.value = v.cutOffFactor
+      const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+      unclicked.forEach(item => {
+        item.opacity = v.opacity
+      })
+      openedPreview.x = v.x
+      openedPreview.y = v.y
+      openedPreview.scale = v.scale
+    },
+    complete: () => {
+      clickedElement = null
+      photoPreviews
+        // .filter(preview => preview.modelName !== modelName)
+        .forEach(preview => {
+        preview.isInteractable = true
+      })
+    },
+  })
+}
+
+function onResize () {
+  appWidth = window.innerWidth
+  appHeight = window.innerHeight
+
+  renderer.setSize(appWidth, appHeight)
+  clipRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+  photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+  cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+
+  const resizeCamera = camera => {
+    camera.left = -appWidth / 2
+    camera.right = appWidth / 2
+    camera.top = -appHeight / 2
+    camera.bottom = appHeight / 2
+    camera.aspect = appWidth / appHeight
+    camera.updateProjectionMatrix()
+  }
+
+  resizeCamera(clipCamera)
+  resizeCamera(photoCamera)
+  resizeCamera(cursorCamera)
+  // resizeCamera(postFXCamera)
+
+}
+
+function onMouseLeave () {
+  photoPreviews.forEach(photoPreview => {
+    photoPreview._diffVectorTarget.x = 0
+    photoPreview._diffVectorTarget.y = 0
+  })
+  cursorArrowOffsetTarget = 0
+}
+
+function onMouseDown (e) {
   isDragging = true
   postFXMesh.onDragStart()
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart())
@@ -174,11 +298,15 @@ webglContainer.addEventListener('mousedown', e => {
         })
       },
       complete: () => {
-        eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, modelName)
+        isDragging = false
+        eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, modelName)
         clickedElement = hoveredElement    
         photoPreviews.filter(preview => preview.modelName !== modelName).forEach(preview => {
           preview.isInteractable = false
         })
+        hoveredPreview.diffX = (clipCamera.position.x - appWidth * 0.25) - hoveredPreview.x
+        hoveredPreview.diffY = clipCamera.position.y - hoveredPreview.y
+        
         tween({
           from: {
             x: hoveredPreview.x,
@@ -219,11 +347,9 @@ webglContainer.addEventListener('mousedown', e => {
       },
     })
   }
-}, false)
+}
 
-document.body.addEventListener('mousemove', e => {
-  mousePos.x = e.pageX
-  mousePos.y = e.pageY
+function onMouseMove (e) {
   eventEmitter.emit(EVT_MOUSEMOVE_APP, mousePos.x, mousePos.y)
 
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
@@ -245,10 +371,11 @@ document.body.addEventListener('mousemove', e => {
   } else {
     
   }
+  mousePos.x = e.pageX
+  mousePos.y = e.pageY
+}
 
-}, false)
-
-webglContainer.addEventListener('mouseup', () => {
+function onMouseUp () {
   if (hoveredElement && !clickedElement) {
     const { modelName: hoveredElementModelName } = hoveredElement
     if (openModelTween) {
@@ -269,84 +396,12 @@ webglContainer.addEventListener('mouseup', () => {
       openModelTween = null
     }
   }
-
   isDragging = false
   postFXMesh.onDragEnd()
   cursorArrowOffsetTarget = 0
   document.body.classList.remove('dragging')
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
-}, false)
-
-webglContainer.addEventListener('mouseleave', () => {
-  photoPreviews.forEach(photoPreview => {
-    photoPreview._diffVectorTarget.x = 0
-    photoPreview._diffVectorTarget.y = 0
-  })
-  cursorArrowOffsetTarget = 0
-})
-
-window.addEventListener('resize', () => {
-  appWidth = window.innerWidth
-  appHeight = window.innerHeight
-
-  renderer.setSize(appWidth, appHeight)
-  clipRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-  photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-  cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-
-  const resizeCamera = camera => {
-    camera.left = -appWidth / 2
-    camera.right = appWidth / 2
-    camera.top = -appHeight / 2
-    camera.bottom = appHeight / 2
-    camera.aspect = appWidth / appHeight
-    camera.updateProjectionMatrix()
-  }
-
-  resizeCamera(clipCamera)
-  resizeCamera(photoCamera)
-  resizeCamera(cursorCamera)
-  // resizeCamera(postFXCamera)
-
-})
-
-const postFXMesh = new PostProcessing({
-  width: appWidth,
-  height: appHeight,
-})
-postFXMesh.mousePos = mousePos
-postFXScene.add(postFXMesh)
-
-const cursorArrowLeft = new THREE.Mesh(
-  new THREE.PlaneGeometry(15, 15),
-  new THREE.MeshBasicMaterial({ opacity: 1 })
-)
-cursorArrowLeft.rotation.z = Math.PI
-cursorScene.add(cursorArrowLeft)
-
-cursorScene.add(new THREE.Mesh(
-  new THREE.PlaneGeometry(WOLRD_WIDTH * 2, WORLD_HEIGHT * 2),
-  new THREE.MeshBasicMaterial({ wireframe: true })
-))
-
-const cursorArrowRight = cursorArrowLeft.clone()
-cursorArrowRight.rotation.z = 0
-cursorScene.add(cursorArrowRight)
-
-const cursorArrowTop = cursorArrowLeft.clone()
-cursorArrowTop.rotation.z = Math.PI / 2
-cursorScene.add(cursorArrowTop)
-
-const cursorArrowBottom = cursorArrowLeft.clone()
-cursorArrowBottom.rotation.z = -Math.PI / 2
-cursorScene.add(cursorArrowBottom)
-
-new THREE.TextureLoader().load(arrowLeft, texture => {
-  cursorArrowLeft.material.map = texture
-  cursorArrowLeft.material.needsUpdate = true
-})
-
-updateFrame()
+}
 
 function updateFrame(ts) {
   if (!ts) {
@@ -380,12 +435,13 @@ function updateFrame(ts) {
   }
 
   if (!clickedElement) {
-    // clipCamera.position.x +=
-    //   (cameraTargetPos.x - clipCamera.position.x) * dt
-    // clipCamera.position.y +=
-    //   (cameraTargetPos.y - clipCamera.position.y) * dt
-    // photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
-    // photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
+
+    clipCamera.position.x +=
+      (cameraTargetPos.x - clipCamera.position.x) * dt
+    clipCamera.position.y +=
+      (cameraTargetPos.y - clipCamera.position.y) * dt
+    photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
+    photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
 
     cameraVelocity.x += (cameraTargetPos.x - clipCamera.position.x) * dt
     cameraVelocity.y += (cameraTargetPos.y - clipCamera.position.y) * dt
