@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { tween } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
@@ -6,29 +7,33 @@ import PhotoPreview from './PhotoPreview'
 import SinglePage from './SinglePage'
 import PostProcessing from './PostProcessing'
 
-import './style'
-
-import arrowLeft from './assets/arrow.png'
-
 import {
   WOLRD_WIDTH,
   WORLD_HEIGHT,
+  PREVIEW_PHOTO_REF_WIDTH,
+  PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
   EVT_CLICKED_SINGLE_PROJECT,
   EVT_MOUSEMOVE_APP,
   EVT_FADE_IN_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
 } from './constants'
-import { tween, chain, mouse } from 'popmotion'
 
+import {
+  getSiglePagePhotoScale,
+} from './helpers'
+
+import './style'
+
+import arrowLeft from './assets/arrow.png'
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
 
+const singlePage = new SinglePage()
+
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
-
 const dpr = window.devicePixelRatio || 1
-
 const mousePos = new THREE.Vector2(0, 0)
 const raycastMouse = new THREE.Vector2(0, 0)
 const cameraTargetPos = new THREE.Vector2(0, 0)
@@ -36,7 +41,6 @@ const cameraVelocity = new THREE.Vector2(0, 0)
 const cursorTargetPos = new THREE.Vector2(0, 0)
 
 const renderer = new THREE.WebGLRenderer({ alpha: true })
-// const renderer = new THREE.WebGLRenderer()
 
 const clipScene = new THREE.Scene()
 const photoScene = new THREE.Scene()
@@ -55,33 +59,26 @@ const photoCamera = clipCamera.clone()
 const postFXCamera = clipCamera.clone()
 const cursorCamera = clipCamera.clone()
 
-const clipRenderTarget = new THREE.WebGLRenderTarget(
-  appWidth * dpr,
-  appHeight * dpr
-)
-const photoRenderTarget = new THREE.WebGLRenderTarget(
-  appWidth * dpr,
-  appHeight * dpr
-)
-const cursorRenderTarget = new THREE.WebGLRenderTarget(
-  appWidth * dpr,
-  appHeight * dpr
-)
+const clipRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+const cursorRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 
 const raycaster = new THREE.Raycaster()
 
 const originalCameraPos = [0, 0, 50]
 const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
-const singlePage = new SinglePage()
-
 let oldTime = 0
+let photoPreviews = []
 let isDragging = false
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let projectsData = []
 let hoveredElement = null
 let clickedElement = null
+let openModelTween
+let closeModelTween
+let openModelTweenFactor = 0
 
 const IS_ZOOMED = false
 
@@ -122,8 +119,6 @@ renderer.setPixelRatio(dpr)
 renderer.setClearAlpha(0)
 webglContainer.appendChild(renderer.domElement)
 
-let photoPreviews = []
-
 fetch('/get_data')
   .then(res => res.json())
   .then(res => {
@@ -134,8 +129,8 @@ fetch('/get_data')
     photoPreviews = res.projects.map(info => {
       const photoPreview = new PhotoPreview({
         modelName: info.modelName,
-        width: 300,
-        height: 450,
+        width: PREVIEW_PHOTO_REF_WIDTH,
+        height: PREVIEW_PHOTO_REF_HEIGHT,
         photos: info.sliderPhotos || [],
       })
       photoPreview.x = info.posX
@@ -143,10 +138,6 @@ fetch('/get_data')
       clipScene.add(photoPreview.clipMesh)
       photoScene.add(photoPreview.photoMesh)
       photoPreview.loadPreview()
-      // new THREE.TextureLoader().load(info.previewSrc, texture => {
-      //   texture.flipY = true
-      //   photoPreview.addPreviewTexture(texture)
-      // })
       return photoPreview
     })
   })
@@ -164,75 +155,69 @@ webglContainer.addEventListener('mousedown', e => {
     if (clickedElement) {
       return  
     }
-
-    cursorArrowOffsetTarget = 1
-    document.body.classList.add('dragging')
-
     const { modelName } = hoveredElement
-    const project = projectsData.find(({ modelName: projectModelName }) => projectModelName === modelName)
-
-    eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, modelName)
-    clickedElement = hoveredElement
-
     const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
-
-    photoPreviews.filter(preview => preview.modelName !== modelName).forEach(preview => {
-      preview.isInteractable = false
-    })
-
-    tween({
-      from: {
-        x: hoveredPreview.x,
-        y: hoveredPreview.y,
-        scale: 1,
-        opacity: 1,
-      },
-      to: {
-        x: clipCamera.position.x - appWidth * 0.25,
-        y: clipCamera.position.y,
-        scale: 1.75,
-        opacity: 0,
-      },
-      duration: 500,
+    if (closeModelTween) {
+      closeModelTween.stop()
+    }
+    openModelTween = tween({
+      from: openModelTweenFactor,
+      to: 1,
+      duration: 700,
     }).start({
       update: v => {
-        let diffx = v.x - hoveredPreview.x
-        let diffy = v.y - hoveredPreview.y
-        hoveredPreview.onSceneDrag(diffx, diffy)
-        hoveredPreview.x = v.x
-        hoveredPreview.y = v.y
-        hoveredPreview.scale = v.scale
+        openModelTweenFactor = v
+        postFXMesh.material.uniforms.u_cutOffFactor.value = v
         const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
         unclicked.forEach(item => {
-          item.opacity = v.opacity
+          item.opacity = 1 - v
         })
       },
       complete: () => {
-        tween({
-          from: { x: hoveredPreview.diffVector.x, y: hoveredPreview.diffVector.y },
-          to: { x: 0, y: 0 },
-        }).start(v => {
-          hoveredPreview.onSceneDrag(v.x, v.y)
+        eventEmitter.emit(EVT_CLICKED_SINGLE_PROJECT, modelName)
+        clickedElement = hoveredElement    
+        photoPreviews.filter(preview => preview.modelName !== modelName).forEach(preview => {
+          preview.isInteractable = false
         })
-        eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
         tween({
-          from: 0,
-          to: 1,
-          duration: 1000,
+          from: {
+            x: hoveredPreview.x,
+            y: hoveredPreview.y,
+            scale: 1,
+            opacity: 1,
+          },
+          to: {
+            x: clipCamera.position.x - appWidth * 0.25,
+            y: clipCamera.position.y,
+            scale: getSiglePagePhotoScale(),
+            opacity: 0,
+          },
+          duration: 500,
         }).start({
           update: v => {
-            postFXMesh.material.uniforms.u_cutOffFactor.value = v
+            let diffx = v.x - hoveredPreview.x
+            let diffy = v.y - hoveredPreview.y
+            hoveredPreview.onSceneDrag(diffx, diffy)
+            hoveredPreview.x = v.x
+            hoveredPreview.y = v.y
+            hoveredPreview.scale = v.scale
+            const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+            unclicked.forEach(item => {
+              item.opacity = v.opacity
+            })
           },
           complete: () => {
-            // singlePage.introScrollFactor
-
-            const clicked = photoPreviews.find(project => project.modelName === modelName)
-            // ...
+            tween({
+              from: { x: hoveredPreview.diffVector.x, y: hoveredPreview.diffVector.y },
+              to: { x: 0, y: 0 },
+            }).start(v => {
+              hoveredPreview.onSceneDrag(v.x, v.y)
+            })
+            eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
           },
         })
       },
     })
-
   }
 }, false)
 
@@ -240,9 +225,7 @@ document.body.addEventListener('mousemove', e => {
   mousePos.x = e.pageX
   mousePos.y = e.pageY
   eventEmitter.emit(EVT_MOUSEMOVE_APP, mousePos.x, mousePos.y)
-})
 
-webglContainer.addEventListener('mousemove', e => {
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
@@ -266,16 +249,33 @@ webglContainer.addEventListener('mousemove', e => {
 }, false)
 
 webglContainer.addEventListener('mouseup', () => {
+  if (hoveredElement && !clickedElement) {
+    const { modelName: hoveredElementModelName } = hoveredElement
+    if (openModelTween) {
+      openModelTween.stop()
+      closeModelTween = tween({
+        from: openModelTweenFactor,
+        to: 0,
+        duration: 700,
+      }).start(v => {
+        openModelTweenFactor = v
+        postFXMesh.material.uniforms.u_cutOffFactor.value = v
+        const unclicked = photoPreviews.filter(project => project.modelName !== hoveredElementModelName)
+        unclicked.forEach(item => {
+          item.opacity = 1 - v
+        })
+      })
+
+      openModelTween = null
+    }
+  }
+
   isDragging = false
   postFXMesh.onDragEnd()
   cursorArrowOffsetTarget = 0
   document.body.classList.remove('dragging')
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
 }, false)
-
-webglContainer.addEventListener('mouseenter', () => {
-  // ...
-})
 
 webglContainer.addEventListener('mouseleave', () => {
   photoPreviews.forEach(photoPreview => {

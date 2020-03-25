@@ -6,9 +6,12 @@ import eventEmitter from './event-emitter'
 import {
   clampNumber,
   mapNumber,
+  getSiglePagePhotoScale,
 } from './helpers'
 
 import {
+  PREVIEW_PHOTO_REF_WIDTH,
+  PREVIEW_PHOTO_REF_HEIGHT,
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
   EVT_CLICKED_SINGLE_PROJECT,
@@ -106,32 +109,40 @@ export default class SinglePage {
     // })
 
     const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
-    const sizerDimensions = sizer.getBoundingClientRect()
+    const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
+    const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
+    sizer.style.setProperty('width', `${sizerWidth}px`)
+    sizer.style.setProperty('height', `${sizerHeight}px`)
+    sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
+    
+    requestAnimationFrame(() => {
+      const sizerDimensions = sizer.getBoundingClientRect()
 
-    this.$els.sliderButtonPrev.pos = {
-      radius: SinglePage.SIDE_ARROW_RADIUS,
-      x: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
-      y: sizerDimensions.top + sizerDimensions.height / 2,
-      origX: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
-      origY: sizerDimensions.top + sizerDimensions.height / 2,
-      vx: 0, vy: 0,
-    }
-    this.$els.sliderButtonNext.pos = {
-      radius: SinglePage.SIDE_ARROW_RADIUS,
-      x: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
-      y: sizerDimensions.top + sizerDimensions.height / 2,
-      origX: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
-      origY: sizerDimensions.top + sizerDimensions.height / 2,
-      vx: 0, vy: 0,
-    }
+      this.$els.sliderButtonPrev.pos = {
+        radius: SinglePage.SIDE_ARROW_RADIUS,
+        x: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
+        y: sizerDimensions.top + sizerDimensions.height / 2,
+        origX: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
+        origY: sizerDimensions.top + sizerDimensions.height / 2,
+        vx: 0, vy: 0,
+      }
+      this.$els.sliderButtonNext.pos = {
+        radius: SinglePage.SIDE_ARROW_RADIUS,
+        x: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
+        y: sizerDimensions.top + sizerDimensions.height / 2,
+        origX: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
+        origY: sizerDimensions.top + sizerDimensions.height / 2,
+        vx: 0, vy: 0,
+      }
 
-    this.stylers.sliderButtonPrev.set({
-      x: this.$els.sliderButtonPrev.pos.origX - this.$els.sliderButtonPrev.pos.radius / 2,
-      y: this.$els.sliderButtonPrev.pos.origY - this.$els.sliderButtonPrev.pos.radius / 2,
-    })
-    this.stylers.sliderButtonNext.set({
-      x: this.$els.sliderButtonNext.pos.origX - this.$els.sliderButtonNext.pos.radius / 2,
-      y: this.$els.sliderButtonNext.pos.origY - this.$els.sliderButtonNext.pos.radius / 2,
+      this.stylers.sliderButtonPrev.set({
+        x: this.$els.sliderButtonPrev.pos.origX - this.$els.sliderButtonPrev.pos.radius / 2,
+        y: this.$els.sliderButtonPrev.pos.origY - this.$els.sliderButtonPrev.pos.radius / 2,
+      })
+      this.stylers.sliderButtonNext.set({
+        x: this.$els.sliderButtonNext.pos.origX - this.$els.sliderButtonNext.pos.radius / 2,
+        y: this.$els.sliderButtonNext.pos.origY - this.$els.sliderButtonNext.pos.radius / 2,
+      })
     })
 
   }

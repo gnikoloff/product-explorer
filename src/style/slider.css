@@ -1,10 +1,7 @@
 .single-page-slider-sizer {
   position: absolute;
-  width: 525px;
-  height: 788px;
-top: 50%;
+  top: 50%;
   left: 50%;
-  margin: -200px 0 0 calc(-125px - 25vw);
 }
 
 .slider-btn {
