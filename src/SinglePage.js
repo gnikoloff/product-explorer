@@ -14,7 +14,9 @@ import {
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
+  EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
+  EVT_CLOSING_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_FADE_IN_SINGLE_VIEW,
   EVT_FADE_OUT_SINGLE_VIEW,
@@ -58,6 +60,7 @@ export default class SinglePage {
       wrapper: styler(this.$els.wrapper),
       sliderButtonPrev: styler(this.$els.sliderButtonPrev),
       sliderButtonNext: styler(this.$els.sliderButtonNext),
+      closeButton: styler(this.$els.closeButton),
     }
     
     eventEmitter.on(EVT_LOADED_PROJECTS, projectsData => {
@@ -65,6 +68,22 @@ export default class SinglePage {
     })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._open)
     eventEmitter.on(EVT_FADE_IN_SINGLE_VIEW, this._fadeIn)
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
+      const closeButtonTweenY = mapNumber(tweenFactor, 0.75, 1, -100, 0)
+      const closeButtonTweenRotate = mapNumber(tweenFactor, 0.75, 1, -480, 0)
+      this.stylers.closeButton.set({
+        y: closeButtonTweenY,
+        rotate: closeButtonTweenRotate,
+      })
+    })
+    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor, startTweenFactor }) => {
+      const closeButtonTweenY = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -100)
+      const closeButtonTweenRotate = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -480)
+      this.stylers.closeButton.set({
+        y: closeButtonTweenY,
+        rotate: closeButtonTweenRotate,
+      })
+    })
 
     const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()

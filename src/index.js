@@ -16,7 +16,9 @@ import {
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
+  EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
+  EVT_CLOSING_SINGLE_PROJECT,
   EVT_MOUSEMOVE_APP,
   EVT_FADE_IN_SINGLE_VIEW,
   EVT_FADE_OUT_SINGLE_VIEW,
@@ -232,6 +234,10 @@ function onCloseSingleView (modelName) {
       openedPreview.y = v.y
       openedPreview.scale = v.scale
       infoPanel.setButtonOpacity(v.opacity)
+      eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
+        tweenFactor: v.cutOffFactor,
+        startTweenFactor: 1,
+      })
     },
     complete: () => {
       clickedElement = null
@@ -343,6 +349,10 @@ function onMouseDown (e) {
         // hoveredPreview.scale += (hoveredPreviewTargetScale - hoveredPreview.scale) * v
 
         // hoveredPreview.scale = 1 + v
+
+        eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, {
+          tweenFactor: v.tweenFactor,
+        })
       },
       complete: () => {
         isDragging = false
@@ -401,6 +411,7 @@ function onMouseUp () {
     const openedPreview = photoPreviews.find(preview => preview.modelName === hoveredElementModelName)
     const startX = openModelTweenPosition.x
     const startY = openModelTweenPosition.y
+    const startOpenFactor = openModelTweenFactor
     const targetX = startX - openedPreview.diffX
     const targetY = startY - openedPreview.diffY
     const targetScale = 1
@@ -441,6 +452,11 @@ function onMouseUp () {
           openedPreview.x = v.x
           openedPreview.y = v.y
           // openedPreview.scale += (targetScale - openedPreview.scale) * (1 - v)
+
+          eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
+            tweenFactor: v.tweenFactor,
+            startTweenFactor: startOpenFactor,
+          })
         },
         complete: () => {
           infoPanel.setPointerEvents('auto')
