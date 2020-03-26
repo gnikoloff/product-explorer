@@ -43,6 +43,7 @@ const raycastMouse = new THREE.Vector2(0, 0)
 const cameraTargetPos = new THREE.Vector2(0, 0)
 const cameraVelocity = new THREE.Vector2(0, 0)
 const cursorTargetPos = new THREE.Vector2(0, 0)
+const openModelTweenPosition = new THREE.Vector2(0, 0)
 
 const renderer = new THREE.WebGLRenderer({ alpha: true })
 
@@ -290,19 +291,49 @@ function onMouseDown (e) {
     if (closeModelTween) {
       closeModelTween.stop()
     }
+
+    const hoveredPreviewTargetX = clipCamera.position.x - appWidth * 0.25
+    const hoveredPreviewTargetY = clipCamera.position.y
+    const hoveredPreviewTargetScale = getSiglePagePhotoScale()
+
+    hoveredPreview.diffX = hoveredPreviewTargetX - hoveredPreview.x
+    hoveredPreview.diffY = hoveredPreviewTargetY - hoveredPreview.y
+
+    openModelTweenPosition.x = hoveredPreview.x
+    openModelTweenPosition.y = hoveredPreview.y
+
     openModelTween = tween({
-      from: openModelTweenFactor,
-      to: 1,
-      duration: 700,
+      from: {
+        tweenFactor: openModelTweenFactor,
+        x: openModelTweenPosition.x,
+        y: openModelTweenPosition.y,
+      },
+      to: {
+        tweenFactor: 1,
+        x: hoveredPreviewTargetX,
+        y: hoveredPreviewTargetY,
+      },
+      duration: 1500,
     }).start({
       update: v => {
-        openModelTweenFactor = v
-        postFXMesh.material.uniforms.u_cutOffFactor.value = v
+        let diffx = hoveredPreview.x - v.x
+        let diffy = hoveredPreview.y - v.y
+        hoveredPreview.onSceneDrag(diffx, diffy)
+        openModelTweenPosition.x = v.x
+        openModelTweenPosition.y = v.y
+        openModelTweenFactor = v.tweenFactor
+        postFXMesh.material.uniforms.u_cutOffFactor.value = v.tweenFactor
         const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
         unclicked.forEach(item => {
-          item.opacity = 1 - v
+          item.opacity = 1 - v.tweenFactor
         })
-        infoPanel.setButtonOpacity(1 - v)
+        infoPanel.setButtonOpacity(1 - v.tweenFactor)
+
+        hoveredPreview.x = v.x
+        hoveredPreview.y = v.y
+        // hoveredPreview.scale += (hoveredPreviewTargetScale - hoveredPreview.scale) * v
+
+        // hoveredPreview.scale = 1 + v
       },
       complete: () => {
         isDragging = false
@@ -311,36 +342,18 @@ function onMouseDown (e) {
         photoPreviews.filter(preview => preview.modelName !== modelName).forEach(preview => {
           preview.isInteractable = false
         })
-        hoveredPreview.diffX = (clipCamera.position.x - appWidth * 0.25) - hoveredPreview.x
-        hoveredPreview.diffY = clipCamera.position.y - hoveredPreview.y
 
         infoPanel.setPointerEvents('none')
         
         tween({
-          from: {
-            x: hoveredPreview.x,
-            y: hoveredPreview.y,
-            scale: 1,
-            opacity: 1,
-          },
-          to: {
-            x: clipCamera.position.x - appWidth * 0.25,
-            y: clipCamera.position.y,
-            scale: getSiglePagePhotoScale(),
-            opacity: 0,
-          },
+          from: 1,
+          to: 0,
           duration: 500,
         }).start({
           update: v => {
-            let diffx = v.x - hoveredPreview.x
-            let diffy = v.y - hoveredPreview.y
-            hoveredPreview.onSceneDrag(diffx, diffy)
-            hoveredPreview.x = v.x
-            hoveredPreview.y = v.y
-            hoveredPreview.scale = v.scale
             const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
             unclicked.forEach(item => {
-              item.opacity = v.opacity
+              item.opacity = v
             })
           },
           complete: () => {
@@ -387,21 +400,47 @@ function onMouseMove (e) {
 function onMouseUp () {
   if (hoveredElement && !clickedElement) {
     const { modelName: hoveredElementModelName } = hoveredElement
+    const openedPreview = photoPreviews.find(preview => preview.modelName === hoveredElementModelName)
+    const startX = openModelTweenPosition.x
+    const startY = openModelTweenPosition.y
+    const targetX = openedPreview.x - openedPreview.diffX
+    const targetY = openedPreview.y - openedPreview.diffY
+    const targetScale = 1
+
+    openModelTweenPosition.x = startX
+    openModelTweenPosition.y = startY
+
     if (openModelTween) {
       openModelTween.stop()
       closeModelTween = tween({
-        from: openModelTweenFactor,
-        to: 0,
-        duration: 700,
+        from: {
+          tweenFactor: openModelTweenFactor,
+          x: startX,
+          y: startY,
+        },
+        to: {
+          tweenFactor: 0,
+          x: targetX,
+          y: targetY,
+        },
+        duration: 1500,
       }).start({
         update: v => {
-          openModelTweenFactor = v
-          postFXMesh.material.uniforms.u_cutOffFactor.value = v
+          let diffx = openedPreview.x - v.x
+          let diffy = openedPreview.y - v.y
+          openedPreview.onSceneDrag(diffx, diffy)
+          openModelTweenPosition.x = v.x
+          openModelTweenPosition.y = v.y
+          openModelTweenFactor = v.tweenFactor
+          postFXMesh.material.uniforms.u_cutOffFactor.value = v.tweenFactor
           const unclicked = photoPreviews.filter(project => project.modelName !== hoveredElementModelName)
           unclicked.forEach(item => {
-            item.opacity = 1 - v
+            item.opacity = 1 - v.tweenFactor
           })
-          infoPanel.setButtonOpacity(1 - v)
+          infoPanel.setButtonOpacity(1 - v.tweenFactor)
+          openedPreview.x = v.x
+          openedPreview.y = v.y
+          // openedPreview.scale += (targetScale - openedPreview.scale) * (1 - v)
         },
         complete: () => {
           infoPanel.setPointerEvents('auto')
