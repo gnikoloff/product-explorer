@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tween } from 'popmotion'
+import { tween, chain, delay } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
@@ -11,6 +11,8 @@ import PostProcessing from './PostProcessing'
 import {
   WOLRD_WIDTH,
   WORLD_HEIGHT,
+  TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
+  TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION,
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
@@ -23,6 +25,8 @@ import {
 } from './constants'
 
 import {
+  mapNumber,
+  clampNumber,
   getSiglePagePhotoScale,
 } from './helpers'
 
@@ -187,6 +191,8 @@ function onProjectsLoad (res) {
     })
     photoPreview.x = info.posX
     photoPreview.y = info.posY
+    photoPreview.origX = info.posX
+    photoPreview.origY = info.posY
     clipScene.add(photoPreview.clipMesh)
     photoScene.add(photoPreview.photoMesh)
     photoPreview.loadPreview()
@@ -195,7 +201,6 @@ function onProjectsLoad (res) {
 }
 
 function onCloseSingleView (modelName) {
-  console.log(modelName)
   const openedPreview = photoPreviews.find(preview => preview.modelName === modelName)
   const targetX = openedPreview.x - openedPreview.diffX
   const targetY = openedPreview.y - openedPreview.diffY
@@ -296,26 +301,29 @@ function onMouseDown (e) {
     const hoveredPreviewTargetY = clipCamera.position.y
     const hoveredPreviewTargetScale = getSiglePagePhotoScale()
 
-    hoveredPreview.diffX = hoveredPreviewTargetX - hoveredPreview.x
-    hoveredPreview.diffY = hoveredPreviewTargetY - hoveredPreview.y
+    let startX = hoveredPreview.origX
+    let startY = hoveredPreview.origY
 
-    openModelTweenPosition.x = hoveredPreview.x
-    openModelTweenPosition.y = hoveredPreview.y
-
-    openModelTween = tween({
-      from: {
-        tweenFactor: openModelTweenFactor,
-        x: openModelTweenPosition.x,
-        y: openModelTweenPosition.y,
-      },
-      to: {
-        tweenFactor: 1,
-        x: hoveredPreviewTargetX,
-        y: hoveredPreviewTargetY,
-      },
-      duration: 1500,
-    }).start({
+    openModelTween = chain(
+      delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+      tween({
+        from: {
+          tweenFactor: openModelTweenFactor,
+          x: hoveredPreview.x,
+          y: hoveredPreview.y,
+        },
+        to: {
+          tweenFactor: 1,
+          x: hoveredPreviewTargetX,
+          y: hoveredPreviewTargetY,
+        },
+        duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * (1 - openModelTweenFactor),
+      })
+    ).start({
       update: v => {
+        hoveredPreview.diffX = v.x - startX
+        hoveredPreview.diffY = v.y - startY
+
         let diffx = hoveredPreview.x - v.x
         let diffy = hoveredPreview.y - v.y
         hoveredPreview.onSceneDrag(diffx, diffy)
@@ -324,8 +332,9 @@ function onMouseDown (e) {
         openModelTweenFactor = v.tweenFactor
         postFXMesh.material.uniforms.u_cutOffFactor.value = v.tweenFactor
         const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+        const fadeOutOpacity = clampNumber(mapNumber(v.tweenFactor, 0, 0.7, 0, 1), 0, 1)
         unclicked.forEach(item => {
-          item.opacity = 1 - v.tweenFactor
+          item.opacity = 1 - fadeOutOpacity
         })
         infoPanel.setButtonOpacity(1 - v.tweenFactor)
 
@@ -344,28 +353,17 @@ function onMouseDown (e) {
         })
 
         infoPanel.setPointerEvents('none')
-        
+
         tween({
-          from: 1,
-          to: 0,
-          duration: 500,
-        }).start({
-          update: v => {
-            const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
-            unclicked.forEach(item => {
-              item.opacity = v
-            })
-          },
-          complete: () => {
-            tween({
-              from: { x: hoveredPreview.diffVector.x, y: hoveredPreview.diffVector.y },
-              to: { x: 0, y: 0 },
-            }).start(v => {
-              hoveredPreview.onSceneDrag(v.x, v.y)
-            })
-            eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
-          },
+          from: { x: hoveredPreview.diffVector.x, y: hoveredPreview.diffVector.y },
+          to: { x: 0, y: 0 },
+        }).start(v => {
+          hoveredPreview.onSceneDrag(v.x, v.y)
         })
+        eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
+
+        openModelTween = null
+
       },
     })
   }
@@ -381,7 +379,7 @@ function onMouseMove (e) {
   cursorTargetPos.y = window.innerHeight - e.pageY
 
 
-  if (isDragging && !clickedElement) {
+  if (isDragging && !openModelTween && !closeModelTween && !clickedElement) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
 
@@ -403,28 +401,30 @@ function onMouseUp () {
     const openedPreview = photoPreviews.find(preview => preview.modelName === hoveredElementModelName)
     const startX = openModelTweenPosition.x
     const startY = openModelTweenPosition.y
-    const targetX = openedPreview.x - openedPreview.diffX
-    const targetY = openedPreview.y - openedPreview.diffY
+    const targetX = startX - openedPreview.diffX
+    const targetY = startY - openedPreview.diffY
     const targetScale = 1
-
-    openModelTweenPosition.x = startX
-    openModelTweenPosition.y = startY
 
     if (openModelTween) {
       openModelTween.stop()
-      closeModelTween = tween({
-        from: {
-          tweenFactor: openModelTweenFactor,
-          x: startX,
-          y: startY,
-        },
-        to: {
-          tweenFactor: 0,
-          x: targetX,
-          y: targetY,
-        },
-        duration: 1500,
-      }).start({
+      openModelTween = null
+
+      closeModelTween = chain(
+        delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+        tween({
+          from: {
+            tweenFactor: openModelTweenFactor,
+            x: startX,
+            y: startY,
+          },
+          to: {
+            tweenFactor: 0,
+            x: targetX,
+            y: targetY,
+          },
+          duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor,
+        })
+      ).start({
         update: v => {
           let diffx = openedPreview.x - v.x
           let diffy = openedPreview.y - v.y
@@ -444,10 +444,10 @@ function onMouseUp () {
         },
         complete: () => {
           infoPanel.setPointerEvents('auto')
+          closeModelTween = null
         }
       })
 
-      openModelTween = null
     }
   }
   isDragging = false

@@ -59,7 +59,6 @@ export default class SinglePage {
       sliderButtonPrev: styler(this.$els.sliderButtonPrev),
       sliderButtonNext: styler(this.$els.sliderButtonNext),
     }
-
     
     eventEmitter.on(EVT_LOADED_PROJECTS, projectsData => {
       this._projectsData = projectsData
