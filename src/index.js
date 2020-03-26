@@ -265,11 +265,11 @@ function onResize () {
 }
 
 function onMouseLeave () {
-  photoPreviews.forEach(photoPreview => {
-    photoPreview._diffVectorTarget.x = 0
-    photoPreview._diffVectorTarget.y = 0
-  })
   cursorArrowOffsetTarget = 0
+  isDragging = false
+  postFXMesh.onDragEnd()
+  document.body.classList.remove('dragging')
+  photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
 }
 
 function onMouseDown (e) {
