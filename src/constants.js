@@ -1,6 +1,8 @@
 export const WOLRD_WIDTH = 1700
 export const WORLD_HEIGHT = 800
 
+export const CAMERA_MIN_VELOCITY_TO_BE_MOVING = 1.25
+
 export const PREVIEW_PHOTO_REF_WIDTH = 300
 export const PREVIEW_PHOTO_REF_HEIGHT = 450
 

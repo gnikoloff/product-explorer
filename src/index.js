@@ -19,6 +19,7 @@ import {
   EVT_FADE_IN_SINGLE_VIEW,
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
+  CAMERA_MIN_VELOCITY_TO_BE_MOVING,
 } from './constants'
 
 import {
@@ -74,6 +75,7 @@ const cameraLookAt = new THREE.Vector3(0, 0, 0)
 let oldTime = 0
 let photoPreviews = []
 let isDragging = false
+let isDragCameraMoving = false
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let projectsData = []
@@ -279,7 +281,7 @@ function onMouseDown (e) {
 
   // webglContainer.classList.add('non-interactable')
 
-  if (hoveredElement) {
+  if (hoveredElement && !isDragCameraMoving) {
     if (clickedElement) {
       return  
     }
@@ -455,9 +457,18 @@ function updateFrame(ts) {
       (cameraTargetPos.y - clipCamera.position.y) * dt
     photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
     photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
+    
+    let oldCameraVelocityX = cameraVelocity.x
+    let oldCameraVelocityY = cameraVelocity.y
 
     cameraVelocity.x += (cameraTargetPos.x - clipCamera.position.x) * dt
     cameraVelocity.y += (cameraTargetPos.y - clipCamera.position.y) * dt
+
+    const dx = cameraVelocity.x - oldCameraVelocityX
+    const dy = cameraVelocity.y - oldCameraVelocityY
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    
+    isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
 
     clipCamera.position.x += cameraVelocity.x
     clipCamera.position.y += cameraVelocity.y
