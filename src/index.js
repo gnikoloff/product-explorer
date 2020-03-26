@@ -5,6 +5,7 @@ import eventEmitter from './event-emitter'
 
 import PhotoPreview from './PhotoPreview'
 import SinglePage from './SinglePage'
+import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 
 import {
@@ -32,6 +33,7 @@ let appWidth = window.innerWidth
 let appHeight = window.innerHeight
 
 const singlePage = new SinglePage()
+const infoPanel = new InfoPanel()
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const dpr = window.devicePixelRatio || 1
@@ -221,6 +223,7 @@ function onCloseSingleView (modelName) {
       openedPreview.x = v.x
       openedPreview.y = v.y
       openedPreview.scale = v.scale
+      infoPanel.setButtonOpacity(v.opacity)
     },
     complete: () => {
       clickedElement = null
@@ -229,6 +232,7 @@ function onCloseSingleView (modelName) {
         .forEach(preview => {
         preview.isInteractable = true
       })
+      infoPanel.setPointerEvents('auto')
     },
   })
 }
@@ -296,6 +300,7 @@ function onMouseDown (e) {
         unclicked.forEach(item => {
           item.opacity = 1 - v
         })
+        infoPanel.setButtonOpacity(1 - v)
       },
       complete: () => {
         isDragging = false
@@ -306,6 +311,8 @@ function onMouseDown (e) {
         })
         hoveredPreview.diffX = (clipCamera.position.x - appWidth * 0.25) - hoveredPreview.x
         hoveredPreview.diffY = clipCamera.position.y - hoveredPreview.y
+
+        infoPanel.setPointerEvents('none')
         
         tween({
           from: {
@@ -384,13 +391,19 @@ function onMouseUp () {
         from: openModelTweenFactor,
         to: 0,
         duration: 700,
-      }).start(v => {
-        openModelTweenFactor = v
-        postFXMesh.material.uniforms.u_cutOffFactor.value = v
-        const unclicked = photoPreviews.filter(project => project.modelName !== hoveredElementModelName)
-        unclicked.forEach(item => {
-          item.opacity = 1 - v
-        })
+      }).start({
+        update: v => {
+          openModelTweenFactor = v
+          postFXMesh.material.uniforms.u_cutOffFactor.value = v
+          const unclicked = photoPreviews.filter(project => project.modelName !== hoveredElementModelName)
+          unclicked.forEach(item => {
+            item.opacity = 1 - v
+          })
+          infoPanel.setButtonOpacity(1 - v)
+        },
+        complete: () => {
+          infoPanel.setPointerEvents('auto')
+        }
       })
 
       openModelTween = null
