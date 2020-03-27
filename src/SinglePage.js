@@ -182,7 +182,7 @@ export default class SinglePage {
     this._mousePos.y = mouseY
   }
 
-  _open = (modelName) => {
+  _open = ({ modelName }) => {
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     const project = this._projectsData.find(project => project.modelName === modelName)
     this.$els.title.textContent = project.modelName

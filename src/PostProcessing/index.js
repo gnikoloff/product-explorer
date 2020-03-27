@@ -4,6 +4,7 @@ import eventEmitter from '../event-emitter'
 
 import {
   EVT_RAF_UPDATE_APP,
+  EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
@@ -48,6 +49,9 @@ export default class PostProcessing extends THREE.Mesh {
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
 
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
+      material.uniforms.u_cutOffFactor.value = tweenFactor
+    })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this._preventClick = true
     })

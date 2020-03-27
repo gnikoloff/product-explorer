@@ -1,16 +1,20 @@
 import * as THREE from 'three'
-import { tween } from 'popmotion'
+import { tween, calc } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
 
 import {
   clampNumber,
+  mapNumber,
+  getSiglePagePhotoScale,
 } from '../helpers'
 
 import {
+  EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
+  EVT_ON_SCENE_DRAG,
   EVT_RAF_UPDATE_APP,
 } from '../constants'
 
@@ -50,42 +54,46 @@ export default class PhotoPreview {clipFragmentShader
 
     this._scale = 1
 
-    this._preventDragging = false
     this._allTexturesLoaded = false
     this._sliderIdx = 0
     this._isCurrentlyTransitioning = false
 
+    const openedPageTargetScale = getSiglePagePhotoScale()
+
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, modelName => {
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({
+      modelName,
+      tweenFactor,
+      targetPosX,
+      targetPosY,
+    }) => {
+      if (this._modelName === modelName) {
+        this.x = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
+        this.y = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
+        this.scale = calc.getValueFromProgress(this.scale, openedPageTargetScale, tweenFactor * 0.1)
+        const diffx = (targetPosX - this.x) * -1
+        const diffy = (targetPosY - this.y) * -1
+        eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
+      } else {
+        this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
+      }
+    })
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, ({ modelName }) => {
       if (this._modelName !== modelName) {
+        this._isInteractable = false
         return
       }
 
-      this._preventDragging = true
-
       const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
-      console.log(this._photoMesh.material.uniforms.u_textures)
       Promise
-        .all(sliderExtraPhotos.map(photo => this._loadTexture(photo)))
+        .all(sliderExtraPhotos.map(this._loadTexture))
         .then(textures => {
-          console.log(textures)
           for (let i = 0; i < textures.length; i++) {
             const texture = textures[i]
             texture.needsUpdate = true
             this._photoMesh.material.uniforms.u_textures.value[i + 1] = texture
           }
           this._photoMesh.material.needsUpdate = true
-          // this._photoMesh.material.uniforms.u_textures.value
-          //   .map((slot, i) => {
-          //     if (i === 0) {
-          //       return slot
-          //     } else {
-          //       const texture = textures[i - 1]
-          //       texture.flipY = true
-          //       return texture
-          //     }
-          //   })
-            // console.log(this._photoMesh.material.uniforms.u_textures)
         })
 
       tween({
@@ -153,6 +161,7 @@ export default class PhotoPreview {clipFragmentShader
         }
       })
     })
+    eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
   }
 
   get modelName () {
@@ -260,10 +269,9 @@ export default class PhotoPreview {clipFragmentShader
     this._photoMesh = new THREE.Mesh(photoGeometry, photoMaterial)
   }
 
-  _loadTexture = texName =>
-    new Promise(resolve =>
-      new THREE.TextureLoader().load(texName, texture => resolve(texture)
-    ))
+  _loadTexture = texName => new Promise(resolve =>
+    new THREE.TextureLoader().load(texName, texture => resolve(texture)
+  ))
 
   loadPreview () {
     this._loadTexture(this._photos[0]).then(texture => {
@@ -274,7 +282,7 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   onSceneDragStart () {
-    if (this._preventDragging) {
+    if (!this._isInteractable) {
       return
     }
     tween({
@@ -285,16 +293,16 @@ export default class PhotoPreview {clipFragmentShader
     .start(v => this._photoMesh.scale.set(v, v, 1))
   }
 
-  onSceneDrag (dragDiffX, dragDiffY) {
-    // if (this._preventDragging) {
+  _onSceneDrag = ({ diffx, diffy }) => {
+    // if (!this._isInteractable) {
     //   return
     // }
-    this._diffVectorTarget.x = clampNumber(dragDiffX * 5, -25, 25)
-    this._diffVectorTarget.y = clampNumber(dragDiffY * 5, -25, 25)
+    this._diffVectorTarget.x = clampNumber(diffx * 5, -25, 25)
+    this._diffVectorTarget.y = clampNumber(diffy * 5, -25, 25)
   }
 
   onSceneDragEnd () {
-    if (this._preventDragging) {
+    if (!this._isInteractable) {
       return
     }
     tween({

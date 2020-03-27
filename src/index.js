@@ -24,6 +24,7 @@ import {
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
   CAMERA_MIN_VELOCITY_TO_BE_MOVING,
+  EVT_ON_SCENE_DRAG,
 } from './constants'
 
 import {
@@ -58,14 +59,7 @@ const photoScene = new THREE.Scene()
 const postFXScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
 
-const clipCamera = new THREE.OrthographicCamera(
-  appWidth / - 2,
-  appWidth / 2,
-  appHeight / 2,
-  appHeight / - 2,
-  1,
-  1000
-)
+const clipCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
 const photoCamera = clipCamera.clone()
 const postFXCamera = clipCamera.clone()
 const cursorCamera = clipCamera.clone()
@@ -176,7 +170,7 @@ function init () {
   
   eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
   
-  updateFrame()
+  requestAnimationFrame(updateFrame)
 }
 
 function onProjectsLoad (res) {
@@ -305,70 +299,44 @@ function onMouseDown (e) {
 
     const hoveredPreviewTargetX = clipCamera.position.x - appWidth * 0.25
     const hoveredPreviewTargetY = clipCamera.position.y
-    const hoveredPreviewTargetScale = getSiglePagePhotoScale()
-
-    let startX = hoveredPreview.origX
-    let startY = hoveredPreview.origY
 
     openModelTween = chain(
       delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
       tween({
-        from: {
-          tweenFactor: openModelTweenFactor,
-          x: hoveredPreview.x,
-          y: hoveredPreview.y,
-        },
-        to: {
-          tweenFactor: 1,
-          x: hoveredPreviewTargetX,
-          y: hoveredPreviewTargetY,
-        },
+        from: 0,
+        to: 1,
         duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * (1 - openModelTweenFactor),
       })
     ).start({
-      update: v => {
-        hoveredPreview.diffX = v.x - startX
-        hoveredPreview.diffY = v.y - startY
+      update: tweenFactor => {
+        // hoveredPreview.diffX = v.x - startX
+        // hoveredPreview.diffY = v.y - startY
 
-        let diffx = hoveredPreview.x - v.x
-        let diffy = hoveredPreview.y - v.y
-        hoveredPreview.onSceneDrag(diffx, diffy)
-        openModelTweenPosition.x = v.x
-        openModelTweenPosition.y = v.y
-        openModelTweenFactor = v.tweenFactor
-        postFXMesh.material.uniforms.u_cutOffFactor.value = v.tweenFactor
-        const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
-        const fadeOutOpacity = clampNumber(mapNumber(v.tweenFactor, 0, 0.7, 0, 1), 0, 1)
-        unclicked.forEach(item => {
-          item.opacity = 1 - fadeOutOpacity
-        })
-        infoPanel.setButtonOpacity(1 - v.tweenFactor)
+        // let diffx = hoveredPreview.x - v.x
+        // let diffy = hoveredPreview.y - v.y
+        // hoveredPreview.onSceneDrag(diffx, diffy)
+        // openModelTweenPosition.x = v.x
+        // openModelTweenPosition.y = v.y
 
-        hoveredPreview.x = v.x
-        hoveredPreview.y = v.y
-        // hoveredPreview.scale += (hoveredPreviewTargetScale - hoveredPreview.scale) * v
-
-        // hoveredPreview.scale = 1 + v
+        openModelTweenFactor = tweenFactor
 
         eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, {
-          tweenFactor: v.tweenFactor,
+          modelName,
+          tweenFactor,
+          targetPosX: hoveredPreviewTargetX,
+          targetPosY: hoveredPreviewTargetY,
         })
       },
       complete: () => {
         isDragging = false
-        eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, modelName)
+        eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
         clickedElement = hoveredElement    
-        photoPreviews.filter(preview => preview.modelName !== modelName).forEach(preview => {
-          preview.isInteractable = false
-        })
-
-        infoPanel.setPointerEvents('none')
-
         tween({
           from: { x: hoveredPreview.diffVector.x, y: hoveredPreview.diffVector.y },
           to: { x: 0, y: 0 },
         }).start(v => {
-          hoveredPreview.onSceneDrag(v.x, v.y)
+          eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx: v.x, diffy: v.y })
+          // hoveredPreview.onSceneDrag(v.x, v.y)
         })
         eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
 
@@ -393,9 +361,8 @@ function onMouseMove (e) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
 
-    photoPreviews.forEach(photoPreview =>
-      photoPreview.onSceneDrag(diffx, diffy)
-    )
+    eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
+
     cameraTargetPos.x += diffx * 2 * -1
     cameraTargetPos.y += diffy * 2 * 1
   } else {
@@ -591,5 +558,5 @@ function updateFrame(ts) {
   renderer.setRenderTarget(null)
   renderer.render(postFXScene, postFXCamera)
 
-  window.requestAnimationFrame(updateFrame)
+  requestAnimationFrame(updateFrame)
 }
