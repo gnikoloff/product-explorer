@@ -9,7 +9,13 @@ import {
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
+  
   EVT_ON_SCENE_DRAG_START,
+  EVT_ON_SCENE_DRAG_END,
+
+  EVT_HOVER_SINGLE_PROJECT_ENTER,
+  EVT_HOVER_SINGLE_PROJECT_LEAVE,
+
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
 } from '../constants'
 
@@ -55,55 +61,55 @@ export default class PostProcessing extends THREE.Mesh {
     
     super(geometry, material)
 
-    const setCutOffFactor = tweenFactor => {
-      material.uniforms.u_cutOffFactor.value = tweenFactor
-    }
-
-    let currCutOffFactor = 0
-
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
-      currCutOffFactor = tweenFactor
-      setCutOffFactor(tweenFactor)
-    })
-    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
-      this._preventClick = true
-    })
-    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor }) => {
-      const tween = currCutOffFactor - mapNumber(tweenFactor, 0, 1, 0, currCutOffFactor)
-      setCutOffFactor(tween)
-    })
-    
-    eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
-    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
-    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
-    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
     this._isHidden = false
     this._preventClick = false
     this._cachedHiddenSize = 0
+    this._currCutOffFactor = 0
+
+    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosingSingleProject)
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpeningSingleProject)
+    eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
+    eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onDragEnd)
+    eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onProjectHoverEnter)
+    eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onProjectHoverLeave)
+    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
+    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
+    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
   }
-  _onDragStart () {
+  _onClosingSingleProject = ({ tweenFactor }) => {
+    const tween = this._currCutOffFactor - mapNumber(tweenFactor, 0, 1, 0, this._currCutOffFactor)
+    this.material.uniforms.u_cutOffFactor.value = tween
+  }
+  _onOpenSingleProject = () => {
+    this._preventClick = true
+  }
+  _onOpeningSingleProject = ({ tweenFactor }) => {
+    this._currCutOffFactor = tweenFactor
+    this.material.uniforms.u_cutOffFactor.value = tweenFactor
+  }
+  _onDragStart = () => {
     if (this._isHidden || this._preventClick) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DRAG_CURSOR_SIZE
   }
-  onDragEnd () {
+  _onDragEnd = () => {
     if (this._isHidden || this._preventClick) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
   }
-  hover () {
+  _onProjectHoverEnter = () => {
     if (this._isHidden) {
       return
     }
     this._cursorSizeTarget = PostProcessing.HOVER_CURSOR_SIZE
     this._cursorScanlineTarget = 1
   }
-  unHover () {
+  _onProjectHoverLeave = () => {
     if (this._isHidden) {
       return
     }

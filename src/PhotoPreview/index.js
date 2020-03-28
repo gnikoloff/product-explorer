@@ -23,8 +23,11 @@ import {
   
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
+  
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
+  EVT_ON_SCENE_DRAG_END,
+
   EVT_RAF_UPDATE_APP,
 } from '../constants'
 
@@ -38,6 +41,10 @@ export default class PhotoPreview {clipFragmentShader
 
   static SCALE_FACTOR_MAX = 1
   static SCALE_FACTOR_MIN = 0.95
+
+  static loadTexture = texName => new Promise(resolve =>
+    new THREE.TextureLoader().load(texName, texture => resolve(texture)
+  ))
 
   constructor ({
     modelName,
@@ -53,6 +60,7 @@ export default class PhotoPreview {clipFragmentShader
     this._position = position.clone()
     this._originalPosition = position.clone()
     this._targetPosition = new THREE.Vector3()
+    this._allTexturesLoaded = false
 
     this._isInteractable = true
     this._targetScale = 1
@@ -82,6 +90,8 @@ export default class PhotoPreview {clipFragmentShader
     
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onSceneDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
+    eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onSceneDragEnd)
+
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
   }
 
@@ -170,12 +180,8 @@ export default class PhotoPreview {clipFragmentShader
     this._photoMesh.position.copy(this._position)
   }
 
-  _loadTexture = texName => new Promise(resolve =>
-    new THREE.TextureLoader().load(texName, texture => resolve(texture)
-  ))
-
   _loadPreview () {
-    this._loadTexture(this._photos[0]).then(texture => {
+    PhotoPreview.loadTexture(this._photos[0]).then(texture => {
       texture.flipY = true
       this._photoMesh.material.uniforms.u_textures.value[0] = texture
       this._photoMesh.material.needsUpdate = true
@@ -195,7 +201,7 @@ export default class PhotoPreview {clipFragmentShader
       const targetPosY = this._targetPosition.y
       const newX = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
       const newY = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
-      const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor * 0.1)
+      const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor)
       
       this.x = newX
       this.y = newY
@@ -208,30 +214,35 @@ export default class PhotoPreview {clipFragmentShader
       const diffy = (targetPosY - this.y) * -1
       this._onSceneDrag({ diffx, diffy })
     } else {
-      this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
+      this.opacity = mapNumber(tweenFactor, 0, 0.75, 1, 0)
+      // this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
     }
   }
 
   _onOpenComplete = ({ modelName }) => {
+    this._isInteractable = false
+
     if (modelName !== this._modelName) {
-      this._isInteractable = false
       return
     }
 
-    const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
-    Promise
-      .all(sliderExtraPhotos.map(this._loadTexture))
-      .then(textures => {
-        for (let i = 0; i < textures.length; i++) {
-          const texture = textures[i]
-          texture.needsUpdate = true
-          this._photoMesh.material.uniforms.u_textures.value[i + 1] = texture
-        }
-        this._photoMesh.material.needsUpdate = true
-      })
+    if (!this._allTexturesLoaded) {
+      const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
+      Promise
+        .all(sliderExtraPhotos.map(PhotoPreview.loadTexture))
+        .then(textures => {
+          for (let i = 0; i < textures.length; i++) {
+            const texture = textures[i]
+            texture.needsUpdate = true
+            this._photoMesh.material.uniforms.u_textures.value[i + 1] = texture
+          }
+          this._photoMesh.material.needsUpdate = true
+          this._allTexturesLoaded = true
+        })
+    }
 
     tween({
-      from: PhotoPreview.SCALE_FACTOR_MAX,
+      from: this._photoMesh.scale.x,
       to: PhotoPreview.SCALE_FACTOR_MIN,
       duration: 250
     })
@@ -271,7 +282,7 @@ export default class PhotoPreview {clipFragmentShader
       this.y = newY
       this.scale = newScale
     } else {
-      this.opacity = clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
+      this.opacity = mapNumber(tweenFactor, 0.25, 1, 0, 1)
     }
   }
 
@@ -321,7 +332,7 @@ export default class PhotoPreview {clipFragmentShader
     })
   }
 
-  _onSceneDragStart () {
+  _onSceneDragStart = () => {
     if (!this._isInteractable) {
       return
     }
@@ -341,7 +352,7 @@ export default class PhotoPreview {clipFragmentShader
     this._diffVectorTarget.y = clampNumber(diffy * 5, -25, 25)
   }
 
-  onSceneDragEnd () {
+  _onSceneDragEnd = () => {
     if (!this._isInteractable) {
       return
     }

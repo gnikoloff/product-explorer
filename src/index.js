@@ -21,20 +21,20 @@ import {
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_MOUSEMOVE_APP,
-  EVT_FADE_IN_SINGLE_VIEW,
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
   CAMERA_MIN_VELOCITY_TO_BE_MOVING,
+  
+  EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
+  EVT_ON_SCENE_DRAG_END,
+
+  EVT_HOVER_SINGLE_PROJECT_ENTER,
+  EVT_HOVER_SINGLE_PROJECT_LEAVE,
+
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
 } from './constants'
-
-import {
-  mapNumber,
-  clampNumber,
-  getSiglePagePhotoScale,
-} from './helpers'
 
 import './style'
 
@@ -270,9 +270,9 @@ function onResize () {
 function onMouseLeave () {
   cursorArrowOffsetTarget = 0
   isDragging = false
-  postFXMesh.onDragEnd()
-  document.body.classList.remove('dragging')
-  photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
+
+  eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
+
   tween({
     from: 1,
     to: 0,
@@ -292,6 +292,8 @@ function onMouseDown (e) {
   mousePos.x = e.pageX
   mousePos.y = e.pageY
 
+  eventEmitter.emit(EVT_ON_SCENE_DRAG_START)
+
   if (hoveredElement && !clickedElement && !isDragCameraMoving) {
     if (closeModelTween) {
       closeModelTween.stop()
@@ -305,9 +307,7 @@ function onMouseDown (e) {
     }))
     openModelTween = chain(
       delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-      tween({
-        duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor,
-      })
+      tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
     ).start({
       update: tweenFactor => {
         openModelTweenFactor = tweenFactor
@@ -366,31 +366,25 @@ function onMouseUp () {
     if (openModelTween) {
       openModelTween.stop()
       openModelTween = null
-    }
 
-    const { modelName } = hoveredElement
+      const { modelName } = hoveredElement
 
-    eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
+      eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
 
-    closeModelTween = chain(
-      delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-      tween({
-        duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor,
+      closeModelTween = chain(
+        delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+        tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+      ).start({
+        update: tweenFactor => {
+          openModelTweenFactor = tweenFactor
+          eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
+        },
+        complete: () => {
+          eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
+          closeModelTween = null
+        }
       })
-    ).start({
-      update: tweenFactor => {
-        openModelTweenFactor = tweenFactor
-        eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
-          modelName,
-          tweenFactor,
-        })
-      },
-      complete: () => {
-        eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
-        closeModelTween = null
-      }
-    })
-
+    }
   } else {
     // tween({
     //   from: 1,
@@ -406,18 +400,17 @@ function onMouseUp () {
     // })
   }
   isDragging = false
-  postFXMesh.onDragEnd()
   cursorArrowOffsetTarget = 0
-  document.body.classList.remove('dragging')
-  photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
+
+  eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
 }
 
 function updateFrame(ts) {
   if (!ts) {
     ts = 0
   }
-  ts /= 1000
   ts = Math.max(ts, 1)
+  ts /= 1000
   const dt = ts - oldTime
   oldTime = ts
 
@@ -435,10 +428,10 @@ function updateFrame(ts) {
       if (!hoveredElement) {
         hoveredElement = object
       }
-      postFXMesh.hover()
+      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER)
     } else {
       hoveredElement = null
-      postFXMesh.unHover()
+      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
     }
   }
 

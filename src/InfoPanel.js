@@ -8,6 +8,7 @@ import {
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
 } from './constants'
+import { mapNumber } from './helpers'
 
 export default class InfoPanel {
   constructor () {
@@ -21,17 +22,21 @@ export default class InfoPanel {
       toggleButton: styler(this.$els.toggleButton),
     }
 
+    this._buttonOpacity = 0
+
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
-      this.stylers.toggleButton.set('opacity', 1 - tweenFactor)
+      const tween = mapNumber(tweenFactor, 0, 0.4, 1, 0)
+      this._buttonOpacity = tween
+      this.stylers.toggleButton.set('opacity', tween)
     })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this.stylers.toggleButton.set('pointerEvents', 'none')
     })
-    
-    eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, ({ tweenFactor }) => {
-      this.stylers.toggleButton.set('opacity', 1 - tweenFactor)
-    })
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor }) => {
+      const tween = mapNumber(tweenFactor, 0.4, 1, 0, 1)
+      this.stylers.toggleButton.set('opacity', tween)
+    })
+    eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, ({ tweenFactor }) => {
       this.stylers.toggleButton.set('pointerEvents', 'auto')
     })
   }

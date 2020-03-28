@@ -21,7 +21,6 @@ import {
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
  
-  EVT_FADE_IN_SINGLE_VIEW,
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
@@ -69,24 +68,10 @@ export default class SinglePage {
     eventEmitter.on(EVT_LOADED_PROJECTS, projectsData => {
       this._projectsData = projectsData
     })
-    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._open)
-    eventEmitter.on(EVT_FADE_IN_SINGLE_VIEW, this._fadeIn)
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
-      const closeButtonTweenY = mapNumber(tweenFactor, 0.75, 1, -100, 0)
-      const closeButtonTweenRotate = mapNumber(tweenFactor, 0.75, 1, -480, 0)
-      this.stylers.closeButton.set({
-        y: closeButtonTweenY,
-        rotate: closeButtonTweenRotate,
-      })
-    })
-    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor, startTweenFactor }) => {
-      const closeButtonTweenY = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -100)
-      const closeButtonTweenRotate = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -480)
-      this.stylers.closeButton.set({
-        y: closeButtonTweenY,
-        rotate: closeButtonTweenRotate,
-      })
-    })
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpen)
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpening)
+    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
+    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
 
     const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
@@ -185,7 +170,7 @@ export default class SinglePage {
     this._mousePos.y = mouseY
   }
 
-  _open = ({ modelName }) => {
+  _onOpen = ({ modelName }) => {
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     const project = this._projectsData.find(project => project.modelName === modelName)
     this.$els.title.textContent = project.modelName
@@ -204,14 +189,66 @@ export default class SinglePage {
     this.$els.prevProductButton.textContent = this._prevModelName
     this.$els.nextProductButton.textContent = this._nextModelName
 
-    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     document.body.addEventListener('click', this._checkSliderClick, false)
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
+    const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
+    
+    // this.stylers.wrapper.set('pointerEvents', 'auto')
+
+    const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
+    fadeInEls.forEach((child, i) => {
+      const childStyler = styler(child)
+      chain(
+        delay(i * 150),
+        tween({
+          from: 0,
+          to: 1,
+        })
+      ).start({
+        update: v => childStyler.set('opacity', v),
+        complete: () => childStyler.set('pointer-events', 'auto')
+      })
+    })
+
+    const sliderBtns = [sliderButtonPrev, sliderButtonNext]
+    sliderBtns.forEach((button, i) => {
+      const buttonStyler = styler(button)
+      chain(
+        delay(i * 150),
+        tween({
+          from: {
+            opacity: 0,
+          },
+          to: {
+            opacity: 1,
+          },
+        })
+      ).start({
+        update: buttonStyler.set,
+      })
+    })
+  }
+
+  _onOpening = ({ tweenFactor }) => {
+    const closeButtonTweenY = mapNumber(tweenFactor, 0.75, 1, -100, 0)
+    const closeButtonTweenRotate = mapNumber(tweenFactor, 0.75, 1, -480, 0)
+    this.stylers.closeButton.set({
+      y: closeButtonTweenY,
+      rotate: closeButtonTweenRotate,
+    })
+  }
+
+  _onClosing = ({ tweenFactor, startTweenFactor }) => {
+    const closeButtonTweenY = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -100)
+    const closeButtonTweenRotate = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -480)
+    this.stylers.closeButton.set({
+      y: closeButtonTweenY,
+      rotate: closeButtonTweenRotate,
+    })
   }
 
   _closeButtonClick = () => {
-    console.log(this._currModelName)
     eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, this._currModelName)
 
     const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
@@ -249,48 +286,8 @@ export default class SinglePage {
     
     document.body.removeEventListener('click', this._checkSliderClick)
     this.$els.closeButton.removeEventListener('click', this._closeButtonClick, false)
-    eventEmitter.off(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.off(EVT_MOUSEMOVE_APP, this._onMouseMove)
-  }
-
-  _fadeIn = () => {
-    const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
     
-    // this.stylers.wrapper.set('pointerEvents', 'auto')
-
-    const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
-    fadeInEls.forEach((child, i) => {
-      const childStyler = styler(child)
-      chain(
-        delay(i * 150),
-        tween({
-          from: 0,
-          to: 1,
-        })
-      ).start({
-        update: v => childStyler.set('opacity', v),
-        complete: () => childStyler.set('pointer-events', 'auto')
-      })
-    })
-
-    const sliderBtns = [sliderButtonPrev, sliderButtonNext]
-    sliderBtns.forEach((button, i) => {
-      const buttonStyler = styler(button)
-      chain(
-        delay(i * 150),
-        tween({
-          from: {
-            opacity: 0,
-          },
-          to: {
-            opacity: 1,
-          },
-        })
-      ).start({
-        update: buttonStyler.set,
-      })
-    })
-
+    eventEmitter.off(EVT_MOUSEMOVE_APP, this._onMouseMove)
   }
   
 
