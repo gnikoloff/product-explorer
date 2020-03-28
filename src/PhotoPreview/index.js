@@ -55,7 +55,8 @@ export default class PhotoPreview {clipFragmentShader
     this._targetPosition = new THREE.Vector3()
 
     this._isInteractable = true
-    this._scale = 1
+    this._targetScale = 1
+    this._scale = this._targetScale
     this._sliderIdx = 0
     this._isCurrentlyTransitioning = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
@@ -120,8 +121,8 @@ export default class PhotoPreview {clipFragmentShader
 
   set scale (scale) {
     this._scale = scale
-    this._clipMesh.scale.set(scale, scale, 1)
-    this._photoMesh.scale.set(scale, scale, 1)
+    this._clipMesh.scale.x = this._clipMesh.scale.y = scale
+    this._photoMesh.scale.x = this._photoMesh.scale.y = scale
   }
 
   set opacity (opacity) {
@@ -184,6 +185,7 @@ export default class PhotoPreview {clipFragmentShader
   _onOpenRequest = ({ modelName, targetX, targetY }) => {
     if (modelName === this._modelName) {
       this._targetPosition.set(targetX, targetY, 1)
+      this._targetScale = this._scale
     }
   }
 
@@ -193,7 +195,7 @@ export default class PhotoPreview {clipFragmentShader
       const targetPosY = this._targetPosition.y
       const newX = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
       const newY = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
-      const newScale = calc.getValueFromProgress(this.scale, this._openedPageTargetScale, tweenFactor * 0.1)
+      const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor * 0.1)
       
       this.x = newX
       this.y = newY
@@ -247,6 +249,7 @@ export default class PhotoPreview {clipFragmentShader
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {
       this._targetPosition.set(this.x, this.y, 1)
+      this._targetScale = this._scale
     }
   }
 
@@ -258,7 +261,7 @@ export default class PhotoPreview {clipFragmentShader
       const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
-      const newScale = calc.getValueFromProgress(this._openedPageTargetScale, this.scale, tweenFactor)
+      const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
 1
       const diffx = (newX - this.x) * -1
       const diffy = (newY - this.y) * -1

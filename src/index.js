@@ -86,7 +86,7 @@ let hoveredElement = null
 let clickedElement = null
 let openModelTween
 let closeModelTween
-let openModelTweenFactor = 0
+let openModelTweenFactor = 1
 
 const IS_ZOOMED = false
 
@@ -292,14 +292,10 @@ function onMouseDown (e) {
   mousePos.x = e.pageX
   mousePos.y = e.pageY
 
-  if (hoveredElement && !isDragCameraMoving) {
-    if (clickedElement) {
-      return  
-    }
+  if (hoveredElement && !clickedElement && !isDragCameraMoving) {
     if (closeModelTween) {
       closeModelTween.stop()
       closeModelTween = null
-      console.log('%c stop CLOSE model tween', 'background: black; color: white;')
     }
     const { modelName } = hoveredElement
     eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
@@ -310,12 +306,11 @@ function onMouseDown (e) {
     openModelTween = chain(
       delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
       tween({
-        duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * (1 - openModelTweenFactor),
+        duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor,
       })
     ).start({
       update: tweenFactor => {
         openModelTweenFactor = tweenFactor
-        console.log(`%c opening ${tweenFactor}`, 'background: red; color: white;')
         eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
       },
       complete: () => {
@@ -324,22 +319,21 @@ function onMouseDown (e) {
         openModelTween = null
 
         eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
-
       },
     })
   } else {
-    tween({
-      from: 0,
-      to: 1,
-    }).start(tweenFactor => {
-      // todo: prevent spamming it
-      // clipCamera.zoom = 1 - tweenFactor * 0.2
-      // clipCamera.updateProjectionMatrix()
-      // photoCamera.zoom = 1 - tweenFactor * 0.2
-      // photoCamera.updateProjectionMatrix()
-      // cursorCamera.zoom = 1 - tweenFactor * 0.2
-      // cursorCamera.updateProjectionMatrix()
-    })
+    // tween({
+    //   from: 0,
+    //   to: 1,
+    // }).start(tweenFactor => {
+    //   // todo: prevent spamming it
+    //   // clipCamera.zoom = 1 - tweenFactor * 0.2
+    //   // clipCamera.updateProjectionMatrix()
+    //   // photoCamera.zoom = 1 - tweenFactor * 0.2
+    //   // photoCamera.updateProjectionMatrix()
+    //   // cursorCamera.zoom = 1 - tweenFactor * 0.2
+    //   // cursorCamera.updateProjectionMatrix()
+    // })
   }
 }
 
@@ -372,7 +366,6 @@ function onMouseUp () {
     if (openModelTween) {
       openModelTween.stop()
       openModelTween = null
-      console.log('%c stop OPEN model tween', 'background: black; color: white;')
     }
 
     const { modelName } = hoveredElement
@@ -387,31 +380,30 @@ function onMouseUp () {
     ).start({
       update: tweenFactor => {
         openModelTweenFactor = tweenFactor
-        console.log(`%c closing ${tweenFactor}`, 'background: yellow;')
         eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
           modelName,
           tweenFactor,
         })
       },
       complete: () => {
-        closeModelTween = null
         eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
+        closeModelTween = null
       }
     })
 
   } else {
-    tween({
-      from: 1,
-      to: 0,
-    }).start(tweenFactor => {
-      // console.log(clipCamera.zoom)
-      // clipCamera.zoom = 1 - tweenFactor * 0.2
-      // clipCamera.updateProjectionMatrix()
-      // photoCamera.zoom = 1 - tweenFactor * 0.2
-      // photoCamera.updateProjectionMatrix()
-      // cursorCamera.zoom = 1 - tweenFactor * 0.2
-      // cursorCamera.updateProjectionMatrix()
-    })
+    // tween({
+    //   from: 1,
+    //   to: 0,
+    // }).start(tweenFactor => {
+    //   // console.log(clipCamera.zoom)
+    //   // clipCamera.zoom = 1 - tweenFactor * 0.2
+    //   // clipCamera.updateProjectionMatrix()
+    //   // photoCamera.zoom = 1 - tweenFactor * 0.2
+    //   // photoCamera.updateProjectionMatrix()
+    //   // cursorCamera.zoom = 1 - tweenFactor * 0.2
+    //   // cursorCamera.updateProjectionMatrix()
+    // })
   }
   isDragging = false
   postFXMesh.onDragEnd()

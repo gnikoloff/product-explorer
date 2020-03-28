@@ -10,7 +10,13 @@ import {
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
   EVT_ON_SCENE_DRAG_START,
+  EVT_CLOSE_REQUEST_SINGLE_PROJECT,
 } from '../constants'
+
+import {
+  clampNumber,
+  mapNumber,
+} from '../helpers'
 
 import vertexShader from './vertexShader.glsl'
 import fragmentShader from './fragmentShader.glsl'
@@ -53,16 +59,18 @@ export default class PostProcessing extends THREE.Mesh {
       material.uniforms.u_cutOffFactor.value = tweenFactor
     }
 
+    let currCutOffFactor = 0
+
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
-      // console.log('open')
+      currCutOffFactor = tweenFactor
       setCutOffFactor(tweenFactor)
     })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this._preventClick = true
     })
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor }) => {
-      // console.log('close')
-      setCutOffFactor(1 - tweenFactor)
+      const tween = currCutOffFactor - mapNumber(tweenFactor, 0, 1, 0, currCutOffFactor)
+      setCutOffFactor(tween)
     })
     
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
