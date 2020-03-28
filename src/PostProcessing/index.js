@@ -6,8 +6,10 @@ import {
   EVT_RAF_UPDATE_APP,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
+  EVT_CLOSING_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
+  EVT_ON_SCENE_DRAG_START,
 } from '../constants'
 
 import vertexShader from './vertexShader.glsl'
@@ -44,26 +46,31 @@ export default class PostProcessing extends THREE.Mesh {
     new THREE.TextureLoader().load('/mask3.png', texture => {
       material.uniforms.u_tDiffuseMask.value = texture
     })
+    
     super(geometry, material)
 
-    this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
-    this._cursorScanlineTarget = 0
-
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
+    const setCutOffFactor = ({ tweenFactor }) => {
       material.uniforms.u_cutOffFactor.value = tweenFactor
-    })
+    }
+
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, setCutOffFactor)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this._preventClick = true
     })
+    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, setCutOffFactor)
+    
+    eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
 
+    this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
+    this._cursorScanlineTarget = 0
     this._isHidden = false
     this._preventClick = false
     this._cachedHiddenSize = 0
   }
-  onDragStart () {
+  _onDragStart () {
     if (this._isHidden || this._preventClick) {
       return
     }

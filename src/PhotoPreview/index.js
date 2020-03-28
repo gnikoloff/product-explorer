@@ -13,10 +13,17 @@ import {
 } from '../helpers'
 
 import {
+  EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
+
+  EVT_CLOSE_REQUEST_SINGLE_PROJECT,
+  EVT_CLOSING_SINGLE_PROJECT,
+  EVT_CLOSE_SINGLE_PROJECT,
+  
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
+  EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
   EVT_RAF_UPDATE_APP,
 } from '../constants'
@@ -45,6 +52,7 @@ export default class PhotoPreview {clipFragmentShader
     this._photos = photos
     this._position = position.clone()
     this._originalPosition = position.clone()
+    this._targetPosition = new THREE.Vector3()
 
     this._isInteractable = true
     this._scale = 1
@@ -60,12 +68,20 @@ export default class PhotoPreview {clipFragmentShader
     this._makePhotoMesh()
     this._loadPreview()
 
-    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onOpenRequest)
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpen)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenComplete)
+    
+    eventEmitter.on(EVT_CLOSE_REQUEST_SINGLE_PROJECT, this._onCloseRequest)
+    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClose)
+    eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseComplete)
+
     eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, this._onArrowClick.bind(this, -1))
     eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, this._onArrowClick.bind(this, 1))
+    
+    eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onSceneDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
+    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
   }
 
   get modelName () {
@@ -88,16 +104,16 @@ export default class PhotoPreview {clipFragmentShader
 
   set x (x) {
     this._position.x = x
-    this._photoMesh.position.copy(this._position)
-    this._clipMesh.position.copy(this._position)
+    this._photoMesh.position.x = x
+    this._clipMesh.position.x = x
   }
 
   get y () { return this._position.y }
 
   set y (y) {
     this._position.y = y
-    this._photoMesh.position.copy(this._position)
-    this._clipMesh.position.copy(this._position)
+    this._photoMesh.position.y = y
+    this._clipMesh.position.y = y
   }
 
   get scale () { return this._scale }
@@ -165,17 +181,20 @@ export default class PhotoPreview {clipFragmentShader
     })
   }
 
-  _onOpen = ({
-    modelName,
-    tweenFactor,
-    targetPosX,
-    targetPosY,
-  }) => {
-    if (this._modelName === modelName) {
+  _onOpenRequest = ({ modelName, targetX, targetY }) => {
+    if (modelName === this._modelName) {
+      this._targetPosition.set(targetX, targetY, 1)
+    }
+  }
+
+  _onOpen = ({ modelName, tweenFactor }) => {
+    if (modelName === this._modelName) {
+      const targetPosX = this._targetPosition.x
+      const targetPosY = this._targetPosition.y
       const newX = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
       const newY = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
       const newScale = calc.getValueFromProgress(this.scale, this._openedPageTargetScale, tweenFactor * 0.1)
-
+      
       this.x = newX
       this.y = newY
       this.scale = newScale
@@ -192,7 +211,7 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   _onOpenComplete = ({ modelName }) => {
-    if (this._modelName !== modelName) {
+    if (modelName !== this._modelName) {
       this._isInteractable = false
       return
     }
@@ -217,13 +236,44 @@ export default class PhotoPreview {clipFragmentShader
     .start(v => this._photoMesh.scale.set(v, v, 1))
 
     tween({
-      from: 0,
-      to: 1,
+      // ...
     }).start(v => {
       const diffx = calc.getValueFromProgress(this._diffVector.x, 0, v)
       const diffy = calc.getValueFromProgress(this._diffVector.y, 0, v)
       this._onSceneDrag({ diffx, diffy })
     })
+  }
+
+  _onCloseRequest = ({ modelName }) => {
+    if (modelName === this._modelName) {
+      this._targetPosition.set(this.x, this.y, 1)
+    }
+  }
+
+  _onClose = ({ modelName, tweenFactor }) => {
+    if (modelName === this._modelName) {
+      const startX = this._targetPosition.x
+      const startY = this._targetPosition.y
+      const endX = this._targetPosition.x - this._originalPositionOpenPositionDiff.x
+      const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
+      const newX = calc.getValueFromProgress(startX, endX, 1 - tweenFactor)
+      const newY = calc.getValueFromProgress(startY, endY, 1 - tweenFactor)
+      const newScale = calc.getValueFromProgress(this._openedPageTargetScale, this.scale, tweenFactor)
+1
+      const diffx = (newX - this.x) * -1
+      const diffy = (newY - this.y) * -1
+      this._onSceneDrag({ diffx, diffy })
+
+      this.x = newX
+      this.y = newY
+      this.scale = newScale
+    } else {
+      this.opacity = clampNumber(mapNumber(tweenFactor, 0, 0.7, 1, 0), 0, 1)
+    }
+  }
+
+  _onCloseComplete () {
+    this._isInteractable = true
   }
 
   _onArrowClick = direction => {
@@ -268,7 +318,7 @@ export default class PhotoPreview {clipFragmentShader
     })
   }
 
-  onSceneDragStart () {
+  _onSceneDragStart () {
     if (!this._isInteractable) {
       return
     }

@@ -14,10 +14,13 @@ import {
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
+ 
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
+  
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
+ 
   EVT_FADE_IN_SINGLE_VIEW,
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
@@ -177,7 +180,7 @@ export default class SinglePage {
     })
   }
   
-  _onMouseMove = (mouseX, mouseY) => {
+  _onMouseMove = ({ mouseX, mouseY }) => {
     this._mousePos.x = mouseX
     this._mousePos.y = mouseY
   }
