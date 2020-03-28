@@ -189,6 +189,7 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   _onOpenRequest = ({ modelName, targetX, targetY }) => {
+    this._isInteractable = false
     if (modelName === this._modelName) {
       this._targetPosition.set(targetX, targetY, 1)
       this._targetScale = this._scale
@@ -220,8 +221,6 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   _onOpenComplete = ({ modelName }) => {
-    this._isInteractable = false
-
     if (modelName !== this._modelName) {
       return
     }
@@ -265,6 +264,7 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   _onClose = ({ modelName, tweenFactor }) => {
+    this._isInteractable = true
     if (modelName === this._modelName) {
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y

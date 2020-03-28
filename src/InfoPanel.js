@@ -22,11 +22,8 @@ export default class InfoPanel {
       toggleButton: styler(this.$els.toggleButton),
     }
 
-    this._buttonOpacity = 0
-
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
       const tween = mapNumber(tweenFactor, 0, 0.4, 1, 0)
-      this._buttonOpacity = tween
       this.stylers.toggleButton.set('opacity', tween)
     })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {

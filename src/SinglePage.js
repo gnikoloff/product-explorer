@@ -1,5 +1,5 @@
 import styler from 'stylefire'
-import { tween, chain, delay } from 'popmotion'
+import { tween, chain, delay, calc } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
@@ -37,7 +37,6 @@ export default class SinglePage {
 
   constructor () {
     this._mousePos = { x: 0, y: 0 }
-
     this._prevModelName = null
     this._currModelName = null
     this._nextModelName = null
@@ -56,6 +55,7 @@ export default class SinglePage {
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
       nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
       closeButton: wrapper.getElementsByClassName('close-single-page')[0],
+      sizer: wrapper.getElementsByClassName('single-page-slider-sizer')[0],
     }
 
     this.stylers = {
@@ -65,21 +65,27 @@ export default class SinglePage {
       closeButton: styler(this.$els.closeButton),
     }
     
-    eventEmitter.on(EVT_LOADED_PROJECTS, projectsData => {
-      this._projectsData = projectsData
-    })
+    eventEmitter.on(EVT_LOADED_PROJECTS, this._onProjectsLoaded)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpen)
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpening)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
 
-    const sizer = wrapper.getElementsByClassName('single-page-slider-sizer')[0]
+    this._positionButtons()
+  }
+
+  _onProjectsLoaded = projectsData => {
+    this._projectsData = projectsData
+  }
+
+  _positionButtons = () => {
+    const { sizer } = this.$els
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
     const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
     sizer.style.setProperty('width', `${sizerWidth}px`)
     sizer.style.setProperty('height', `${sizerHeight}px`)
     sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
-    
+
     requestAnimationFrame(() => {
       const sizerDimensions = sizer.getBoundingClientRect()
 
@@ -109,7 +115,6 @@ export default class SinglePage {
         y: this.$els.sliderButtonNext.pos.origY - this.$els.sliderButtonNext.pos.radius / 2,
       })
     })
-
   }
 
   _checkSliderClick = e => {
@@ -126,9 +131,13 @@ export default class SinglePage {
     
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
     sliderBtns.forEach((buttonEl, i) => {
-      const dx = buttonEl.pos.origX - this._mousePos.x
-      const dy = buttonEl.pos.origY - this._mousePos.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
+      const dist = calc.distance({
+        x: buttonEl.pos.origX,
+        y: buttonEl.pos.origY,
+      }, {
+        x: this._mousePos.x,
+        y: this._mousePos.y,
+      })
 
       if (dist < SinglePage.ARROW_INTERACTION_DIST_THRESHOLD) {
         buttonEl.pos.vx += (this._mousePos.x - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
@@ -168,6 +177,15 @@ export default class SinglePage {
   _onMouseMove = ({ mouseX, mouseY }) => {
     this._mousePos.x = mouseX
     this._mousePos.y = mouseY
+  }
+
+  _onOpening = ({ tweenFactor }) => {
+    const closeButtonTweenY = clampNumber(mapNumber(tweenFactor, 0, 0.75, -100, 0), -100, 0)
+    const closeButtonTweenRotate = clampNumber(mapNumber(tweenFactor, 0, 0.75, -480, 0), -480, 0)
+    this.stylers.closeButton.set({
+      y: closeButtonTweenY,
+      rotate: closeButtonTweenRotate,
+    })
   }
 
   _onOpen = ({ modelName }) => {
@@ -230,18 +248,9 @@ export default class SinglePage {
     })
   }
 
-  _onOpening = ({ tweenFactor }) => {
-    const closeButtonTweenY = mapNumber(tweenFactor, 0.75, 1, -100, 0)
-    const closeButtonTweenRotate = mapNumber(tweenFactor, 0.75, 1, -480, 0)
-    this.stylers.closeButton.set({
-      y: closeButtonTweenY,
-      rotate: closeButtonTweenRotate,
-    })
-  }
-
-  _onClosing = ({ tweenFactor, startTweenFactor }) => {
-    const closeButtonTweenY = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -100)
-    const closeButtonTweenRotate = mapNumber(tweenFactor, startTweenFactor, startTweenFactor - 0.5, 0, -480)
+  _onClosing = ({ tweenFactor }) => {
+    const closeButtonTweenY = mapNumber(tweenFactor, 0.75, 0, -100, 0)
+    const closeButtonTweenRotate = mapNumber(tweenFactor, 0.75, 0, -480, 0)
     this.stylers.closeButton.set({
       y: closeButtonTweenY,
       rotate: closeButtonTweenRotate,

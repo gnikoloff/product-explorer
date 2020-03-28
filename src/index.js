@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tween, chain, delay } from 'popmotion'
+import { tween, chain, delay, calc } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
@@ -195,6 +195,22 @@ function onProjectsLoad (res) {
 }
 
 function onCloseSingleView (modelName) {
+  eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
+
+  closeModelTween = chain(
+    delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+    tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+  ).start({
+    update: tweenFactor => {
+      openModelTweenFactor = tweenFactor
+      eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
+    },
+    complete: () => {
+      eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
+      closeModelTween = null
+      clickedElement = null
+    }
+  })
   // const openedPreview = photoPreviews.find(preview => preview.modelName === modelName)
   // const targetX = openedPreview.x - openedPreview.diffX
   // const targetY = openedPreview.y - openedPreview.diffY
@@ -450,9 +466,13 @@ function updateFrame(ts) {
     cameraVelocity.x += (cameraTargetPos.x - clipCamera.position.x) * dt
     cameraVelocity.y += (cameraTargetPos.y - clipCamera.position.y) * dt
 
-    const dx = cameraVelocity.x - oldCameraVelocityX
-    const dy = cameraVelocity.y - oldCameraVelocityY
-    const dist = Math.sqrt(dx * dx + dy * dy)
+    const dist = calc.distance({
+      x: cameraVelocity.x,
+      y: cameraVelocity.y
+    }, {
+      x: oldCameraVelocityX,
+      y: oldCameraVelocityY,
+    })
     
     isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
 
