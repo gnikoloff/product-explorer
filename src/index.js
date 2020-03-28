@@ -16,6 +16,7 @@ import {
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
+  EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
@@ -25,6 +26,8 @@ import {
   EVT_LOADED_PROJECTS,
   CAMERA_MIN_VELOCITY_TO_BE_MOVING,
   EVT_ON_SCENE_DRAG,
+  EVT_CLOSE_REQUEST_SINGLE_PROJECT,
+  EVT_CLOSE_SINGLE_PROJECT,
 } from './constants'
 
 import {
@@ -192,52 +195,51 @@ function onProjectsLoad (res) {
 }
 
 function onCloseSingleView (modelName) {
-  const openedPreview = photoPreviews.find(preview => preview.modelName === modelName)
-  const targetX = openedPreview.x - openedPreview.diffX
-  const targetY = openedPreview.y - openedPreview.diffY
-  closeModelTween = tween({
-    from: {
-      cutOffFactor: 1,
-      opacity: 0,
-      x: openedPreview.x,
-      y: openedPreview.y,
-      scale: openedPreview.scale,
-    },
-    to: {
-      cutOffFactor: 0,
-      opacity: 1,
-      x: targetX,
-      y: targetY,
-      scale: 1,
-    },
-    duration: 700,
-  }).start({
-    update: v => {
-      openModelTweenFactor = v.cutOffFactor
-      postFXMesh.material.uniforms.u_cutOffFactor.value = v.cutOffFactor
-      const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
-      unclicked.forEach(item => {
-        item.opacity = v.opacity
-      })
-      openedPreview.x = v.x
-      openedPreview.y = v.y
-      openedPreview.scale = v.scale
-      infoPanel.setButtonOpacity(v.opacity)
-      eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
-        tweenFactor: v.cutOffFactor,
-        startTweenFactor: 1,
-      })
-    },
-    complete: () => {
-      clickedElement = null
-      photoPreviews
-        // .filter(preview => preview.modelName !== modelName)
-        .forEach(preview => {
-        preview.isInteractable = true
-      })
-      infoPanel.setPointerEvents('auto')
-    },
-  })
+  // const openedPreview = photoPreviews.find(preview => preview.modelName === modelName)
+  // const targetX = openedPreview.x - openedPreview.diffX
+  // const targetY = openedPreview.y - openedPreview.diffY
+  // closeModelTween = tween({
+  //   from: {
+  //     cutOffFactor: 1,
+  //     opacity: 0,
+  //     x: openedPreview.x,
+  //     y: openedPreview.y,
+  //     scale: openedPreview.scale,
+  //   },
+  //   to: {
+  //     cutOffFactor: 0,
+  //     opacity: 1,
+  //     x: targetX,
+  //     y: targetY,
+  //     scale: 1,
+  //   },
+  //   duration: 700,
+  // }).start({
+  //   update: v => {
+  //     openModelTweenFactor = v.cutOffFactor
+  //     postFXMesh.material.uniforms.u_cutOffFactor.value = v.cutOffFactor
+  //     const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
+  //     unclicked.forEach(item => {
+  //       item.opacity = v.opacity
+  //     })
+  //     openedPreview.x = v.x
+  //     openedPreview.y = v.y
+  //     openedPreview.scale = v.scale
+  //     infoPanel.setButtonOpacity(v.opacity)
+  //     eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
+  //       tweenFactor: v.cutOffFactor,
+  //     })
+  //   },
+  //   complete: () => {
+  //     clickedElement = null
+  //     photoPreviews
+  //       // .filter(preview => preview.modelName !== modelName)
+  //       .forEach(preview => {
+  //       preview.isInteractable = true
+  //     })
+  //     infoPanel.setPointerEvents('auto')
+  //   },
+  // })
 }
 
 function onResize () {
@@ -275,24 +277,20 @@ function onMouseLeave () {
     from: 1,
     to: 0,
   }).start(tweenFactor => {
-    console.log(clipCamera.zoom)
-    clipCamera.zoom = 1 - tweenFactor * 0.2
-    clipCamera.updateProjectionMatrix()
-    photoCamera.zoom = 1 - tweenFactor * 0.2
-    photoCamera.updateProjectionMatrix()
-    cursorCamera.zoom = 1 - tweenFactor * 0.2
-    cursorCamera.updateProjectionMatrix()
+    // console.log(clipCamera.zoom)
+    // clipCamera.zoom = 1 - tweenFactor * 0.2
+    // clipCamera.updateProjectionMatrix()
+    // photoCamera.zoom = 1 - tweenFactor * 0.2
+    // photoCamera.updateProjectionMatrix()
+    // cursorCamera.zoom = 1 - tweenFactor * 0.2
+    // cursorCamera.updateProjectionMatrix()
   })
 }
 
 function onMouseDown (e) {
   isDragging = true
-  postFXMesh.onDragStart()
-  photoPreviews.forEach(photoPreview => photoPreview.onSceneDragStart())
   mousePos.x = e.pageX
   mousePos.y = e.pageY
-
-  // webglContainer.classList.add('non-interactable')
 
   if (hoveredElement && !isDragCameraMoving) {
     if (clickedElement) {
@@ -300,36 +298,32 @@ function onMouseDown (e) {
     }
     if (closeModelTween) {
       closeModelTween.stop()
+      closeModelTween = null
+      console.log('%c stop CLOSE model tween', 'background: black; color: white;')
     }
-
-    const hoveredPreviewTargetX = clipCamera.position.x - appWidth * 0.25
-    const hoveredPreviewTargetY = clipCamera.position.y
-
     const { modelName } = hoveredElement
-
+    eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
+      modelName,
+      targetX: clipCamera.position.x - appWidth * 0.25,
+      targetY: clipCamera.position.y,
+    }))
     openModelTween = chain(
       delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
       tween({
-        from: 0,
-        to: 1,
         duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * (1 - openModelTweenFactor),
       })
     ).start({
       update: tweenFactor => {
         openModelTweenFactor = tweenFactor
-        eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, {
-          modelName,
-          tweenFactor,
-          targetPosX: hoveredPreviewTargetX,
-          targetPosY: hoveredPreviewTargetY,
-        })
+        console.log(`%c opening ${tweenFactor}`, 'background: red; color: white;')
+        eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
       },
       complete: () => {
         isDragging = false
-        eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
         clickedElement = hoveredElement
-        eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
         openModelTween = null
+
+        eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
 
       },
     })
@@ -350,14 +344,13 @@ function onMouseDown (e) {
 }
 
 function onMouseMove (e) {
-  eventEmitter.emit(EVT_MOUSEMOVE_APP, mousePos.x, mousePos.y)
+  eventEmitter.emit(EVT_MOUSEMOVE_APP, { mouseX: mousePos.x, mouseY: mousePos.y})
 
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
   cursorTargetPos.x = e.pageX
   cursorTargetPos.y = window.innerHeight - e.pageY
-
 
   if (isDragging && !openModelTween && !closeModelTween && !clickedElement) {
     const diffx = e.pageX - mousePos.x
@@ -376,76 +369,48 @@ function onMouseMove (e) {
 
 function onMouseUp () {
   if (hoveredElement && !clickedElement) {
-    const { modelName: hoveredElementModelName } = hoveredElement
-    const openedPreview = photoPreviews.find(preview => preview.modelName === hoveredElementModelName)
-    const startX = openModelTweenPosition.x
-    const startY = openModelTweenPosition.y
-    const startOpenFactor = openModelTweenFactor
-    const targetX = startX - openedPreview.diffX
-    const targetY = startY - openedPreview.diffY
-    const targetScale = 1
-
     if (openModelTween) {
       openModelTween.stop()
       openModelTween = null
-
-      closeModelTween = chain(
-        delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-        tween({
-          from: {
-            tweenFactor: openModelTweenFactor,
-            x: startX,
-            y: startY,
-          },
-          to: {
-            tweenFactor: 0,
-            x: targetX,
-            y: targetY,
-          },
-          duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor,
-        })
-      ).start({
-        update: v => {
-          let diffx = openedPreview.x - v.x
-          let diffy = openedPreview.y - v.y
-          openedPreview.onSceneDrag(diffx, diffy)
-          openModelTweenPosition.x = v.x
-          openModelTweenPosition.y = v.y
-          openModelTweenFactor = v.tweenFactor
-          postFXMesh.material.uniforms.u_cutOffFactor.value = v.tweenFactor
-          const unclicked = photoPreviews.filter(project => project.modelName !== hoveredElementModelName)
-          unclicked.forEach(item => {
-            item.opacity = 1 - v.tweenFactor
-          })
-          infoPanel.setButtonOpacity(1 - v.tweenFactor)
-          openedPreview.x = v.x
-          openedPreview.y = v.y
-          // openedPreview.scale += (targetScale - openedPreview.scale) * (1 - v)
-
-          eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
-            tweenFactor: v.tweenFactor,
-            startTweenFactor: startOpenFactor,
-          })
-        },
-        complete: () => {
-          infoPanel.setPointerEvents('auto')
-          closeModelTween = null
-        }
-      })
-
+      console.log('%c stop OPEN model tween', 'background: black; color: white;')
     }
+
+    const { modelName } = hoveredElement
+
+    eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
+
+    closeModelTween = chain(
+      delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+      tween({
+        duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor,
+      })
+    ).start({
+      update: tweenFactor => {
+        openModelTweenFactor = tweenFactor
+        console.log(`%c closing ${tweenFactor}`, 'background: yellow;')
+        eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
+          modelName,
+          tweenFactor,
+        })
+      },
+      complete: () => {
+        closeModelTween = null
+        eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
+      }
+    })
+
   } else {
     tween({
       from: 1,
       to: 0,
     }).start(tweenFactor => {
-      console.log(clipCamera.zoom)
-      clipCamera.zoom = 1 - tweenFactor * 0.2
-      clipCamera.updateProjectionMatrix()
-      photoCamera.zoom = 1 - tweenFactor * 0.2
-      photoCamera.updateProjectionMatrix()
-      cursorCamera.zoom = 1 - tweenFactor * 0.2
-      cursorCamera.updateProjectionMatrix()
+      // console.log(clipCamera.zoom)
+      // clipCamera.zoom = 1 - tweenFactor * 0.2
+      // clipCamera.updateProjectionMatrix()
+      // photoCamera.zoom = 1 - tweenFactor * 0.2
+      // photoCamera.updateProjectionMatrix()
+      // cursorCamera.zoom = 1 - tweenFactor * 0.2
+      // cursorCamera.updateProjectionMatrix()
     })
   }
   isDragging = false

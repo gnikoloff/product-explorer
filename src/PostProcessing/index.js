@@ -49,15 +49,21 @@ export default class PostProcessing extends THREE.Mesh {
     
     super(geometry, material)
 
-    const setCutOffFactor = ({ tweenFactor }) => {
+    const setCutOffFactor = tweenFactor => {
       material.uniforms.u_cutOffFactor.value = tweenFactor
     }
 
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, setCutOffFactor)
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
+      // console.log('open')
+      setCutOffFactor(tweenFactor)
+    })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this._preventClick = true
     })
-    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, setCutOffFactor)
+    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor }) => {
+      // console.log('close')
+      setCutOffFactor(1 - tweenFactor)
+    })
     
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)

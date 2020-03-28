@@ -256,8 +256,8 @@ export default class PhotoPreview {clipFragmentShader
       const startY = this._targetPosition.y
       const endX = this._targetPosition.x - this._originalPositionOpenPositionDiff.x
       const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
-      const newX = calc.getValueFromProgress(startX, endX, 1 - tweenFactor)
-      const newY = calc.getValueFromProgress(startY, endY, 1 - tweenFactor)
+      const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
+      const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._openedPageTargetScale, this.scale, tweenFactor)
 1
       const diffx = (newX - this.x) * -1
@@ -268,7 +268,7 @@ export default class PhotoPreview {clipFragmentShader
       this.y = newY
       this.scale = newScale
     } else {
-      this.opacity = clampNumber(mapNumber(tweenFactor, 0, 0.7, 1, 0), 0, 1)
+      this.opacity = clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
     }
   }
 
