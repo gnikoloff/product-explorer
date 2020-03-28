@@ -1,3 +1,7 @@
 import EventEmitter from 'events'
 
-export default new EventEmitter()
+const eventEmitter = new EventEmitter()
+
+eventEmitter.setMaxListeners(15)
+
+export default eventEmitter

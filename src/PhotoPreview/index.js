@@ -1,5 +1,8 @@
 import * as THREE from 'three'
-import { tween, calc } from 'popmotion'
+import {
+  tween,
+  calc,
+} from 'popmotion'
 
 import eventEmitter from '../event-emitter'
 
@@ -34,133 +37,34 @@ export default class PhotoPreview {clipFragmentShader
     width,
     height,
     photos,
+    position,
   }) {
     this._modelName = modelName
     this._width = width
     this._height = height
     this._photos = photos
+    this._position = position.clone()
+    this._originalPosition = position.clone()
 
     this._isInteractable = true
+    this._scale = 1
+    this._sliderIdx = 0
+    this._isCurrentlyTransitioning = false
+    this._openedPageTargetScale = getSiglePagePhotoScale()
 
     this._diffVector = new THREE.Vector2(0, 0)
     this._diffVectorTarget = new THREE.Vector2(0, 0)
+    this._originalPositionOpenPositionDiff = new THREE.Vector2(0, 0)
 
     this._makeClipMesh()
     this._makePhotoMesh()
-
-    this._x = 0
-    this._y = 0
-    this._z = 0
-
-    this._scale = 1
-
-    this._allTexturesLoaded = false
-    this._sliderIdx = 0
-    this._isCurrentlyTransitioning = false
-
-    const openedPageTargetScale = getSiglePagePhotoScale()
+    this._loadPreview()
 
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({
-      modelName,
-      tweenFactor,
-      targetPosX,
-      targetPosY,
-    }) => {
-      if (this._modelName === modelName) {
-        this.x = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
-        this.y = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
-        this.scale = calc.getValueFromProgress(this.scale, openedPageTargetScale, tweenFactor * 0.1)
-        const diffx = (targetPosX - this.x) * -1
-        const diffy = (targetPosY - this.y) * -1
-        eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
-      } else {
-        this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
-      }
-    })
-    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, ({ modelName }) => {
-      if (this._modelName !== modelName) {
-        this._isInteractable = false
-        return
-      }
-
-      const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
-      Promise
-        .all(sliderExtraPhotos.map(this._loadTexture))
-        .then(textures => {
-          for (let i = 0; i < textures.length; i++) {
-            const texture = textures[i]
-            texture.needsUpdate = true
-            this._photoMesh.material.uniforms.u_textures.value[i + 1] = texture
-          }
-          this._photoMesh.material.needsUpdate = true
-        })
-
-      tween({
-        from: PhotoPreview.SCALE_FACTOR_MAX,
-        to: PhotoPreview.SCALE_FACTOR_MIN,
-        duration: 250
-      })
-      .start(v => this._photoMesh.scale.set(v, v, 1))
-    })
-    eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, () => {
-      if (this._isCurrentlyTransitioning) {
-        return
-      }
-      const oldSliderIdx = this._sliderIdx
-      this._sliderIdx -= 1
-      if (this._sliderIdx < 0) {
-        this._sliderIdx = 2
-      }
-      this._photoMesh.material.uniforms.u_texIdx0.value = oldSliderIdx
-      this._photoMesh.material.uniforms.u_texIdx1.value = this._sliderIdx
-      this._photoMesh.material.uniforms.u_photoMixFactor.value = 0
-      this._photoMesh.material.uniforms.u_horizontalDirection.value = -1.0
-
-      this._isCurrentlyTransitioning = true
-
-      tween({
-        from: 0,
-        to: 1,
-        duration: 800,
-      }).start({
-        update: v => {
-          this._photoMesh.material.uniforms.u_photoMixFactor.value = v
-        },
-        complete: () => {
-          this._isCurrentlyTransitioning = false
-        }
-      })
-    })
-    eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, () => {
-      if (this._isCurrentlyTransitioning) {
-        return
-      }
-      const oldSliderIdx = this._sliderIdx
-      this._sliderIdx += 1
-      if (this._sliderIdx > 2) {
-        this._sliderIdx = 0
-      }
-      this._photoMesh.material.uniforms.u_texIdx0.value = oldSliderIdx
-      this._photoMesh.material.uniforms.u_texIdx1.value = this._sliderIdx
-      this._photoMesh.material.uniforms.u_photoMixFactor.value = 0
-      this._photoMesh.material.uniforms.u_horizontalDirection.value = 1.0
-
-      this._isCurrentlyTransitioning = true
-
-      tween({
-        from: 0,
-        to: 1,
-        duration: 800,
-      }).start({
-        update: v => {
-          this._photoMesh.material.uniforms.u_photoMixFactor.value = v
-        },
-        complete: () => {
-          this._isCurrentlyTransitioning = false
-        }
-      })
-    })
+    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpen)
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenComplete)
+    eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, this._onArrowClick.bind(this, -1))
+    eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, this._onArrowClick.bind(this, 1))
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
   }
 
@@ -171,10 +75,6 @@ export default class PhotoPreview {clipFragmentShader
   get isInteractable () {
     return this._isInteractable
   }
-
-  set isInteractable (isInteractable) {
-    this._isInteractable = isInteractable
-  }
   
   get clipMesh () {
     return this._clipMesh
@@ -184,51 +84,33 @@ export default class PhotoPreview {clipFragmentShader
     return this._photoMesh
   }
 
-  get diffVectorTarget () {
-    return this._diffVectorTarget
-  }
-
-  get x () { return this._x }
+  get x () { return this._position.x }
 
   set x (x) {
-    this._x = x
-    this._clipMesh.position.x = x
-    this._photoMesh.position.x = x
+    this._position.x = x
+    this._photoMesh.position.copy(this._position)
+    this._clipMesh.position.copy(this._position)
   }
 
-  get y () { return this._y }
+  get y () { return this._position.y }
 
   set y (y) {
-    this._y = y
-    this._clipMesh.position.y = y
-    this._photoMesh.position.y = y
+    this._position.y = y
+    this._photoMesh.position.copy(this._position)
+    this._clipMesh.position.copy(this._position)
   }
 
-  get z () { return this._z }
-
-  set z (z) {
-    this._z = z
-    this._clipMesh.position.z = z
-    this._photoMesh.position.z = z
-  }
+  get scale () { return this._scale }
 
   set scale (scale) {
     this._scale = scale
-    this._clipMesh.scale.x = this._clipMesh.scale.y = scale
-    this._photoMesh.scale.x = this._photoMesh.scale.y = scale
-  }
-
-  get scale () {
-    return this._scale
+    this._clipMesh.scale.set(scale, scale, 1)
+    this._photoMesh.scale.set(scale, scale, 1)
   }
 
   set opacity (opacity) {
     this._clipMesh.material.uniforms.u_opacity.value = opacity
     this._photoMesh.material.uniforms.u_opacity.value = opacity
-  }
-
-  get diffVector () {
-    return this._diffVectorTarget
   }
 
   _makeClipMesh () {
@@ -246,6 +128,7 @@ export default class PhotoPreview {clipFragmentShader
     })
 
     this._clipMesh = new THREE.Mesh(clipGeometry, clipMaterial)
+    this._clipMesh.position.copy(this._position)
     this._clipMesh.modelName = this._modelName
   }
 
@@ -267,17 +150,121 @@ export default class PhotoPreview {clipFragmentShader
       fragmentShader: photoFragmentShader,
     })
     this._photoMesh = new THREE.Mesh(photoGeometry, photoMaterial)
+    this._photoMesh.position.copy(this._position)
   }
 
   _loadTexture = texName => new Promise(resolve =>
     new THREE.TextureLoader().load(texName, texture => resolve(texture)
   ))
 
-  loadPreview () {
+  _loadPreview () {
     this._loadTexture(this._photos[0]).then(texture => {
       texture.flipY = true
       this._photoMesh.material.uniforms.u_textures.value[0] = texture
       this._photoMesh.material.needsUpdate = true
+    })
+  }
+
+  _onOpen = ({
+    modelName,
+    tweenFactor,
+    targetPosX,
+    targetPosY,
+  }) => {
+    if (this._modelName === modelName) {
+      const newX = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
+      const newY = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
+      const newScale = calc.getValueFromProgress(this.scale, this._openedPageTargetScale, tweenFactor * 0.1)
+
+      this.x = newX
+      this.y = newY
+      this.scale = newScale
+
+      this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
+      this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
+      
+      const diffx = (targetPosX - this.x) * -1
+      const diffy = (targetPosY - this.y) * -1
+      this._onSceneDrag({ diffx, diffy })
+    } else {
+      this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
+    }
+  }
+
+  _onOpenComplete = ({ modelName }) => {
+    if (this._modelName !== modelName) {
+      this._isInteractable = false
+      return
+    }
+
+    const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
+    Promise
+      .all(sliderExtraPhotos.map(this._loadTexture))
+      .then(textures => {
+        for (let i = 0; i < textures.length; i++) {
+          const texture = textures[i]
+          texture.needsUpdate = true
+          this._photoMesh.material.uniforms.u_textures.value[i + 1] = texture
+        }
+        this._photoMesh.material.needsUpdate = true
+      })
+
+    tween({
+      from: PhotoPreview.SCALE_FACTOR_MAX,
+      to: PhotoPreview.SCALE_FACTOR_MIN,
+      duration: 250
+    })
+    .start(v => this._photoMesh.scale.set(v, v, 1))
+
+    tween({
+      from: 0,
+      to: 1,
+    }).start(v => {
+      const diffx = calc.getValueFromProgress(this._diffVector.x, 0, v)
+      const diffy = calc.getValueFromProgress(this._diffVector.y, 0, v)
+      this._onSceneDrag({ diffx, diffy })
+    })
+  }
+
+  _onArrowClick = direction => {
+    if (this._isCurrentlyTransitioning) {
+      return
+    }
+    
+    let tweenFrom
+    let tweenTo
+
+    if (direction === 1) {
+      tweenFrom = 0
+      tweenTo = 0
+    } else if (direction === -1) {
+      tweenFrom = 1
+      tweenTo = 0
+    }
+
+    const oldSliderIdx = this._sliderIdx
+    this._sliderIdx += direction
+    if (this._sliderIdx > 2) {
+      this._sliderIdx = 0
+    }
+    this._photoMesh.material.uniforms.u_texIdx0.value = oldSliderIdx
+    this._photoMesh.material.uniforms.u_texIdx1.value = this._sliderIdx
+    this._photoMesh.material.uniforms.u_photoMixFactor.value = 0
+    this._photoMesh.material.uniforms.u_horizontalDirection.value = direction
+
+    this._isCurrentlyTransitioning = true
+
+    tween({
+      from: tweenFrom,
+      to: tweenTo,
+      duration: 800,
+    }).start({
+      update: v => {
+        this._photoMesh.material.uniforms.u_photoMixFactor.value = v
+      },
+      complete: () => {
+        this._isCurrentlyTransitioning = false
+      }
     })
   }
 

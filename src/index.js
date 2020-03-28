@@ -50,7 +50,6 @@ const raycastMouse = new THREE.Vector2(0, 0)
 const cameraTargetPos = new THREE.Vector2(0, 0)
 const cameraVelocity = new THREE.Vector2(0, 0)
 const cursorTargetPos = new THREE.Vector2(0, 0)
-const openModelTweenPosition = new THREE.Vector2(0, 0)
 
 const renderer = new THREE.WebGLRenderer({ alpha: true })
 
@@ -184,14 +183,10 @@ function onProjectsLoad (res) {
       width: PREVIEW_PHOTO_REF_WIDTH,
       height: PREVIEW_PHOTO_REF_HEIGHT,
       photos: info.sliderPhotos || [],
+      position: new THREE.Vector3(info.posX, info.posY, 0)
     })
-    photoPreview.x = info.posX
-    photoPreview.y = info.posY
-    photoPreview.origX = info.posX
-    photoPreview.origY = info.posY
     clipScene.add(photoPreview.clipMesh)
     photoScene.add(photoPreview.photoMesh)
-    photoPreview.loadPreview()
     return photoPreview
   })
 }
@@ -276,6 +271,18 @@ function onMouseLeave () {
   postFXMesh.onDragEnd()
   document.body.classList.remove('dragging')
   photoPreviews.forEach(photoPreview => photoPreview.onSceneDragEnd())
+  tween({
+    from: 1,
+    to: 0,
+  }).start(tweenFactor => {
+    console.log(clipCamera.zoom)
+    clipCamera.zoom = 1 - tweenFactor * 0.2
+    clipCamera.updateProjectionMatrix()
+    photoCamera.zoom = 1 - tweenFactor * 0.2
+    photoCamera.updateProjectionMatrix()
+    cursorCamera.zoom = 1 - tweenFactor * 0.2
+    cursorCamera.updateProjectionMatrix()
+  })
 }
 
 function onMouseDown (e) {
@@ -291,14 +298,14 @@ function onMouseDown (e) {
     if (clickedElement) {
       return  
     }
-    const { modelName } = hoveredElement
-    const hoveredPreview = photoPreviews.find(preview => preview.modelName === modelName)
     if (closeModelTween) {
       closeModelTween.stop()
     }
 
     const hoveredPreviewTargetX = clipCamera.position.x - appWidth * 0.25
     const hoveredPreviewTargetY = clipCamera.position.y
+
+    const { modelName } = hoveredElement
 
     openModelTween = chain(
       delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
@@ -309,17 +316,7 @@ function onMouseDown (e) {
       })
     ).start({
       update: tweenFactor => {
-        // hoveredPreview.diffX = v.x - startX
-        // hoveredPreview.diffY = v.y - startY
-
-        // let diffx = hoveredPreview.x - v.x
-        // let diffy = hoveredPreview.y - v.y
-        // hoveredPreview.onSceneDrag(diffx, diffy)
-        // openModelTweenPosition.x = v.x
-        // openModelTweenPosition.y = v.y
-
         openModelTweenFactor = tweenFactor
-
         eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, {
           modelName,
           tweenFactor,
@@ -330,19 +327,24 @@ function onMouseDown (e) {
       complete: () => {
         isDragging = false
         eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
-        clickedElement = hoveredElement    
-        tween({
-          from: { x: hoveredPreview.diffVector.x, y: hoveredPreview.diffVector.y },
-          to: { x: 0, y: 0 },
-        }).start(v => {
-          eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx: v.x, diffy: v.y })
-          // hoveredPreview.onSceneDrag(v.x, v.y)
-        })
+        clickedElement = hoveredElement
         eventEmitter.emit(EVT_FADE_IN_SINGLE_VIEW)
-
         openModelTween = null
 
       },
+    })
+  } else {
+    tween({
+      from: 0,
+      to: 1,
+    }).start(tweenFactor => {
+      // todo: prevent spamming it
+      // clipCamera.zoom = 1 - tweenFactor * 0.2
+      // clipCamera.updateProjectionMatrix()
+      // photoCamera.zoom = 1 - tweenFactor * 0.2
+      // photoCamera.updateProjectionMatrix()
+      // cursorCamera.zoom = 1 - tweenFactor * 0.2
+      // cursorCamera.updateProjectionMatrix()
     })
   }
 }
@@ -432,6 +434,19 @@ function onMouseUp () {
       })
 
     }
+  } else {
+    tween({
+      from: 1,
+      to: 0,
+    }).start(tweenFactor => {
+      console.log(clipCamera.zoom)
+      clipCamera.zoom = 1 - tweenFactor * 0.2
+      clipCamera.updateProjectionMatrix()
+      photoCamera.zoom = 1 - tweenFactor * 0.2
+      photoCamera.updateProjectionMatrix()
+      cursorCamera.zoom = 1 - tweenFactor * 0.2
+      cursorCamera.updateProjectionMatrix()
+    })
   }
   isDragging = false
   postFXMesh.onDragEnd()
@@ -457,7 +472,6 @@ function updateFrame(ts) {
       .filter(a => a.isInteractable)
       .map(({ clipMesh }) => clipMesh)
     const intersects = raycaster.intersectObjects(intersectsTests)
-
     if (intersects.length > 0) {
       const intersect = intersects[0]
       const { object, object: { modelName } } = intersect
