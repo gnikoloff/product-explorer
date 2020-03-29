@@ -120,9 +120,11 @@ export default class SinglePage {
   _checkSliderClick = e => {
     if (this._sliderPrevBtnHovered) {
       eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
+      console.log('firing EVT_SLIDER_BUTTON_LEFT_CLICK')
     }
     if (this._sliderNextBtnHovered) {
       eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
+      console.log('firing EVT_SLIDER_BUTTON_NEXT_CLICK')
     }
   }
 

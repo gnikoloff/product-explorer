@@ -41,6 +41,8 @@ export default class PhotoPreview {clipFragmentShader
 
   static SCALE_FACTOR_MAX = 1
   static SCALE_FACTOR_MIN = 0.95
+  static ARROW_RIGHT_KEY_CODE = 39
+  static ARROW_LEFT_KEY_CODE = 37
 
   static loadTexture = texName => new Promise(resolve =>
     new THREE.TextureLoader().load(texName, texture => resolve(texture)
@@ -85,8 +87,8 @@ export default class PhotoPreview {clipFragmentShader
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClose)
     eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseComplete)
 
-    eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, this._onArrowClick.bind(this, -1))
-    eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, this._onArrowClick.bind(this, 1))
+    eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, this._onSlideChange.bind(this, -1))
+    eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, this._onSlideChange.bind(this, 1))
     
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onSceneDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
@@ -138,6 +140,15 @@ export default class PhotoPreview {clipFragmentShader
   set opacity (opacity) {
     this._clipMesh.material.uniforms.u_opacity.value = opacity
     this._photoMesh.material.uniforms.u_opacity.value = opacity
+  }
+
+  _onKeyDown = e => {
+    console.log(e.keyCode)
+    if (e.keyCode === PhotoPreview.ARROW_RIGHT_KEY_CODE) {
+      this._onSlideChange(1)
+    } else if (e.keyCode === PhotoPreview.ARROW_LEFT_KEY_CODE) {
+      this._onSlideChange(-1)
+    }
   }
 
   _makeClipMesh () {
@@ -225,6 +236,8 @@ export default class PhotoPreview {clipFragmentShader
       return
     }
 
+    window.addEventListener('keydown', this._onKeyDown)
+
     if (!this._allTexturesLoaded) {
       const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
       Promise
@@ -260,6 +273,7 @@ export default class PhotoPreview {clipFragmentShader
     if (modelName === this._modelName) {
       this._targetPosition.set(this.x, this.y, 1)
       this._targetScale = this._scale
+      window.removeEventListener('keydown', this._onKeyDown)
     }
   }
 
@@ -290,7 +304,7 @@ export default class PhotoPreview {clipFragmentShader
     this._isInteractable = true
   }
 
-  _onArrowClick = direction => {
+  _onSlideChange = direction => {
     if (this._isCurrentlyTransitioning) {
       return
     }
@@ -298,21 +312,26 @@ export default class PhotoPreview {clipFragmentShader
     let tweenFrom
     let tweenTo
 
+    const oldSliderIdx = this._sliderIdx
+    this._sliderIdx += direction
+
     if (direction === 1) {
       tweenFrom = 0
-      tweenTo = 0
+      tweenTo = 1
+      if (this._sliderIdx > 2) {
+        this._sliderIdx = 0
+      }
+      this._photoMesh.material.uniforms.u_texIdx0.value = oldSliderIdx
+      this._photoMesh.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
       tweenFrom = 1
       tweenTo = 0
+      if (this._sliderIdx < 0) {
+        this._sliderIdx = 2
+      }
+      this._photoMesh.material.uniforms.u_texIdx0.value = this._sliderIdx
+      this._photoMesh.material.uniforms.u_texIdx1.value = oldSliderIdx
     }
-
-    const oldSliderIdx = this._sliderIdx
-    this._sliderIdx += direction
-    if (this._sliderIdx > 2) {
-      this._sliderIdx = 0
-    }
-    this._photoMesh.material.uniforms.u_texIdx0.value = oldSliderIdx
-    this._photoMesh.material.uniforms.u_texIdx1.value = this._sliderIdx
     this._photoMesh.material.uniforms.u_photoMixFactor.value = 0
     this._photoMesh.material.uniforms.u_horizontalDirection.value = direction
 
