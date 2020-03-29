@@ -211,51 +211,6 @@ function onCloseSingleView (modelName) {
       clickedElement = null
     }
   })
-  // const openedPreview = photoPreviews.find(preview => preview.modelName === modelName)
-  // const targetX = openedPreview.x - openedPreview.diffX
-  // const targetY = openedPreview.y - openedPreview.diffY
-  // closeModelTween = tween({
-  //   from: {
-  //     cutOffFactor: 1,
-  //     opacity: 0,
-  //     x: openedPreview.x,
-  //     y: openedPreview.y,
-  //     scale: openedPreview.scale,
-  //   },
-  //   to: {
-  //     cutOffFactor: 0,
-  //     opacity: 1,
-  //     x: targetX,
-  //     y: targetY,
-  //     scale: 1,
-  //   },
-  //   duration: 700,
-  // }).start({
-  //   update: v => {
-  //     openModelTweenFactor = v.cutOffFactor
-  //     postFXMesh.material.uniforms.u_cutOffFactor.value = v.cutOffFactor
-  //     const unclicked = photoPreviews.filter(project => project.modelName !== modelName)
-  //     unclicked.forEach(item => {
-  //       item.opacity = v.opacity
-  //     })
-  //     openedPreview.x = v.x
-  //     openedPreview.y = v.y
-  //     openedPreview.scale = v.scale
-  //     infoPanel.setButtonOpacity(v.opacity)
-  //     eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, {
-  //       tweenFactor: v.cutOffFactor,
-  //     })
-  //   },
-  //   complete: () => {
-  //     clickedElement = null
-  //     photoPreviews
-  //       // .filter(preview => preview.modelName !== modelName)
-  //       .forEach(preview => {
-  //       preview.isInteractable = true
-  //     })
-  //     infoPanel.setPointerEvents('auto')
-  //   },
-  // })
 }
 
 function onResize () {

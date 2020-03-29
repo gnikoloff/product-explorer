@@ -143,7 +143,6 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   _onKeyDown = e => {
-    console.log(e.keyCode)
     if (e.keyCode === PhotoPreview.ARROW_RIGHT_KEY_CODE) {
       this._onSlideChange(1)
     } else if (e.keyCode === PhotoPreview.ARROW_LEFT_KEY_CODE) {
