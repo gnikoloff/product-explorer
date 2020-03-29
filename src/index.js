@@ -135,7 +135,7 @@ function init () {
   webglContainer.addEventListener('mousedown', onMouseDown, false)
   document.body.addEventListener('mousemove', onMouseMove, false)
   webglContainer.addEventListener('mouseup', onMouseUp, false)
-  webglContainer.addEventListener('mouseleave', onMouseLeave, false)
+  document.body.addEventListener('mouseleave', onMouseLeave, false)
   window.addEventListener('resize', onResize)
   
   eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)

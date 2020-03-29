@@ -46,6 +46,7 @@ export default class CameraSystem {
     this._targetPosition = new THREE.Vector3(0, 0, 0)
     this._isDragCameraMoving = false
     this._zoomFactor = 1
+    this._isZoomedOut = false
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -129,6 +130,7 @@ export default class CameraSystem {
     this._targetPosition.y += diffy * 2 - 1
   }
   _onDragZoomOut = () => {
+    this._isZoomedOut = true
     tween().start(tweenFactor => {
       this._zoomFactor = 1 - tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom: this._zoomFactor })
@@ -137,6 +139,10 @@ export default class CameraSystem {
     })
   }
   _onDragZoomIn = () => {
+    if (!this._isZoomedOut) {
+      return
+    }
+    this._isZoomedOut = false
     tween().start(tweenFactor => {
       const zoom = this._zoomFactor + tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom })

@@ -44,10 +44,10 @@
   text-transform: uppercase;
   text-decoration: none;
 }
-button:focus {
+.button:focus {
   outline: 0;
 }
-button:hover {
+.button:hover {
   cursor: pointer;
 }
 

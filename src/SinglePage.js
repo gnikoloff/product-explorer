@@ -214,7 +214,7 @@ export default class SinglePage {
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
     const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
     
-    // this.stylers.wrapper.set('pointerEvents', 'auto')
+    this.stylers.wrapper.set('pointerEvents', 'auto')
 
     const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
     fadeInEls.forEach((child, i) => {
@@ -227,7 +227,12 @@ export default class SinglePage {
         })
       ).start({
         update: v => childStyler.set('opacity', v),
-        complete: () => childStyler.set('pointer-events', 'auto')
+        complete: () => {
+          childStyler.set('pointer-events', 'auto')
+          if (i === 0) {
+            this.stylers.wrapper.set('user-select', 'auto')
+          }
+        }
       })
     })
 
@@ -264,6 +269,9 @@ export default class SinglePage {
 
     const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
     const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
+
+    this.stylers.wrapper.set('pointerEvents', 'none')
+    this.stylers.wrapper.set('user-select', 'none')
 
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)

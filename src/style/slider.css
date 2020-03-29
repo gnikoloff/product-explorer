@@ -16,9 +16,9 @@
   opacity: 0;
   background-size: 50%;
   background-repeat: no-repeat;
+  pointer-events: none;
 }
 .slider-btn:focus { outline: 0; }
-.slider-btn:hover { cursor: pointer; }
 .slider-btn-prev {
   background-position: 48% 50%;
   background-image: url('../assets/arrow-left.svg');
