@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { calc } from 'popmotion'
+import { calc, tween } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
@@ -9,6 +9,9 @@ import {
   CAMERA_MIN_VELOCITY_TO_BE_MOVING,
 
   EVT_CAMERA_HANDLE_MOVEMENT_WORLD,
+  EVT_CAMERA_ZOOM_OUT_DRAG_START,
+  EVT_CAMERA_ZOOM_IN_DRAG_END,
+
   EVT_APP_RESIZE,
   EVT_ON_SCENE_DRAG,
 } from './constants'
@@ -26,6 +29,12 @@ export default class CameraSystem {
     return camera
   }
 
+  static controlCameraZoom ({ camera, zoom }) {
+    camera.zoom = zoom
+    camera.updateProjectionMatrix()
+    return camera
+  }
+
   constructor ({
     appWidth,
     appHeight,
@@ -34,6 +43,7 @@ export default class CameraSystem {
     this._velocity = new THREE.Vector3(0, 0, 0)
     this._targetPosition = new THREE.Vector3(0, 0, 0)
     this._isDragCameraMoving = false
+    this._zoomFactor = 1
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -56,6 +66,8 @@ export default class CameraSystem {
 
     eventEmitter.on(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, this._handleMovement)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
+    eventEmitter.on(EVT_CAMERA_ZOOM_OUT_DRAG_START, this._onDragZoomOut)
+    eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
   }
   get clipCamera () {
@@ -130,6 +142,24 @@ export default class CameraSystem {
     this._targetPosition.x += diffx * -2 + 1
     this._targetPosition.y += diffy * 2 - 1
   }
+  _onDragZoomOut = () => {
+    tween().start(tweenFactor => {
+      this._zoomFactor = 1 - tweenFactor * 0.125
+      CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom: this._zoomFactor })
+      CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
+      CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom: this._zoomFactor })
+    })
+  }
+
+  _onDragZoomIn = () => {
+    tween().start(tweenFactor => {
+      const zoom = this._zoomFactor + tweenFactor * 0.125
+      CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom })
+      CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
+      CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
+    })
+  }
+  
   _onResize = ({ appWidth, appHeight }) => {
     CameraSystem.resizeCamera({ camera: this._clipCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._photoCamera, appWidth, appHeight })

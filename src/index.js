@@ -25,6 +25,8 @@ import {
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
   EVT_CAMERA_HANDLE_MOVEMENT_WORLD,
+  EVT_CAMERA_ZOOM_OUT_DRAG_START,
+  EVT_CAMERA_ZOOM_IN_DRAG_END,
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
   EVT_ON_SCENE_DRAG_END,
@@ -190,19 +192,7 @@ function onMouseLeave () {
   isDragging = false
 
   eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
-
-  tween({
-    from: 1,
-    to: 0,
-  }).start(tweenFactor => {
-    // console.log(clipCamera.zoom)
-    // clipCamera.zoom = 1 - tweenFactor * 0.2
-    // clipCamera.updateProjectionMatrix()
-    // photoCamera.zoom = 1 - tweenFactor * 0.2
-    // photoCamera.updateProjectionMatrix()
-    // cursorCamera.zoom = 1 - tweenFactor * 0.2
-    // cursorCamera.updateProjectionMatrix()
-  })
+  eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
 }
 
 function onMouseDown (e) {
@@ -240,18 +230,7 @@ function onMouseDown (e) {
       },
     })
   } else {
-    // tween({
-    //   from: 0,
-    //   to: 1,
-    // }).start(tweenFactor => {
-    //   // todo: prevent spamming it
-    //   // clipCamera.zoom = 1 - tweenFactor * 0.2
-    //   // clipCamera.updateProjectionMatrix()
-    //   // photoCamera.zoom = 1 - tweenFactor * 0.2
-    //   // photoCamera.updateProjectionMatrix()
-    //   // cursorCamera.zoom = 1 - tweenFactor * 0.2
-    //   // cursorCamera.updateProjectionMatrix()
-    // })
+    eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
   }
 }
 
@@ -300,18 +279,7 @@ function onMouseUp () {
       })
     }
   } else {
-    // tween({
-    //   from: 1,
-    //   to: 0,
-    // }).start(tweenFactor => {
-    //   // console.log(clipCamera.zoom)
-    //   // clipCamera.zoom = 1 - tweenFactor * 0.2
-    //   // clipCamera.updateProjectionMatrix()
-    //   // photoCamera.zoom = 1 - tweenFactor * 0.2
-    //   // photoCamera.updateProjectionMatrix()
-    //   // cursorCamera.zoom = 1 - tweenFactor * 0.2
-    //   // cursorCamera.updateProjectionMatrix()
-    // })
+    eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
   }
   isDragging = false
   cursorArrowOffsetTarget = 0
