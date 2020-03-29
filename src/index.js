@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tween, chain, delay, calc } from 'popmotion'
+import { tween, chain, delay } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
@@ -7,6 +7,7 @@ import PhotoPreview from './PhotoPreview'
 import SinglePage from './SinglePage'
 import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
+import CameraSystem from './CameraSystem'
 
 import {
   WOLRD_WIDTH,
@@ -23,17 +24,15 @@ import {
   EVT_MOUSEMOVE_APP,
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
-  CAMERA_MIN_VELOCITY_TO_BE_MOVING,
-  
+  EVT_CAMERA_HANDLE_MOVEMENT_WORLD,
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
   EVT_ON_SCENE_DRAG_END,
-
   EVT_HOVER_SINGLE_PROJECT_ENTER,
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
-
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
+  EVT_APP_RESIZE,
 } from './constants'
 
 import './style'
@@ -45,13 +44,16 @@ let appHeight = window.innerHeight
 
 const singlePage = new SinglePage()
 const infoPanel = new InfoPanel()
+const cameraSystem = new CameraSystem({
+  appWidth,
+  appHeight,
+  position: new THREE.Vector3(0, 0, 50)
+})
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const dpr = window.devicePixelRatio || 1
 const mousePos = new THREE.Vector2(0, 0)
 const raycastMouse = new THREE.Vector2(0, 0)
-const cameraTargetPos = new THREE.Vector2(0, 0)
-const cameraVelocity = new THREE.Vector2(0, 0)
 const cursorTargetPos = new THREE.Vector2(0, 0)
 
 const renderer = new THREE.WebGLRenderer({ alpha: true })
@@ -61,24 +63,15 @@ const photoScene = new THREE.Scene()
 const postFXScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
 
-const clipCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
-const photoCamera = clipCamera.clone()
-const postFXCamera = clipCamera.clone()
-const cursorCamera = clipCamera.clone()
-
 const clipRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const cursorRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 
 const raycaster = new THREE.Raycaster()
 
-const originalCameraPos = [0, 0, 50]
-const cameraLookAt = new THREE.Vector3(0, 0, 0)
-
 let oldTime = 0
 let photoPreviews = []
 let isDragging = false
-let isDragCameraMoving = false
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let projectsData = []
@@ -88,38 +81,10 @@ let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
 
-const IS_ZOOMED = false
-
-clipCamera.position.set(...originalCameraPos)
-clipCamera.lookAt(cameraLookAt)
-clipScene.add(clipCamera)
-
-if (IS_ZOOMED) {
-  clipCamera.zoom = 0.2
-  clipCamera.updateProjectionMatrix()
-}
-
-photoCamera.position.set(...originalCameraPos)
-photoCamera.lookAt(cameraLookAt)
-photoScene.add(photoCamera)
-
-if (IS_ZOOMED) {
-  photoCamera.zoom = 0.2
-  photoCamera.updateProjectionMatrix()
-}
-
-postFXCamera.position.set(...originalCameraPos)
-postFXCamera.lookAt(cameraLookAt)
-postFXScene.add(postFXCamera)
-
-cursorCamera.position.set(...originalCameraPos)
-cursorCamera.lookAt(cameraLookAt)
-cursorScene.add(cursorCamera)
-
-if (IS_ZOOMED) {
-  cursorCamera.zoom = 0.2
-  cursorCamera.updateProjectionMatrix()
-}
+clipScene.add(cameraSystem.clipCamera)
+photoScene.add(cameraSystem.photoCamera)
+cursorScene.add(cameraSystem.cursorCamera)
+postFXScene.add(cameraSystem.postFXCamera)
 
 const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
 postFXMesh.mousePos = mousePos
@@ -216,26 +181,8 @@ function onCloseSingleView (modelName) {
 function onResize () {
   appWidth = window.innerWidth
   appHeight = window.innerHeight
-
   renderer.setSize(appWidth, appHeight)
-  clipRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-  photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-  cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-
-  const resizeCamera = camera => {
-    camera.left = -appWidth / 2
-    camera.right = appWidth / 2
-    camera.top = -appHeight / 2
-    camera.bottom = appHeight / 2
-    camera.aspect = appWidth / appHeight
-    camera.updateProjectionMatrix()
-  }
-
-  resizeCamera(clipCamera)
-  resizeCamera(photoCamera)
-  resizeCamera(cursorCamera)
-  // resizeCamera(postFXCamera)
-
+  eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
 }
 
 function onMouseLeave () {
@@ -265,7 +212,7 @@ function onMouseDown (e) {
 
   eventEmitter.emit(EVT_ON_SCENE_DRAG_START)
 
-  if (hoveredElement && !clickedElement && !isDragCameraMoving) {
+  if (hoveredElement && !clickedElement && !cameraSystem.isDragCameraMoving) {
     if (closeModelTween) {
       closeModelTween.stop()
       closeModelTween = null
@@ -273,8 +220,8 @@ function onMouseDown (e) {
     const { modelName } = hoveredElement
     eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
       modelName,
-      targetX: clipCamera.position.x - appWidth * 0.25,
-      targetY: clipCamera.position.y,
+      targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
+      targetY: cameraSystem.clipCamera.position.y,
     }))
     openModelTween = chain(
       delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
@@ -320,11 +267,7 @@ function onMouseMove (e) {
   if (isDragging && !openModelTween && !closeModelTween && !clickedElement) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
-
     eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
-
-    cameraTargetPos.x += diffx * 2 * -1
-    cameraTargetPos.y += diffy * 2 * 1
   } else {
     
   }
@@ -388,10 +331,8 @@ function updateFrame(ts) {
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
 
   if (!isDragging) {
-    raycaster.setFromCamera(raycastMouse, photoCamera)
-    const intersectsTests = photoPreviews
-      .filter(a => a.isInteractable)
-      .map(({ clipMesh }) => clipMesh)
+    raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
+    const intersectsTests = photoPreviews.filter(a => a.isInteractable).map(({ clipMesh }) => clipMesh)
     const intersects = raycaster.intersectObjects(intersectsTests)
     if (intersects.length > 0) {
       const intersect = intersects[0]
@@ -399,7 +340,7 @@ function updateFrame(ts) {
       if (!hoveredElement) {
         hoveredElement = object
       }
-      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER)
+      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
     } else {
       hoveredElement = null
       eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
@@ -407,57 +348,7 @@ function updateFrame(ts) {
   }
 
   if (!clickedElement) {
-
-    clipCamera.position.x +=
-      (cameraTargetPos.x - clipCamera.position.x) * dt
-    clipCamera.position.y +=
-      (cameraTargetPos.y - clipCamera.position.y) * dt
-    photoCamera.position.x += (cameraTargetPos.x - photoCamera.position.x) * dt
-    photoCamera.position.y += (cameraTargetPos.y - photoCamera.position.y) * dt
-    
-    let oldCameraVelocityX = cameraVelocity.x
-    let oldCameraVelocityY = cameraVelocity.y
-
-    cameraVelocity.x += (cameraTargetPos.x - clipCamera.position.x) * dt
-    cameraVelocity.y += (cameraTargetPos.y - clipCamera.position.y) * dt
-
-    const dist = calc.distance({
-      x: cameraVelocity.x,
-      y: cameraVelocity.y
-    }, {
-      x: oldCameraVelocityX,
-      y: oldCameraVelocityY,
-    })
-    
-    isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
-
-    clipCamera.position.x += cameraVelocity.x
-    clipCamera.position.y += cameraVelocity.y
-    photoCamera.position.x += cameraVelocity.x
-    photoCamera.position.y += cameraVelocity.y
-
-    const friction = 0.6
-
-    clipCamera.position.x  *= friction
-    clipCamera.position.y  *= friction
-    photoCamera.position.x *= friction
-    photoCamera.position.y *= friction
-    
-    const bounceOffFactor = -0.05
-
-    if (cameraTargetPos.x > WOLRD_WIDTH / 2) {
-      // cameraTargetPos.x *= -1
-      cameraTargetPos.x = WOLRD_WIDTH / 2
-    } else if (cameraTargetPos.x < -WOLRD_WIDTH / 2) {
-      // cameraTargetPos.x *= -1
-      cameraTargetPos.x = -WOLRD_WIDTH / 2
-    } else if (cameraTargetPos.y > WORLD_HEIGHT / 2) {
-      // cameraTargetPos.y *= -1
-      cameraTargetPos.y = WORLD_HEIGHT / 2
-    } else if (cameraTargetPos.y < -WORLD_HEIGHT / 2) {
-      // cameraTargetPos.y *= -1
-      cameraTargetPos.y = -WORLD_HEIGHT / 2
-    }
+    eventEmitter.emit(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, ts, dt)
   }
   
   postFXMesh.material.uniforms.u_time.value = ts
@@ -486,16 +377,16 @@ function updateFrame(ts) {
   cursorArrowBottom.position.y = cursorBasePosY + 50 + cursorArrowOffset
 
   renderer.setRenderTarget(cursorRenderTarget)
-  renderer.render(cursorScene, cursorCamera)
+  renderer.render(cursorScene, cameraSystem.cursorCamera)
   
   renderer.setRenderTarget(clipRenderTarget)
-  renderer.render(clipScene, clipCamera)
+  renderer.render(clipScene, cameraSystem.clipCamera)
   
   renderer.setRenderTarget(photoRenderTarget)
-  renderer.render(photoScene, photoCamera)
+  renderer.render(photoScene, cameraSystem.photoCamera)
 
   renderer.setRenderTarget(null)
-  renderer.render(postFXScene, postFXCamera)
+  renderer.render(postFXScene, cameraSystem.postFXCamera)
 
   requestAnimationFrame(updateFrame)
 }

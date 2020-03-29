@@ -1,0 +1,139 @@
+import * as THREE from 'three'
+import { calc } from 'popmotion'
+
+import eventEmitter from './event-emitter'
+
+import {
+  WOLRD_WIDTH,
+  WORLD_HEIGHT,
+  CAMERA_MIN_VELOCITY_TO_BE_MOVING,
+
+  EVT_CAMERA_HANDLE_MOVEMENT_WORLD,
+  EVT_APP_RESIZE,
+  EVT_ON_SCENE_DRAG,
+} from './constants'
+
+export default class CameraSystem {
+  static resizeCamera (camera, appWidth, appHeight) {
+    const dpr = devicePixelRatio || 1
+    camera.left = -appWidth / 2
+    camera.right = appWidth / 2
+    camera.top = -appHeight / 2
+    camera.bottom = appHeight / 2
+    camera.aspect = appWidth / appHeight
+    camera.updateProjectionMatrix()
+    camera.setSize(appWidth * dpr, appHeight * dpr)
+    return camera
+  }
+
+  constructor ({
+    appWidth,
+    appHeight,
+    position,
+  }) {
+    this._velocity = new THREE.Vector3(0, 0, 0)
+    this._targetPosition = new THREE.Vector3(0, 0, 0)
+    this._isDragCameraMoving = false
+
+    const cameraLookAt = new THREE.Vector3(0, 0, 0)
+
+    this._clipCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
+    this._photoCamera = this._clipCamera.clone()
+    this._postFXCamera = this._clipCamera.clone()
+    this._cursorCamera = this._clipCamera.clone()
+
+    this._clipCamera.position.copy(position)
+    this._clipCamera.lookAt(cameraLookAt)
+
+    this._photoCamera.position.copy(position)
+    this._photoCamera.lookAt(cameraLookAt)
+
+    this._cursorCamera.position.copy(position)
+    this._cursorCamera.lookAt(cameraLookAt)
+    
+    this._postFXCamera.position.copy(position)
+    this._postFXCamera.lookAt(cameraLookAt)
+
+    eventEmitter.on(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, this._handleMovement)
+    eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
+    eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+  }
+  get clipCamera () {
+    return this._clipCamera
+  }
+  get photoCamera () {
+    return this._photoCamera
+  }
+  get postFXCamera () {
+    return this._postFXCamera
+  }
+  get cursorCamera () {
+    return this._cursorCamera
+  }
+  get isDragCameraMoving () {
+    return this._isDragCameraMoving
+  }
+  _handleMovement = (ts, dt) => {
+    // debugger
+    // this._clipCamera.position.x +=
+    //   (this._targetPosition.x - this._clipCamera.position.x) * dt
+    // this._clipCamera.position.y +=
+    //   (this._targetPosition.y - this._clipCamera.position.y) * dt
+    // this._photoCamera.position.x += (this._targetPosition.x - this._photoCamera.position.x) * dt
+    // this._photoCamera.position.y += (this._targetPosition.y - this._photoCamera.position.y) * dt
+    
+    let oldCameraVelocityX = this._velocity.x
+    let oldCameraVelocityY = this._velocity.y
+
+    this._velocity.x += (this._targetPosition.x - this._clipCamera.position.x) * dt
+    this._velocity.y += (this._targetPosition.y - this._clipCamera.position.y) * dt
+
+    const dist = calc.distance({
+      x: this._velocity.x,
+      y: this._velocity.y
+    }, {
+      x: oldCameraVelocityX,
+      y: oldCameraVelocityY,
+    })
+    
+    this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
+
+    this._clipCamera.position.x += this._velocity.x
+    this._clipCamera.position.y += this._velocity.y
+    this._photoCamera.position.x += this._velocity.x
+    this._photoCamera.position.y += this._velocity.y
+
+    const friction = 0.6
+
+    this._clipCamera.position.x  *= friction
+    this._clipCamera.position.y  *= friction
+    this._photoCamera.position.x *= friction
+    this._photoCamera.position.y *= friction
+    
+    const bounceOffFactor = -0.05
+
+    if (this._targetPosition.x > WOLRD_WIDTH / 2) {
+      // this._targetPosition.x *= -1
+      this._targetPosition.x = WOLRD_WIDTH / 2
+    } else if (this._targetPosition.x < -WOLRD_WIDTH / 2) {
+      // this._targetPosition.x *= -1
+      this._targetPosition.x = -WOLRD_WIDTH / 2
+    } else if (this._targetPosition.y > WORLD_HEIGHT / 2) {
+      // this._targetPosition.y *= -1
+      this._targetPosition.y = WORLD_HEIGHT / 2
+    } else if (this._targetPosition.y < -WORLD_HEIGHT / 2) {
+      // this._targetPosition.y *= -1
+      this._targetPosition.y = -WORLD_HEIGHT / 2
+    }
+  }
+  _onSceneDrag = ({ diffx, diffy }) => {
+    this._targetPosition.x += diffx * -2 + 1
+    this._targetPosition.y += diffy * 2 - 1
+  }
+  _onResize = ({ appWidth, appHeight }) => {
+    CameraSystem.resizeCamera({ camera: this._clipCamera, appWidth, appHeight })
+    CameraSystem.resizeCamera({ camera: this._photoCamera, appWidth, appHeight })
+    CameraSystem.resizeCamera({ camera: this._cursorCamera, appWidth, appHeight })
+    CameraSystem.resizeCamera({ camera: this._postFXCamera, appWidth, appHeight })
+  }
+}
