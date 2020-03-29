@@ -27,6 +27,7 @@ import {
   EVT_RAF_UPDATE_APP,
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO,
+  EVT_NEXT_PROJECT_TRANSITIONED_IN,
 } from '../constants'
 
 import photoVertexShader from './photo-vertexShader.glsl'
@@ -42,6 +43,8 @@ export default class PhotoPreview {clipFragmentShader
   static SCALE_FACTOR_MIN = 0.95
   static ARROW_RIGHT_KEY_CODE = 39
   static ARROW_LEFT_KEY_CODE = 37
+  static SLIDER_DIRECTION_LEFT = -1
+  static SLIDER_DIRECTION_RIGHT = 1
 
   static loadTexture = texName => new Promise(resolve =>
     new THREE.TextureLoader().load(texName, texture => resolve(texture)
@@ -62,12 +65,12 @@ export default class PhotoPreview {clipFragmentShader
     this._originalPosition = position.clone()
     this._targetPosition = new THREE.Vector3()
     this._allTexturesLoaded = false
-
     this._isInteractable = true
     this._targetScale = 1
     this._scale = this._targetScale
     this._sliderIdx = 0
     this._isSliderCurrentlyTransitioning = false
+    this._isSingleViewCurrentlyTransitioning = false
     this._isOpenInSingleView = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
 
@@ -85,113 +88,145 @@ export default class PhotoPreview {clipFragmentShader
     eventEmitter.on(EVT_CLOSE_REQUEST_SINGLE_PROJECT, this._onCloseRequest)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClose)
     eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseComplete)
-    eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, this._onSlideChange.bind(this, -1))
-    eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, this._onSlideChange.bind(this, 1))
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onSceneDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
     eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onSceneDragEnd)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, ({ modelName, targetX, targetY }) => {
-
-      if (this._isOpenInSingleView) {
-        this._targetPosition.x = this.x
-        this._targetPosition.y = this.y
-        tween().start({
-          update: tweenFactor => {
-            const startX = this._targetPosition.x
-            const startY = this._targetPosition.y
-            // const endX = this._targetPosition.x - this._originalPositionOpenPositionDiff.x
-            // const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
-            const endX = this._targetPosition.x - innerWidth * 0.5
-            const endY = this._targetPosition.y
-            const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
-            const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
-            const diffx = (newX - this.x) * -1
-            const diffy = (newY - this.y) * -1
-            this._onSceneDrag({ diffx, diffy })
-  
-            this.x = newX
-            this.y = newY
-            this.opacity = 1 - tweenFactor
-          },
-          complete: () => {
-            this._isOpenInSingleView = false
-            eventEmitter.emit(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, { modelName, targetX, targetY })
-          },
-        })
+    eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, this._onNavChangeTransitionOut)
+    eventEmitter.on(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, this._onNavChangeTransitionIn)
+    eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, ({ modelName }) => {
+      if (modelName === this._modelName) {
+        this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_LEFT)
       }
     })
-    eventEmitter.on(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, ({ modelName, targetX, targetY }) => {
-      if (this._modelName === modelName) {
-        this._targetPosition.x = targetX + innerWidth * 0.5
-        this._targetPosition.y = 0
-        // debugger
-        tween().start(tweenFactor => {
-          const newX = calc.getValueFromProgress(this._targetPosition.x, targetX, tweenFactor)
-          const newY = calc.getValueFromProgress(this._targetPosition.y, targetY, tweenFactor)
-          console.log(tweenFactor)
-          this.x = newX
-          this.y = newY
-          this.opacity = tweenFactor
-
-          this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
-          this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
-          
-          const diffx = (targetX - this.x) * -1
-          const diffy = (targetY - this.y) * -1
-          this._onSceneDrag({ diffx, diffy })
-
-          this._isOpenInSingleView = true
-        })
+    eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, ({ modelName }) => {
+      if (modelName === this._modelName) {
+        this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_RIGHT)
       }
     })
   }
-
   get modelName () {
     return this._modelName
   }
-
   get isInteractable () {
     return this._isInteractable
   }
-  
   get clipMesh () {
     return this._clipMesh
   }
-
   get photoMesh () {
     return this._photoMesh
   }
-
   get x () { return this._position.x }
-
   set x (x) {
     this._position.x = x
     this._photoMesh.position.x = x
     this._clipMesh.position.x = x
   }
-
   get y () { return this._position.y }
-
   set y (y) {
     this._position.y = y
     this._photoMesh.position.y = y
     this._clipMesh.position.y = y
   }
-
   get scale () { return this._scale }
-
   set scale (scale) {
     this._scale = scale
     this._clipMesh.scale.x = this._clipMesh.scale.y = scale
     this._photoMesh.scale.x = this._photoMesh.scale.y = scale
   }
-
   set opacity (opacity) {
     this._clipMesh.material.uniforms.u_opacity.value = opacity
     this._photoMesh.material.uniforms.u_opacity.value = opacity
   }
+  _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
+    if (this._isSingleViewCurrentlyTransitioning) {
+      return
+    }
+    if (this._isOpenInSingleView) {
+      const dpr = devicePixelRatio || 1
+      let offsetX
+      if (direction === 1) {
+        offsetX = -innerWidth * dpr * 0.5
+      } else {
+        offsetX = innerWidth * dpr * 0.5
+      }
+      this._transitionOnNavigationChange({
+        startX: this.x,
+        startY: this.y,
+        targetX: targetX + offsetX,
+        targetY,
+        onUpdate: tweenFactor => {
+          this.opacity = 1 - tweenFactor
+        }
+      }).then(() => {
+        this._onOpenComplete({ modelName })
+        eventEmitter.emit(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, { modelName, direction, targetX, targetY })
+        this._isOpenInSingleView = false
+        this.x = this._originalPosition.x
+        this.y = this._originalPosition.y
+        this.scale = 1
+      })
+    }
+  }
+  _onNavChangeTransitionIn = ({ modelName, direction, targetX, targetY }) => {
+    if (this._modelName !== modelName) {
+      return
+    }
+    if (this._isSingleViewCurrentlyTransitioning) {
+      return
+    }
+    this.opacity = 1
+    const dpr = devicePixelRatio || 1
+    let offsetX
+    if (direction === 1) {
+      offsetX = innerWidth + dpr * 0.5
+    } else {
+      offsetX = -innerWidth + dpr * 0.5
+    }
+    this._transitionOnNavigationChange({
+      startX: targetX + offsetX,
+      startY: targetY,
+      targetX: targetX,
+      targetY,
+    }).then(() => {
+      this._isOpenInSingleView = true
+      this._onOpenComplete({ modelName })
+      eventEmitter.emit(EVT_NEXT_PROJECT_TRANSITIONED_IN)
+    })
+  }
+  _transitionOnNavigationChange = ({
+    startX,
+    startY,
+    targetX,
+    targetY,
+    onUpdate = () => {},
+  }) => new Promise(resolve => {
+    this._isSingleViewCurrentlyTransitioning = true
+    this._targetPosition.x = startX
+    this._targetPosition.y = startY
+    tween().start({
+      update: tweenFactor => {
+        const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
+        const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
+        const diffx = (newX - this.x) * -1 * 5
+        const diffy = (newY - this.y) * -1
+        this._onSceneDrag({ diffx, diffy })
 
+        this.x = newX
+        this.y = newY
+
+        this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
+        this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
+        
+        onUpdate(tweenFactor)
+      },
+      complete: () => {
+        this._isSingleViewCurrentlyTransitioning = false
+        resolve()
+      },
+    })
+  })
   _onKeyDown = e => {
     if (e.keyCode === PhotoPreview.ARROW_RIGHT_KEY_CODE) {
       this._onSlideChange(1)
@@ -199,7 +234,6 @@ export default class PhotoPreview {clipFragmentShader
       this._onSlideChange(-1)
     }
   }
-
   _makeClipMesh () {
     const clipGeometryVertCount = 20
 
@@ -218,7 +252,6 @@ export default class PhotoPreview {clipFragmentShader
     this._clipMesh.position.copy(this._position)
     this._clipMesh.modelName = this._modelName
   }
-
   _makePhotoMesh () {
     const photoGeometry = new THREE.PlaneGeometry(this._width + 100, this._height + 100)
     const photoMaterial = new THREE.ShaderMaterial({
@@ -239,7 +272,6 @@ export default class PhotoPreview {clipFragmentShader
     this._photoMesh = new THREE.Mesh(photoGeometry, photoMaterial)
     this._photoMesh.position.copy(this._position)
   }
-
   _loadPreview () {
     PhotoPreview.loadTexture(this._photos[0]).then(texture => {
       texture.flipY = true
@@ -247,7 +279,6 @@ export default class PhotoPreview {clipFragmentShader
       this._photoMesh.material.needsUpdate = true
     })
   }
-
   _onOpenRequest = ({ modelName, targetX, targetY }) => {
     this._isInteractable = false
     if (modelName === this._modelName) {
@@ -255,7 +286,6 @@ export default class PhotoPreview {clipFragmentShader
       this._targetScale = this._scale
     }
   }
-
   _onOpen = ({ modelName, tweenFactor }) => {
     if (modelName === this._modelName) {
       const targetPosX = this._targetPosition.x
@@ -281,7 +311,6 @@ export default class PhotoPreview {clipFragmentShader
       // this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
     }
   }
-
   _onOpenComplete = ({ modelName }) => {
     if (modelName !== this._modelName) {
       return
@@ -319,7 +348,6 @@ export default class PhotoPreview {clipFragmentShader
       this._onSceneDrag({ diffx, diffy })
     })
   }
-
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {
       this._targetPosition.set(this.x, this.y, 1)
@@ -327,7 +355,6 @@ export default class PhotoPreview {clipFragmentShader
       window.removeEventListener('keydown', this._onKeyDown)
     }
   }
-
   _onClose = ({ modelName, tweenFactor }) => {
     this._isInteractable = true
     if (modelName === this._modelName) {
@@ -338,7 +365,7 @@ export default class PhotoPreview {clipFragmentShader
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
-1
+
       const diffx = (newX - this.x) * -1
       const diffy = (newY - this.y) * -1
       this._onSceneDrag({ diffx, diffy })
@@ -352,11 +379,9 @@ export default class PhotoPreview {clipFragmentShader
       this.opacity = mapNumber(tweenFactor, 0.25, 1, 0, 1)
     }
   }
-
   _onCloseComplete () {
     this._isInteractable = true
   }
-
   _onSlideChange = direction => {
     if (this._isSliderCurrentlyTransitioning) {
       return
@@ -403,7 +428,6 @@ export default class PhotoPreview {clipFragmentShader
       }
     })
   }
-
   _onSceneDragStart = () => {
     if (!this._isInteractable) {
       return
@@ -415,7 +439,6 @@ export default class PhotoPreview {clipFragmentShader
     })
     .start(v => this._photoMesh.scale.set(v, v, 1))
   }
-
   _onSceneDrag = ({ diffx, diffy }) => {
     // if (!this._isInteractable) {
     //   return
@@ -423,7 +446,6 @@ export default class PhotoPreview {clipFragmentShader
     this._diffVectorTarget.x = clampNumber(diffx * 5, -25, 25)
     this._diffVectorTarget.y = clampNumber(diffy * 5, -25, 25)
   }
-
   _onSceneDragEnd = () => {
     if (!this._isInteractable) {
       return
@@ -437,10 +459,8 @@ export default class PhotoPreview {clipFragmentShader
     this._diffVectorTarget.x = 0
     this._diffVectorTarget.y = 0
   }
-
   _onUpdate = (ts, dt) => {
     this._diffVector.x += (this._diffVectorTarget.x - this._diffVector.x) * dt * 6
     this._diffVector.y += (this._diffVectorTarget.y - this._diffVector.y) * dt * 6
   } 
-
 }

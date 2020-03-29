@@ -14,19 +14,17 @@ import {
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
- 
   EVT_OPENING_SINGLE_PROJECT,
-  EVT_OPEN_SINGLE_PROJECT,
-  
+  EVT_OPEN_SINGLE_PROJECT,  
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
- 
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
   EVT_LOADED_PROJECTS,
-
+  EVT_CLICK_PREV_PROJECT,
   EVT_CLICK_NEXT_PROJECT,
+  EVT_NEXT_PROJECT_TRANSITIONED_IN,
 } from './constants'
 
 export default class SinglePage {
@@ -36,6 +34,8 @@ export default class SinglePage {
   static SIDE_ARROW_RADIUS = 50
   static SIDE_ARROW_PADDING = 50
   static ARROW_INTERACTION_DIST_THRESHOLD = 50
+
+  static pageBackground = '#fcfcfc'
 
   constructor () {
     this._mousePos = { x: 0, y: 0 }
@@ -48,6 +48,7 @@ export default class SinglePage {
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
       wrapper,
+      singlePageInfo: wrapper.getElementsByClassName('single-page-info')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
       subtitle: wrapper.getElementsByClassName('single-page-subheading')[0],
       description: wrapper.getElementsByClassName('single-page-description')[0],
@@ -62,6 +63,7 @@ export default class SinglePage {
 
     this.stylers = {
       wrapper: styler(this.$els.wrapper),
+      singlePageInfo: styler(this.$els.singlePageInfo),
       sliderButtonPrev: styler(this.$els.sliderButtonPrev),
       sliderButtonNext: styler(this.$els.sliderButtonNext),
       closeButton: styler(this.$els.closeButton),
@@ -72,6 +74,16 @@ export default class SinglePage {
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpening)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.on(EVT_NEXT_PROJECT_TRANSITIONED_IN, this._removeBackgroundColor)
+
+    this.$els.prevProductButton.addEventListener('click', () => {
+      this._nextModelName = this._currModelName
+      this._currModelName = this._prevModelName
+      const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
+      this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1]
+      eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
+      this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
+    }, false)
 
     this.$els.nextProductButton.addEventListener('click', () => {
       this._prevModelName = this._currModelName
@@ -79,9 +91,14 @@ export default class SinglePage {
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
       this._nextModelName = this._projectsData[currNextIdx + 1] ? this._projectsData[currNextIdx + 1].modelName : this._projectsData[0].modelName
       eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
+      this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
     }, false)
 
     this._positionButtons()
+  }
+
+  _removeBackgroundColor = () => {
+    this.stylers.singlePageInfo.set('background-color', 'transparent')
   }
 
   _positionButtons = () => {
@@ -129,12 +146,10 @@ export default class SinglePage {
 
   _checkSliderClick = e => {
     if (this._sliderPrevBtnHovered) {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK)
-      console.log('firing EVT_SLIDER_BUTTON_LEFT_CLICK')
+      eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK, { modelName: this._currModelName })
     }
     if (this._sliderNextBtnHovered) {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK)
-      console.log('firing EVT_SLIDER_BUTTON_NEXT_CLICK')
+      eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK, { modelName: this._currModelName })
     }
   }
 

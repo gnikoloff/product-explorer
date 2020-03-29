@@ -38,6 +38,7 @@ import {
   EVT_RENDER_CLIP_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_APP_RESIZE,
+  EVT_CLICK_PREV_PROJECT,
   EVT_CLICK_NEXT_PROJECT,
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
 } from './constants'
@@ -137,14 +138,25 @@ function init () {
   window.addEventListener('resize', onResize)
   
   eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
+  eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
   
   requestAnimationFrame(updateFrame)
 }
 
+function onPrevProjectClick ({ modelName }) {
+  eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, {
+    modelName,
+    direction: -1,
+    targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
+    targetY: cameraSystem.clipCamera.position.y,
+  })
+}
+
 function onNextProjectClick ({ modelName }) {
   eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, {
     modelName,
+    direction: 1,
     targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
     targetY: cameraSystem.clipCamera.position.y,
   })
