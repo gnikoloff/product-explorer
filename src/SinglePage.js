@@ -93,7 +93,9 @@ export default class SinglePage {
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
-      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false })
+      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false }).then(() => {
+        this._setContentTexts({ modelName: this._currModelName })
+      })
     }, false)
 
     this.$els.nextProductButton.addEventListener('click', () => {
@@ -105,7 +107,9 @@ export default class SinglePage {
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
-      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false })
+      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false }).then(() => {
+        this._setContentTexts({ modelName: this._currModelName })
+      })
     }, false)
 
     this._positionButtons()
@@ -269,9 +273,13 @@ export default class SinglePage {
           childStyler.set('opacity', tweenFactor)
         },
         complete: () => {
-          childStyler.set('pointer-events', 'auto')
-          if (i === 0) {
-            this.stylers.wrapper.set('user-select', 'auto')
+          if (direction === 1) {
+            childStyler.set('pointer-events', 'auto')
+            if (i === 0) {
+              this.stylers.wrapper.set('user-select', 'auto')
+            }
+          } else {
+            childStyler.set('pointer-events', 'none')
           }
           if (i === fadeInEls.length - 1) {
             resolve()
@@ -305,6 +313,7 @@ export default class SinglePage {
     const { sliderButtonPrev, sliderButtonNext } = this.$els
     
     this.stylers.wrapper.set('pointerEvents', 'auto')
+    document.body.style.setProperty('cursor', 'auto')
 
     this._fadeProjectDescription()
 
@@ -337,6 +346,7 @@ export default class SinglePage {
 
     this.stylers.wrapper.set('pointerEvents', 'none')
     this.stylers.wrapper.set('user-select', 'none')
+    document.body.style.setProperty('cursor', 'none')
 
     this._fadeProjectDescription({ duration: 300, parralel: true, direction: -1 })
 

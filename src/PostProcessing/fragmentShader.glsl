@@ -74,9 +74,5 @@ void main () {
 
   hoverColor = mix(hoverColor, cursorCircleColor, u_hoverMixFactor);
 
-  gl_FragColor = mix(color, hoverColor, cursorAlpha);
-
-  // gl_FragColor = maskColor;
-  
-  
+  gl_FragColor = mix(color, hoverColor, cursorAlpha * (1.0 - u_cutOffFactor));
 }
