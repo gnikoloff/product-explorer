@@ -48,21 +48,34 @@
 }
 
 .single-page-btn {
+  position: relative;
   width: 50%;
   height: 62px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background: none;
   border: none;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 .single-page-btn:focus { outline: 0; }
 .single-page-btn:hover { cursor: pointer; }
+.single-page-btn.non-interactable {
+  pointer-events: none;
+  user-select: none;
+}
 
 .single-page-prev-button {
   border-left: 1px solid rgba(0, 0, 0, 0.12);
   border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.single-page-btn-label {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .close-single-page {

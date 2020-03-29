@@ -25,6 +25,7 @@ import {
   EVT_CLICK_PREV_PROJECT,
   EVT_CLICK_NEXT_PROJECT,
   EVT_NEXT_PROJECT_TRANSITIONED_IN,
+  EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
 } from './constants'
 
 export default class SinglePage {
@@ -75,6 +76,13 @@ export default class SinglePage {
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_NEXT_PROJECT_TRANSITIONED_IN, this._removeBackgroundColor)
+    eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, () => {
+      this._fadeProjectDescription({ duration: 200, direction: 1, includeButtons: false }).then(() => {
+        this.$els.prevProductButton.classList.remove('non-interactable')
+        this.$els.nextProductButton.classList.remove('non-interactable')
+      })
+    })
+    // _setContentTexts
 
     this.$els.prevProductButton.addEventListener('click', () => {
       this._nextModelName = this._currModelName
@@ -83,6 +91,9 @@ export default class SinglePage {
       this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1]
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
+      this.$els.prevProductButton.classList.add('non-interactable')
+      this.$els.nextProductButton.classList.add('non-interactable')
+      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false })
     }, false)
 
     this.$els.nextProductButton.addEventListener('click', () => {
@@ -92,6 +103,9 @@ export default class SinglePage {
       this._nextModelName = this._projectsData[currNextIdx + 1] ? this._projectsData[currNextIdx + 1].modelName : this._projectsData[0].modelName
       eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
+      this.$els.prevProductButton.classList.add('non-interactable')
+      this.$els.nextProductButton.classList.add('non-interactable')
+      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false })
     }, false)
 
     this._positionButtons()
@@ -206,6 +220,67 @@ export default class SinglePage {
     this._mousePos.y = mouseY
   }
 
+  _setContentTexts = ({ modelName }) => {
+    const project = this._projectsData.find(project => project.modelName === modelName)
+    this.$els.title.textContent = project.modelName
+    this.$els.subtitle.textContent = project.subheading
+    this.$els.description.innerHTML = project.description
+    this.$els.descriptionList.innerHTML = ''
+    project.fabricTechnologies.forEach(desc => {
+      const li = document.createElement('li')
+      li.textContent = desc
+      this.$els.descriptionList.appendChild(li)
+    })
+    this.$els.prevProductButton.children[0].textContent = this._prevModelName
+    this.$els.nextProductButton.children[0].textContent = this._nextModelName
+  }
+
+  _fadeProjectDescription = ({ direction = 1, duration = 300, includeButtons = true, parralel = false } = {}) => new Promise(resolve => {
+    let fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
+    if (!includeButtons) {
+      const buttonNavWrapper = fadeInEls.find(el => el.classList.contains('single-page-nav'))
+      fadeInEls = fadeInEls.filter(el => !el.classList.contains('single-page-nav'))
+      const buttonElPrevLabel = buttonNavWrapper.children[0].children[0]
+      const buttonElNextLabel = buttonNavWrapper.children[1].children[0]
+      const labels = [buttonElPrevLabel, buttonElNextLabel]
+      labels.forEach((el, i) => {
+        const elStyler = styler(el)
+        tween({
+          duration,
+        }).start({
+        update: tweenFactor => {
+          if (direction === -1) {
+            tweenFactor = 1 - tweenFactor
+          }
+          elStyler.set('opacity', tweenFactor)
+        }})
+      })
+    }
+    fadeInEls.forEach((child, i) => {
+      const childStyler = styler(child)
+      chain(
+        delay(parralel ? 0 : i * 150),
+        tween({ duration })
+      ).start({
+        update: tweenFactor => {
+          if (direction === -1) {
+            tweenFactor = 1 - tweenFactor
+          }
+          childStyler.set('opacity', tweenFactor)
+        },
+        complete: () => {
+          childStyler.set('pointer-events', 'auto')
+          if (i === 0) {
+            this.stylers.wrapper.set('user-select', 'auto')
+          }
+          if (i === fadeInEls.length - 1) {
+            resolve()
+          }
+        }
+      })
+    })
+  })
+
   _onOpening = ({ tweenFactor }) => {
     const closeButtonTweenY = clampNumber(mapNumber(tweenFactor, 0, 0.75, -100, 0), -100, 0)
     const closeButtonTweenRotate = clampNumber(mapNumber(tweenFactor, 0, 0.75, -480, 0), -480, 0)
@@ -216,47 +291,22 @@ export default class SinglePage {
   }
 
   _onOpen = ({ modelName }) => {
-    const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
-    const project = this._projectsData.find(project => project.modelName === modelName)
-    this.$els.title.textContent = project.modelName
-    this.$els.subtitle.textContent = project.subheading
-    this.$els.description.innerHTML = project.description
-    project.fabricTechnologies.forEach(desc => {
-      const li = document.createElement('li')
-      li.textContent = desc
-      this.$els.descriptionList.appendChild(li)
-    })
-
     this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
     this._currModelName = modelName
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
 
-    this.$els.prevProductButton.textContent = this._prevModelName
-    this.$els.nextProductButton.textContent = this._nextModelName
+    const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
+
+    this._setContentTexts({ modelName })
 
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     document.body.addEventListener('click', this._checkSliderClick, false)
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
-    const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
+    const { sliderButtonPrev, sliderButtonNext } = this.$els
     
     this.stylers.wrapper.set('pointerEvents', 'auto')
 
-    const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
-    fadeInEls.forEach((child, i) => {
-      const childStyler = styler(child)
-      chain(
-        delay(i * 150),
-        tween()
-      ).start({
-        update: tweenFactor => childStyler.set('opacity', tweenFactor),
-        complete: () => {
-          childStyler.set('pointer-events', 'auto')
-          if (i === 0) {
-            this.stylers.wrapper.set('user-select', 'auto')
-          }
-        }
-      })
-    })
+    this._fadeProjectDescription()
 
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
     sliderBtns.forEach((button, i) => {
@@ -288,18 +338,7 @@ export default class SinglePage {
     this.stylers.wrapper.set('pointerEvents', 'none')
     this.stylers.wrapper.set('user-select', 'none')
 
-    fadeInEls.forEach((child, i) => {
-      const childStyler = styler(child)
-      tween({
-        from: { opacity: 1 },
-        to: { opacity: 0 },
-      }).start({
-        update: childStyler.set,
-        complete: () => {
-          childStyler.set('pointer-events', 'none')
-        }
-      })
-    })
+    this._fadeProjectDescription({ duration: 300, parralel: true, direction: -1 })
 
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
     sliderBtns.forEach((button, i) => {
@@ -311,7 +350,6 @@ export default class SinglePage {
         update: buttonStyler.set,
         complete: () => {
           if (i === 0) {
-            this.$els.descriptionList.innerHTML = ''
             eventEmitter.emit(EVT_FADE_OUT_SINGLE_VIEW, this._currModelName)
           }
         },
