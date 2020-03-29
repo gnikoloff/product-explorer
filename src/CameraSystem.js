@@ -17,6 +17,8 @@ import {
 } from './constants'
 
 export default class CameraSystem {
+  static friction = 0.6
+
   static resizeCamera (camera, appWidth, appHeight) {
     const dpr = devicePixelRatio || 1
     camera.left = -appWidth / 2
@@ -86,14 +88,6 @@ export default class CameraSystem {
     return this._isDragCameraMoving
   }
   _handleMovement = (ts, dt) => {
-    // debugger
-    // this._clipCamera.position.x +=
-    //   (this._targetPosition.x - this._clipCamera.position.x) * dt
-    // this._clipCamera.position.y +=
-    //   (this._targetPosition.y - this._clipCamera.position.y) * dt
-    // this._photoCamera.position.x += (this._targetPosition.x - this._photoCamera.position.x) * dt
-    // this._photoCamera.position.y += (this._targetPosition.y - this._photoCamera.position.y) * dt
-    
     let oldCameraVelocityX = this._velocity.x
     let oldCameraVelocityY = this._velocity.y
 
@@ -115,26 +109,18 @@ export default class CameraSystem {
     this._photoCamera.position.x += this._velocity.x
     this._photoCamera.position.y += this._velocity.y
 
-    const friction = 0.6
-
-    this._clipCamera.position.x  *= friction
-    this._clipCamera.position.y  *= friction
-    this._photoCamera.position.x *= friction
-    this._photoCamera.position.y *= friction
-    
-    const bounceOffFactor = -0.05
+    this._clipCamera.position.x  *= CameraSystem.friction
+    this._clipCamera.position.y  *= CameraSystem.friction
+    this._photoCamera.position.x *= CameraSystem.friction
+    this._photoCamera.position.y *= CameraSystem.friction
 
     if (this._targetPosition.x > WOLRD_WIDTH / 2) {
-      // this._targetPosition.x *= -1
       this._targetPosition.x = WOLRD_WIDTH / 2
     } else if (this._targetPosition.x < -WOLRD_WIDTH / 2) {
-      // this._targetPosition.x *= -1
       this._targetPosition.x = -WOLRD_WIDTH / 2
     } else if (this._targetPosition.y > WORLD_HEIGHT / 2) {
-      // this._targetPosition.y *= -1
       this._targetPosition.y = WORLD_HEIGHT / 2
     } else if (this._targetPosition.y < -WORLD_HEIGHT / 2) {
-      // this._targetPosition.y *= -1
       this._targetPosition.y = -WORLD_HEIGHT / 2
     }
   }
@@ -150,7 +136,6 @@ export default class CameraSystem {
       CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom: this._zoomFactor })
     })
   }
-
   _onDragZoomIn = () => {
     tween().start(tweenFactor => {
       const zoom = this._zoomFactor + tweenFactor * 0.125
@@ -159,7 +144,6 @@ export default class CameraSystem {
       CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
     })
   }
-  
   _onResize = ({ appWidth, appHeight }) => {
     CameraSystem.resizeCamera({ camera: this._clipCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._photoCamera, appWidth, appHeight })

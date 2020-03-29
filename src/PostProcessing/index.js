@@ -9,14 +9,14 @@ import {
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
-  
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG_END,
-
   EVT_HOVER_SINGLE_PROJECT_ENTER,
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
-
-  EVT_CLOSE_REQUEST_SINGLE_PROJECT,
+  EVT_MOUSEMOVE_APP,
+  EVT_RENDER_CURSOR_SCENE_FRAME,
+  EVT_RENDER_CLIP_SCENE_FRAME,
+  EVT_RENDER_PHOTO_SCENE_FRAME,
 } from '../constants'
 
 import {
@@ -62,6 +62,7 @@ export default class PostProcessing extends THREE.Mesh {
     super(geometry, material)
 
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
+    this._cursorTargetPosition = new THREE.Vector2(0, 0)
     this._cursorScanlineTarget = 0
     this._isHidden = false
     this._preventClick = false
@@ -78,6 +79,13 @@ export default class PostProcessing extends THREE.Mesh {
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
+    eventEmitter.on(EVT_RENDER_CURSOR_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseCursor', texture))
+    eventEmitter.on(EVT_RENDER_CLIP_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseClip', texture))
+    eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', texture))
+  }
+  _updateFrameTexture = (uniformName, texture) => {
+    this.material.uniforms[uniformName].value = texture
   }
   _onClosingSingleProject = ({ tweenFactor }) => {
     const tween = this._currCutOffFactor - mapNumber(tweenFactor, 0, 1, 0, this._currCutOffFactor)
@@ -101,6 +109,11 @@ export default class PostProcessing extends THREE.Mesh {
       return
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
+  }
+  _onMouseMove = ({ mouseX, mouseY }) => {
+    const dpr = devicePixelRatio || 1
+    this._cursorTargetPosition.x = mouseX * dpr
+    this._cursorTargetPosition.y = (innerHeight - mouseY) * dpr
   }
   _onProjectHoverEnter = () => {
     if (this._isHidden) {
@@ -126,7 +139,10 @@ export default class PostProcessing extends THREE.Mesh {
     this._isHidden = false
   }
   _onUpdate = (ts, dt) => {
+    this.material.uniforms.u_time.value = ts
     this.material.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this.material.uniforms.u_cursorSize.value) * (dt * 10)
     this.material.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this.material.uniforms.u_hoverMixFactor.value) * (dt * 10)
+    this.material.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this.material.uniforms.u_mouse.value.x) * (dt * 12)
+    this.material.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this.material.uniforms.u_mouse.value.y) * (dt * 12)
   }
 }

@@ -34,6 +34,9 @@ import {
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
+  EVT_RENDER_CURSOR_SCENE_FRAME,
+  EVT_RENDER_CLIP_SCENE_FRAME,
+  EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_APP_RESIZE,
 } from './constants'
 
@@ -56,7 +59,6 @@ const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const dpr = window.devicePixelRatio || 1
 const mousePos = new THREE.Vector2(0, 0)
 const raycastMouse = new THREE.Vector2(0, 0)
-const cursorTargetPos = new THREE.Vector2(0, 0)
 
 const renderer = new THREE.WebGLRenderer({ alpha: true })
 
@@ -89,7 +91,6 @@ cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
 
 const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
-postFXMesh.mousePos = mousePos
 postFXScene.add(postFXMesh)
 
 const cursorArrowLeft = new THREE.Mesh(
@@ -240,9 +241,6 @@ function onMouseMove (e) {
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
-  cursorTargetPos.x = e.pageX
-  cursorTargetPos.y = window.innerHeight - e.pageY
-
   if (isDragging && !openModelTween && !closeModelTween && !clickedElement) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
@@ -318,13 +316,6 @@ function updateFrame(ts) {
   if (!clickedElement) {
     eventEmitter.emit(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, ts, dt)
   }
-  
-  postFXMesh.material.uniforms.u_time.value = ts
-  postFXMesh.material.uniforms.u_tDiffuseClip.value = clipRenderTarget.texture
-  postFXMesh.material.uniforms.u_tDiffusePhoto.value = photoRenderTarget.texture
-  postFXMesh.material.uniforms.u_tDiffuseCursor.value = cursorRenderTarget.texture
-  postFXMesh.material.uniforms.u_mouse.value.x += (cursorTargetPos.x - postFXMesh.material.uniforms.u_mouse.value.x) * (dt * 12)
-  postFXMesh.material.uniforms.u_mouse.value.y += (cursorTargetPos.y - postFXMesh.material.uniforms.u_mouse.value.y) * (dt * 12)
 
   const cursorBasePosX = (raycastMouse.x * appWidth) / 2
   const cursorBasePosY = (raycastMouse.y * appHeight) / 2
@@ -346,12 +337,15 @@ function updateFrame(ts) {
 
   renderer.setRenderTarget(cursorRenderTarget)
   renderer.render(cursorScene, cameraSystem.cursorCamera)
+  eventEmitter.emit(EVT_RENDER_CURSOR_SCENE_FRAME, { texture: cursorRenderTarget.texture })
   
   renderer.setRenderTarget(clipRenderTarget)
   renderer.render(clipScene, cameraSystem.clipCamera)
+  eventEmitter.emit(EVT_RENDER_CLIP_SCENE_FRAME, { texture: clipRenderTarget.texture })
   
   renderer.setRenderTarget(photoRenderTarget)
   renderer.render(photoScene, cameraSystem.photoCamera)
+  eventEmitter.emit(EVT_RENDER_PHOTO_SCENE_FRAME, { texture: photoRenderTarget.texture })
 
   renderer.setRenderTarget(null)
   renderer.render(postFXScene, cameraSystem.postFXCamera)
