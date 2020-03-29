@@ -79,7 +79,7 @@ export default class SinglePage {
     this.$els.prevProductButton.addEventListener('click', () => {
       this._nextModelName = this._currModelName
       this._currModelName = this._prevModelName
-      const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
+      const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._prevModelName)
       this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1]
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
@@ -246,12 +246,9 @@ export default class SinglePage {
       const childStyler = styler(child)
       chain(
         delay(i * 150),
-        tween({
-          from: 0,
-          to: 1,
-        })
+        tween()
       ).start({
-        update: v => childStyler.set('opacity', v),
+        update: tweenFactor => childStyler.set('opacity', tweenFactor),
         complete: () => {
           childStyler.set('pointer-events', 'auto')
           if (i === 0) {
@@ -266,16 +263,9 @@ export default class SinglePage {
       const buttonStyler = styler(button)
       chain(
         delay(i * 150),
-        tween({
-          from: {
-            opacity: 0,
-          },
-          to: {
-            opacity: 1,
-          },
-        })
+        tween()
       ).start({
-        update: buttonStyler.set,
+        update: tweenFactor => buttonStyler.set('opacity', tweenFactor),
       })
     })
   }

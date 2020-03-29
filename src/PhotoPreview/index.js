@@ -191,7 +191,7 @@ export default class PhotoPreview {clipFragmentShader
       targetY,
     }).then(() => {
       this._isOpenInSingleView = true
-      this._onOpenComplete({ modelName })
+      this._onOpenComplete({ modelName, diffDuration: 50 })
       eventEmitter.emit(EVT_NEXT_PROJECT_TRANSITIONED_IN)
     })
   }
@@ -311,7 +311,7 @@ export default class PhotoPreview {clipFragmentShader
       // this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
     }
   }
-  _onOpenComplete = ({ modelName }) => {
+  _onOpenComplete = ({ modelName, diffDuration = 300 }) => {
     if (modelName !== this._modelName) {
       return
     }
@@ -341,7 +341,7 @@ export default class PhotoPreview {clipFragmentShader
     .start(v => this._photoMesh.scale.set(v, v, 1))
 
     tween({
-      // ...
+      duration: diffDuration,
     }).start(v => {
       const diffx = calc.getValueFromProgress(this._diffVector.x, 0, v)
       const diffy = calc.getValueFromProgress(this._diffVector.y, 0, v)
