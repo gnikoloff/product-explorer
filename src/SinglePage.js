@@ -25,6 +25,8 @@ import {
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
   EVT_LOADED_PROJECTS,
+
+  EVT_CLICK_NEXT_PROJECT,
 } from './constants'
 
 export default class SinglePage {
@@ -71,11 +73,15 @@ export default class SinglePage {
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
 
-    this._positionButtons()
-  }
+    this.$els.nextProductButton.addEventListener('click', () => {
+      this._prevModelName = this._currModelName
+      this._currModelName = this._nextModelName
+      const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
+      this._nextModelName = this._projectsData[currNextIdx + 1] ? this._projectsData[currNextIdx + 1].modelName : this._projectsData[0].modelName
+      eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
+    }, false)
 
-  _onProjectsLoaded = ({ projectsData }) => {
-    this._projectsData = projectsData
+    this._positionButtons()
   }
 
   _positionButtons = () => {
@@ -115,6 +121,10 @@ export default class SinglePage {
         y: this.$els.sliderButtonNext.pos.origY - this.$els.sliderButtonNext.pos.radius / 2,
       })
     })
+  }
+
+  _onProjectsLoaded = ({ projectsData }) => {
+    this._projectsData = projectsData
   }
 
   _checkSliderClick = e => {

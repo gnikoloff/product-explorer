@@ -16,19 +16,17 @@ import {
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
-
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
-  
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
-  
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
   EVT_ON_SCENE_DRAG_END,
-
   EVT_RAF_UPDATE_APP,
+  EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
+  EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO,
 } from '../constants'
 
 import photoVertexShader from './photo-vertexShader.glsl'
@@ -36,6 +34,7 @@ import photoFragmentShader from './photo-fragmentShader.glsl'
 
 import clipVertexShader from './clip-vertexShader.glsl'
 import clipFragmentShader from './clip-fragmentShader.glsl'
+import { EventEmitter } from 'events'
 
 export default class PhotoPreview {clipFragmentShader
 
@@ -68,7 +67,8 @@ export default class PhotoPreview {clipFragmentShader
     this._targetScale = 1
     this._scale = this._targetScale
     this._sliderIdx = 0
-    this._isCurrentlyTransitioning = false
+    this._isSliderCurrentlyTransitioning = false
+    this._isOpenInSingleView = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
 
     this._diffVector = new THREE.Vector2(0, 0)
@@ -82,19 +82,69 @@ export default class PhotoPreview {clipFragmentShader
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onOpenRequest)
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpen)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenComplete)
-    
     eventEmitter.on(EVT_CLOSE_REQUEST_SINGLE_PROJECT, this._onCloseRequest)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClose)
     eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseComplete)
-
     eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, this._onSlideChange.bind(this, -1))
     eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, this._onSlideChange.bind(this, 1))
-    
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onSceneDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
     eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onSceneDragEnd)
-
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, ({ modelName, targetX, targetY }) => {
+
+      if (this._isOpenInSingleView) {
+        this._targetPosition.x = this.x
+        this._targetPosition.y = this.y
+        tween().start({
+          update: tweenFactor => {
+            const startX = this._targetPosition.x
+            const startY = this._targetPosition.y
+            // const endX = this._targetPosition.x - this._originalPositionOpenPositionDiff.x
+            // const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
+            const endX = this._targetPosition.x - innerWidth * 0.5
+            const endY = this._targetPosition.y
+            const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
+            const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
+            const diffx = (newX - this.x) * -1
+            const diffy = (newY - this.y) * -1
+            this._onSceneDrag({ diffx, diffy })
+  
+            this.x = newX
+            this.y = newY
+            this.opacity = 1 - tweenFactor
+          },
+          complete: () => {
+            this._isOpenInSingleView = false
+            eventEmitter.emit(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, { modelName, targetX, targetY })
+          },
+        })
+      }
+    })
+    eventEmitter.on(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, ({ modelName, targetX, targetY }) => {
+      if (this._modelName === modelName) {
+        this._targetPosition.x = targetX + innerWidth * 0.5
+        this._targetPosition.y = 0
+        // debugger
+        tween().start(tweenFactor => {
+          const newX = calc.getValueFromProgress(this._targetPosition.x, targetX, tweenFactor)
+          const newY = calc.getValueFromProgress(this._targetPosition.y, targetY, tweenFactor)
+          console.log(tweenFactor)
+          this.x = newX
+          this.y = newY
+          this.opacity = tweenFactor
+
+          this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
+          this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
+          
+          const diffx = (targetX - this.x) * -1
+          const diffy = (targetY - this.y) * -1
+          this._onSceneDrag({ diffx, diffy })
+
+          this._isOpenInSingleView = true
+        })
+      }
+    })
   }
 
   get modelName () {
@@ -224,6 +274,8 @@ export default class PhotoPreview {clipFragmentShader
       const diffx = (targetPosX - this.x) * -1
       const diffy = (targetPosY - this.y) * -1
       this._onSceneDrag({ diffx, diffy })
+
+      this._isOpenInSingleView = true
     } else {
       this.opacity = mapNumber(tweenFactor, 0, 0.75, 1, 0)
       // this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
@@ -294,6 +346,8 @@ export default class PhotoPreview {clipFragmentShader
       this.x = newX
       this.y = newY
       this.scale = newScale
+
+      this._isOpenInSingleView = false
     } else {
       this.opacity = mapNumber(tweenFactor, 0.25, 1, 0, 1)
     }
@@ -304,7 +358,7 @@ export default class PhotoPreview {clipFragmentShader
   }
 
   _onSlideChange = direction => {
-    if (this._isCurrentlyTransitioning) {
+    if (this._isSliderCurrentlyTransitioning) {
       return
     }
     
@@ -334,7 +388,7 @@ export default class PhotoPreview {clipFragmentShader
     this._photoMesh.material.uniforms.u_photoMixFactor.value = 0
     this._photoMesh.material.uniforms.u_horizontalDirection.value = direction
 
-    this._isCurrentlyTransitioning = true
+    this._isSliderCurrentlyTransitioning = true
 
     tween({
       from: tweenFrom,
@@ -345,7 +399,7 @@ export default class PhotoPreview {clipFragmentShader
         this._photoMesh.material.uniforms.u_photoMixFactor.value = v
       },
       complete: () => {
-        this._isCurrentlyTransitioning = false
+        this._isSliderCurrentlyTransitioning = false
       }
     })
   }
