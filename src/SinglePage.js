@@ -74,7 +74,7 @@ export default class SinglePage {
     this._positionButtons()
   }
 
-  _onProjectsLoaded = projectsData => {
+  _onProjectsLoaded = ({ projectsData }) => {
     this._projectsData = projectsData
   }
 

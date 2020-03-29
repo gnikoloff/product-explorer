@@ -57,20 +57,17 @@ const cameraSystem = new CameraSystem({
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const dpr = window.devicePixelRatio || 1
+
 const mousePos = new THREE.Vector2(0, 0)
 const raycastMouse = new THREE.Vector2(0, 0)
-
 const renderer = new THREE.WebGLRenderer({ alpha: true })
-
 const clipScene = new THREE.Scene()
 const photoScene = new THREE.Scene()
 const postFXScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
-
 const clipRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const cursorRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-
 const raycaster = new THREE.Raycaster()
 
 let oldTime = 0
@@ -78,7 +75,6 @@ let photoPreviews = []
 let isDragging = false
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
-let projectsData = []
 let hoveredElement = null
 let clickedElement = null
 let openModelTween
@@ -144,9 +140,7 @@ function init () {
 }
 
 function onProjectsLoad (res) {
-  projectsData = res.projects
-
-  eventEmitter.emit(EVT_LOADED_PROJECTS, projectsData)
+  eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
 
   photoPreviews = res.projects.map(info => {
     const photoPreview = new PhotoPreview({
