@@ -220,33 +220,37 @@ function onMouseDown (e) {
 
   eventEmitter.emit(EVT_ON_SCENE_DRAG_START)
 
-  if (hoveredElement && !clickedElement && !cameraSystem.isDragCameraMoving) {
-    if (closeModelTween) {
-      closeModelTween.stop()
-      closeModelTween = null
-    }
-    const { modelName } = hoveredElement
-    eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
-      modelName,
-      targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
-      targetY: cameraSystem.clipCamera.position.y,
-    }))
-    openModelTween = chain(
-      delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-      tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
-    ).start({
-      update: tweenFactor => {
-        openModelTweenFactor = tweenFactor
-        eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
-      },
-      complete: () => {
-        isDragging = false
-        clickedElement = hoveredElement
-        openModelTween = null
+  if (hoveredElement && !clickedElement) {
+    if (!cameraSystem.isDragCameraMoving) {
+      if (closeModelTween) {
+        closeModelTween.stop()
+        closeModelTween = null
+      }
+      const { modelName } = hoveredElement
+      eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
+        modelName,
+        targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
+        targetY: cameraSystem.clipCamera.position.y,
+      }))
+      openModelTween = chain(
+        delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+        tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+      ).start({
+        update: tweenFactor => {
+          openModelTweenFactor = tweenFactor
+          eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
+        },
+        complete: () => {
+          isDragging = false
+          clickedElement = hoveredElement
+          openModelTween = null
 
-        eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
-      },
-    })
+          eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
+        },
+      })
+    } else {
+      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+    }
   } else {
     eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
   }
@@ -270,35 +274,35 @@ function onMouseMove (e) {
 }
 
 function onMouseUp () {
-  if (hoveredElement && !clickedElement) {
-    if (openModelTween) {
-      openModelTween.stop()
-      openModelTween = null
+  if (hoveredElement) {
+    if (!clickedElement) {
+      if (openModelTween) {
+        openModelTween.stop()
+        openModelTween = null
 
-      const { modelName } = hoveredElement
+        const { modelName } = hoveredElement
 
-      eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
+        eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
 
-      closeModelTween = chain(
-        delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-        tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
-      ).start({
-        update: tweenFactor => {
-          openModelTweenFactor = tweenFactor
-          eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
-        },
-        complete: () => {
-          eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
-          closeModelTween = null
-        }
-      })
+        closeModelTween = chain(
+          delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+          tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+        ).start({
+          update: tweenFactor => {
+            openModelTweenFactor = tweenFactor
+            eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
+          },
+          complete: () => {
+            eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
+            closeModelTween = null
+          }
+        })
+      }
     }
-  } else {
-    eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
   }
   isDragging = false
   cursorArrowOffsetTarget = 0
-
+  eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END) 
   eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
 }
 
@@ -318,12 +322,16 @@ function updateFrame(ts) {
     const intersectsTests = photoPreviews.filter(a => a.isInteractable).map(({ clipMesh }) => clipMesh)
     const intersects = raycaster.intersectObjects(intersectsTests)
     if (intersects.length > 0) {
-      const intersect = intersects[0]
-      const { object, object: { modelName } } = intersect
-      if (!hoveredElement) {
-        hoveredElement = object
+      if (cameraSystem.isDragCameraMoving) {
+        eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+      } else {
+        const intersect = intersects[0]
+        const { object, object: { modelName } } = intersect
+        if (!hoveredElement) {
+          hoveredElement = object
+        }
+        eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
       }
-      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
     } else {
       hoveredElement = null
       eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
