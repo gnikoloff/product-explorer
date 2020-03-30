@@ -135,7 +135,7 @@ export default class CameraSystem {
       this._zoomFactor = 1 - tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom: this._zoomFactor })
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
-      CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom: this._zoomFactor })
+      // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom: this._zoomFactor })
     })
   }
   _onDragZoomIn = () => {
@@ -147,7 +147,7 @@ export default class CameraSystem {
       const zoom = this._zoomFactor + tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom })
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
-      CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
+      // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
     })
   }
   _onResize = ({ appWidth, appHeight }) => {

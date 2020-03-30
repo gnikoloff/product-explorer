@@ -250,9 +250,11 @@ function onMouseDown (e) {
       })
     } else {
       eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+      cursorArrowOffsetTarget = 1
     }
   } else {
     eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
+    cursorArrowOffsetTarget = 1
   }
 }
 
