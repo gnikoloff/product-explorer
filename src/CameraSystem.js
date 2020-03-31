@@ -128,14 +128,22 @@ export default class CameraSystem {
     this._photoCamera.position.x *= CameraSystem.friction
     this._photoCamera.position.y *= CameraSystem.friction
 
-    if (this._targetPosition.x > WOLRD_WIDTH / 2) {
-      this._targetPosition.x = WOLRD_WIDTH / 2
-    } else if (this._targetPosition.x < -WOLRD_WIDTH / 2) {
-      this._targetPosition.x = -WOLRD_WIDTH / 2
-    } else if (this._targetPosition.y > WORLD_HEIGHT / 2) {
-      this._targetPosition.y = WORLD_HEIGHT / 2
-    } else if (this._targetPosition.y < -WORLD_HEIGHT / 2) {
-      this._targetPosition.y = -WORLD_HEIGHT / 2
+    const screenPaddingX = 1300 - innerWidth
+    const screenPaddingY = 1100 - innerHeight
+
+    const rightBound  = WOLRD_WIDTH / 2 + screenPaddingX / 2
+    const leftBound   = -WOLRD_WIDTH / 2 - screenPaddingX / 2
+    const bottomBound = WORLD_HEIGHT / 2 + screenPaddingY / 2
+    const topBound    = -WORLD_HEIGHT / 2 - screenPaddingY / 2
+
+    if (this._targetPosition.x > rightBound) {
+      this._targetPosition.x = rightBound
+    } else if (this._targetPosition.x < leftBound) {
+      this._targetPosition.x = leftBound
+    } else if (this._targetPosition.y > bottomBound) {
+      this._targetPosition.y = bottomBound
+    } else if (this._targetPosition.y < topBound) {
+      this._targetPosition.y = topBound
     }
   }
   _onSceneDrag = ({ diffx, diffy }) => {
