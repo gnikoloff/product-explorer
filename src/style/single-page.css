@@ -54,9 +54,12 @@
   background: none;
   border: none;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
+  transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .single-page-btn:focus { outline: 0; }
-.single-page-btn:hover { cursor: pointer; }
+.single-page-btn:hover { cursor: pointer; background: #111; color: #fff; }
+.single-page-btn.clicked { background: #111; color: #fff; }
 .single-page-btn.non-interactable {
   pointer-events: none;
   user-select: none;

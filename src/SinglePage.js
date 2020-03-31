@@ -80,6 +80,8 @@ export default class SinglePage {
       this._fadeProjectDescription({ duration: 200, direction: 1, includeButtons: false }).then(() => {
         this.$els.prevProductButton.classList.remove('non-interactable')
         this.$els.nextProductButton.classList.remove('non-interactable')
+        this.$els.prevProductButton.classList.remove('clicked')
+        this.$els.nextProductButton.classList.remove('clicked')
       })
     })
     // _setContentTexts
@@ -88,11 +90,12 @@ export default class SinglePage {
       this._nextModelName = this._currModelName
       this._currModelName = this._prevModelName
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._prevModelName)
-      this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1]
+      this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
+      this.$els.prevProductButton.classList.add('clicked')
       this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false }).then(() => {
         this._setContentTexts({ modelName: this._currModelName })
       })
@@ -107,6 +110,7 @@ export default class SinglePage {
       this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
+      this.$els.nextProductButton.classList.add('clicked')
       this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false }).then(() => {
         this._setContentTexts({ modelName: this._currModelName })
       })
