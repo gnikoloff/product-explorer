@@ -17,6 +17,7 @@ import {
   EVT_RENDER_CURSOR_SCENE_FRAME,
   EVT_RENDER_CLIP_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
+  EVT_APP_RESIZE,
 } from '../constants'
 
 import {
@@ -60,6 +61,9 @@ export default class PostProcessing extends THREE.Mesh {
     })
     
     super(geometry, material)
+    
+    this._width = width
+    this._height = height
 
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorTargetPosition = new THREE.Vector2(0, 0)
@@ -83,6 +87,7 @@ export default class PostProcessing extends THREE.Mesh {
     eventEmitter.on(EVT_RENDER_CURSOR_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseCursor', texture))
     eventEmitter.on(EVT_RENDER_CLIP_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseClip', texture))
     eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', texture))
+    eventEmitter.on(EVT_APP_RESIZE, this._onResize)
   }
   _updateFrameTexture = (uniformName, texture) => {
     this.material.uniforms[uniformName].value = texture
@@ -144,5 +149,11 @@ export default class PostProcessing extends THREE.Mesh {
     this.material.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this.material.uniforms.u_hoverMixFactor.value) * (dt * 10)
     this.material.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this.material.uniforms.u_mouse.value.x) * (dt * 12)
     this.material.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this.material.uniforms.u_mouse.value.y) * (dt * 12)
+  }
+  _onResize = () => {
+    const scaleDeltaX = innerWidth / this._width
+    const scaleDeltaY = innerHeight / this._height
+    this.scale.set(scaleDeltaX, scaleDeltaY, 1)
+    this.material.uniforms.u_resolution.value.set(innerWidth, innerHeight)
   }
 }

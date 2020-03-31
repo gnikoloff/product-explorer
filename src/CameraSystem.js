@@ -19,15 +19,13 @@ import {
 export default class CameraSystem {
   static friction = 0.6
 
-  static resizeCamera (camera, appWidth, appHeight) {
-    const dpr = devicePixelRatio || 1
+  static resizeCamera ({ camera, appWidth, appHeight }) {
     camera.left = -appWidth / 2
     camera.right = appWidth / 2
-    camera.top = -appHeight / 2
-    camera.bottom = appHeight / 2
+    camera.top = appHeight / 2
+    camera.bottom = -appHeight / 2
     camera.aspect = appWidth / appHeight
     camera.updateProjectionMatrix()
-    camera.setSize(appWidth * dpr, appHeight * dpr)
     return camera
   }
 

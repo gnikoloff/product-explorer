@@ -201,7 +201,12 @@ function onCloseSingleView (modelName) {
 function onResize () {
   appWidth = window.innerWidth
   appHeight = window.innerHeight
+
   renderer.setSize(appWidth, appHeight)
+  clipRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+  photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+  cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
+
   eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
 }
 
