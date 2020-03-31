@@ -10,13 +10,19 @@ body {
 
 body {
   background: #e5e5e5;
-  font-family: 'Fira Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   line-height: 24px;
   cursor: none;
 }
 body.dragging {
   /* cursor: grabbing; */
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 500;
 }
 
 li {
