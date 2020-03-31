@@ -93,9 +93,7 @@ export default class CameraSystem {
   }
   _onRequestOpenProject = () => {
     this._shouldMove = false
-    this._targetPosition.x = this._clipCamera.position.x
-    this._targetPosition.y = this._clipCamera.position.y
-    // this._velocity.set(0, 0, 0)
+    this._targetPosition.copy(this._clipCamera.position)
   }
   _onRequestCloseProject = () => {
     this._shouldMove = true
@@ -124,8 +122,6 @@ export default class CameraSystem {
     this._clipCamera.position.y += this._velocity.y
     this._photoCamera.position.x += this._velocity.x
     this._photoCamera.position.y += this._velocity.y
-
-    console.log('updating')
 
     this._clipCamera.position.x  *= CameraSystem.friction
     this._clipCamera.position.y  *= CameraSystem.friction

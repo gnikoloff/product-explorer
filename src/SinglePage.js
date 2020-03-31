@@ -34,7 +34,7 @@ export default class SinglePage {
 
   static SIDE_ARROW_RADIUS = 50
   static SIDE_ARROW_PADDING = 50
-  static ARROW_INTERACTION_DIST_THRESHOLD = 50
+  static ARROW_INTERACTION_DIST_THRESHOLD = 32
 
   static pageBackground = '#fcfcfc'
 
