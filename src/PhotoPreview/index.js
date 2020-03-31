@@ -5,6 +5,7 @@ import {
 } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
+import CameraSystem from '../CameraSystem'
 
 import {
   clampNumber,
@@ -28,6 +29,7 @@ import {
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO,
   EVT_NEXT_PROJECT_TRANSITIONED_IN,
+  EVT_APP_RESIZE,
 } from '../constants'
 
 import photoVertexShader from './photo-vertexShader.glsl'
@@ -35,7 +37,6 @@ import photoFragmentShader from './photo-fragmentShader.glsl'
 
 import clipVertexShader from './clip-vertexShader.glsl'
 import clipFragmentShader from './clip-fragmentShader.glsl'
-import { EventEmitter } from 'events'
 
 export default class PhotoPreview {clipFragmentShader
 
@@ -104,6 +105,7 @@ export default class PhotoPreview {clipFragmentShader
         this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_RIGHT)
       }
     })
+    eventEmitter.on(EVT_APP_RESIZE, this._onResize)
   }
   get modelName () {
     return this._modelName
@@ -176,7 +178,7 @@ export default class PhotoPreview {clipFragmentShader
     if (this._isSingleViewCurrentlyTransitioning) {
       return
     }
-    this.scale = this._openedPageTargetScale
+    this.scale = getSiglePagePhotoScale()
     const dpr = devicePixelRatio || 1
     let offsetX
     if (direction === 1) {
@@ -465,5 +467,13 @@ export default class PhotoPreview {clipFragmentShader
   _onUpdate = (ts, dt) => {
     this._diffVector.x += (this._diffVectorTarget.x - this._diffVector.x) * dt * 6
     this._diffVector.y += (this._diffVectorTarget.y - this._diffVector.y) * dt * 6
-  } 
+  }
+  _onResize = ({ cameraPositionX, cameraPositionY }) => {
+    if (this._isOpenInSingleView) {
+      this.x = cameraPositionX - innerWidth * 0.25
+      this.y = cameraPositionY
+      this.scale = getSiglePagePhotoScale()
+    }
+    this._openedPageTargetScale = getSiglePagePhotoScale()
+  }
 }

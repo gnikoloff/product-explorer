@@ -207,7 +207,12 @@ function onResize () {
   photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
   cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
 
-  eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
+  eventEmitter.emit(EVT_APP_RESIZE, {
+    appWidth,
+    appHeight,
+    cameraPositionX: cameraSystem.clipCamera.position.x,
+    cameraPositionY: cameraSystem.clipCamera.position.y,
+  })
 }
 
 function onMouseLeave () {
