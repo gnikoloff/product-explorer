@@ -1,0 +1,54 @@
+Date : 2020-04-01 00:00:57
+Directory : /Users/georgi/Code/acronym-proto/src
+Total : 23 files,  1891 codes, 19 comments, 263 blanks, all 2173 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| JavaScript |          9 |      1,451 |         13 |        194 |      1,658 |
+| CSS        |          5 |        294 |          3 |         36 |        333 |
+| GLSL       |          6 |        121 |          2 |         32 |        155 |
+| XML        |          3 |         25 |          1 |          1 |         27 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------+------------+------------+------------+------------+------------+
+| path                                   | files      | code       | comment    | blank      | total      |
++----------------------------------------+------------+------------+------------+------------+------------+
+| .                                      |         23 |      1,891 |         19 |        263 |      2,173 |
+| PhotoPreview                           |          5 |        479 |         11 |         48 |        538 |
+| style                                  |          5 |        294 |          3 |         36 |        333 |
+| PostProcessing                         |          3 |        205 |          1 |         27 |        233 |
+| assets                                 |          3 |         25 |          1 |          1 |         27 |
++----------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------+------------+------------+------------+------------+------------+
+| filename                               | language   | code       | comment    | blank      | total      |
++----------------------------------------+------------+------------+------------+------------+------------+
+| CameraSystem.js                        | JavaScript |        151 |          2 |         20 |        173 |
+| InfoPanel.js                           | JavaScript |         35 |          0 |          5 |         40 |
+| PhotoPreview/clip-fragmentShader.glsl  | GLSL       |          4 |          0 |          2 |          6 |
+| PhotoPreview/clip-vertexShader.glsl    | GLSL       |          7 |          0 |          4 |         11 |
+| PhotoPreview/index.js                  | JavaScript |        424 |         10 |         34 |        468 |
+| PhotoPreview/photo-fragmentShader.glsl | GLSL       |         39 |          1 |          7 |         47 |
+| PhotoPreview/photo-vertexShader.glsl   | GLSL       |          5 |          0 |          1 |          6 |
+| PostProcessing/fragmentShader.glsl     | GLSL       |         61 |          1 |         16 |         78 |
+| PostProcessing/index.js                | JavaScript |        139 |          0 |          9 |        148 |
+| PostProcessing/vertexShader.glsl       | GLSL       |          5 |          0 |          2 |          7 |
+| SinglePage.js                          | JavaScript |        330 |          1 |         45 |        376 |
+| assets/acronym-logo.svg                | XML        |         23 |          1 |          1 |         25 |
+| assets/arrow-left.svg                  | XML        |          1 |          0 |          0 |          1 |
+| assets/arrow-right.svg                 | XML        |          1 |          0 |          0 |          1 |
+| constants.js                           | JavaScript |         36 |          0 |         12 |         48 |
+| event-emitter.js                       | JavaScript |          4 |          0 |          4 |          8 |
+| helpers.js                             | JavaScript |         15 |          0 |          4 |         19 |
+| index.js                               | JavaScript |        317 |          0 |         61 |        378 |
+| style/general.css                      | CSS        |         28 |          1 |          6 |         35 |
+| style/header.css                       | CSS        |         69 |          1 |          8 |         78 |
+| style/index.css                        | CSS        |          4 |          0 |          1 |          5 |
+| style/single-page.css                  | CSS        |        126 |          0 |         19 |        145 |
+| style/slider.css                       | CSS        |         67 |          1 |          2 |         70 |
+| Total                                  |            |      1,891 |         19 |        263 |      2,173 |
++----------------------------------------+------------+------------+------------+------------+------------+

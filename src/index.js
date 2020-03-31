@@ -309,12 +309,8 @@ function onMouseUp () {
 }
 
 function updateFrame(ts) {
-  if (!ts) {
-    ts = 0
-  }
-  ts = Math.max(ts, 1)
-  ts /= 1000
-  const dt = ts - oldTime
+  if (!ts) { ts = 0 }
+  const dt = Math.min((ts - oldTime) / 1000, 1)
   oldTime = ts
 
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)

@@ -160,12 +160,12 @@ export default class PhotoPreview {clipFragmentShader
           this.opacity = 1 - tweenFactor
         }
       }).then(() => {
-        this._onOpenComplete({ modelName })
-        eventEmitter.emit(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, { modelName, direction, targetX, targetY })
-        this._isOpenInSingleView = false
         this.x = this._originalPosition.x
         this.y = this._originalPosition.y
         this.scale = 1
+        this._onOpenComplete({ modelName })
+        this._isOpenInSingleView = false
+        eventEmitter.emit(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, { modelName, direction, targetX, targetY })
       })
     }
   }
@@ -176,7 +176,6 @@ export default class PhotoPreview {clipFragmentShader
     if (this._isSingleViewCurrentlyTransitioning) {
       return
     }
-    this.opacity = 1
     this.scale = this._openedPageTargetScale
     const dpr = devicePixelRatio || 1
     let offsetX
@@ -190,6 +189,9 @@ export default class PhotoPreview {clipFragmentShader
       startY: targetY,
       targetX: targetX,
       targetY,
+      onUpdate: () => {
+        this.opacity = 1
+      },
     }).then(() => {
       this._isOpenInSingleView = true
       this._onOpenComplete({ modelName, diffDuration: 50 })
