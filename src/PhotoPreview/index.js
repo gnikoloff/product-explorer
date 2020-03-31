@@ -177,6 +177,7 @@ export default class PhotoPreview {clipFragmentShader
       return
     }
     this.opacity = 1
+    this.scale = this._openedPageTargetScale
     const dpr = devicePixelRatio || 1
     let offsetX
     if (direction === 1) {
@@ -333,12 +334,12 @@ export default class PhotoPreview {clipFragmentShader
         })
     }
 
-    tween({
-      from: this._photoMesh.scale.x,
-      to: PhotoPreview.SCALE_FACTOR_MIN,
-      duration: 250
-    })
-    .start(v => this._photoMesh.scale.set(v, v, 1))
+    // tween({
+    //   from: this._photoMesh.scale.x,
+    //   to: PhotoPreview.SCALE_FACTOR_MIN,
+    //   duration: 250
+    // })
+    // .start(v => this._photoMesh.scale.set(v, v, 1))
 
     tween({
       duration: diffDuration,
