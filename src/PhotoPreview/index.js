@@ -38,7 +38,7 @@ import photoFragmentShader from './photo-fragmentShader.glsl'
 import clipVertexShader from './clip-vertexShader.glsl'
 import clipFragmentShader from './clip-fragmentShader.glsl'
 
-export default class PhotoPreview {clipFragmentShader
+export default class PhotoPreview extends THREE.Mesh {
 
   static SCALE_FACTOR_MAX = 1
   static SCALE_FACTOR_MIN = 0.95
@@ -58,11 +58,30 @@ export default class PhotoPreview {clipFragmentShader
     photos,
     position,
   }) {
+    const photoGeometry = new THREE.PlaneGeometry(width + 100, height + 100)
+    const photoMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        u_planeSize: { value: new THREE.Vector2(width + 100, height + 100) },
+        u_imageSize: { value: new THREE.Vector2(750, 1200) },
+        u_textures: { value: [ new THREE.Texture(), ...new Array(3).fill(null) ] },
+        u_opacity: { value: 1.0 },
+        u_photoMixFactor: { value: 0.0 },
+        u_texIdx0: { value: 0 },
+        u_texIdx1: { value: 1 },
+        u_horizontalDirection: { value: 0 },
+      },
+      transparent: true,
+      vertexShader: photoVertexShader,
+      fragmentShader: photoFragmentShader,
+    })
+    super(photoGeometry, photoMaterial)
+
+    this.position.copy(position)
+
     this._modelName = modelName
     this._width = width
     this._height = height
     this._photos = photos
-    this._position = position.clone()
     this._originalPosition = position.clone()
     this._targetPosition = new THREE.Vector3()
     this._allTexturesLoaded = false
@@ -79,8 +98,7 @@ export default class PhotoPreview {clipFragmentShader
     this._diffVectorTarget = new THREE.Vector2(0, 0)
     this._originalPositionOpenPositionDiff = new THREE.Vector2(0, 0)
 
-    this._makeClipMesh()
-    this._makePhotoMesh()
+    
     this._loadPreview()
 
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onOpenRequest)
@@ -113,34 +131,6 @@ export default class PhotoPreview {clipFragmentShader
   get isInteractable () {
     return this._isInteractable
   }
-  get clipMesh () {
-    return this._clipMesh
-  }
-  get photoMesh () {
-    return this._photoMesh
-  }
-  get x () { return this._position.x }
-  set x (x) {
-    this._position.x = x
-    this._photoMesh.position.x = x
-    this._clipMesh.position.x = x
-  }
-  get y () { return this._position.y }
-  set y (y) {
-    this._position.y = y
-    this._photoMesh.position.y = y
-    this._clipMesh.position.y = y
-  }
-  get scale () { return this._scale }
-  set scale (scale) {
-    this._scale = scale
-    this._clipMesh.scale.x = this._clipMesh.scale.y = scale
-    this._photoMesh.scale.x = this._photoMesh.scale.y = scale
-  }
-  set opacity (opacity) {
-    this._clipMesh.material.uniforms.u_opacity.value = opacity
-    this._photoMesh.material.uniforms.u_opacity.value = opacity
-  }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
       return
@@ -154,17 +144,17 @@ export default class PhotoPreview {clipFragmentShader
         offsetX = innerWidth * dpr * 0.5
       }
       this._transitionOnNavigationChange({
-        startX: this.x,
-        startY: this.y,
+        startX: this.position.x,
+        startY: this.position.y,
         targetX: targetX + offsetX,
         targetY,
         onUpdate: tweenFactor => {
-          this.opacity = 1 - tweenFactor
+          this.material.uniforms.u_opacity.value = 1 - tweenFactor
         }
       }).then(() => {
-        this.x = this._originalPosition.x
-        this.y = this._originalPosition.y
-        this.scale = 1
+        this.position.x = this._originalPosition.x
+        this.position.y = this._originalPosition.y
+        this.scale.set(1, 1, 1)
         this._onOpenComplete({ modelName })
         this._isOpenInSingleView = false
         eventEmitter.emit(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, { modelName, direction, targetX, targetY })
@@ -178,7 +168,8 @@ export default class PhotoPreview {clipFragmentShader
     if (this._isSingleViewCurrentlyTransitioning) {
       return
     }
-    this.scale = getSiglePagePhotoScale()
+    const scale = getSiglePagePhotoScale()
+    this.scale.set(scale, scale, 1)
     const dpr = devicePixelRatio || 1
     let offsetX
     if (direction === 1) {
@@ -192,7 +183,7 @@ export default class PhotoPreview {clipFragmentShader
       targetX: targetX,
       targetY,
       onUpdate: () => {
-        this.opacity = 1
+        this.material.uniforms.u_opacity.value = 1
       },
     }).then(() => {
       this._isOpenInSingleView = true
@@ -214,12 +205,12 @@ export default class PhotoPreview {clipFragmentShader
       update: tweenFactor => {
         const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
         const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
-        const diffx = (newX - this.x) * -1 * 5
-        const diffy = (newY - this.y) * -1
+        const diffx = (newX - this.position.x) * -1 * 5
+        const diffy = (newY - this.position.y) * -1
         this._onSceneDrag({ diffx, diffy })
 
-        this.x = newX
-        this.y = newY
+        this.position.x = newX
+        this.position.y = newY
 
         this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
         this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
@@ -239,49 +230,11 @@ export default class PhotoPreview {clipFragmentShader
       this._onSlideChange(-1)
     }
   }
-  _makeClipMesh () {
-    const clipGeometryVertCount = 20
-
-    const clipGeometry = new THREE.PlaneGeometry(this._width, this._height, clipGeometryVertCount, clipGeometryVertCount)
-    const clipMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        u_dragOffsetVec: { value: this._diffVector },
-        u_opacity: { value: 1 },
-      },
-      transparent: true,
-      vertexShader: clipVertexShader,
-      fragmentShader: clipFragmentShader,
-    })
-
-    this._clipMesh = new THREE.Mesh(clipGeometry, clipMaterial)
-    this._clipMesh.position.copy(this._position)
-    this._clipMesh.modelName = this._modelName
-  }
-  _makePhotoMesh () {
-    const photoGeometry = new THREE.PlaneGeometry(this._width + 100, this._height + 100)
-    const photoMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        u_planeSize: { value: new THREE.Vector2(this._width + 100, this._height + 100) },
-        u_imageSize: { value: new THREE.Vector2(750, 1200) },
-        u_textures: { value: [ new THREE.Texture(), ...new Array(3).fill(null) ] },
-        u_opacity: { value: 1.0 },
-        u_photoMixFactor: { value: 0.0 },
-        u_texIdx0: { value: 0 },
-        u_texIdx1: { value: 1 },
-        u_horizontalDirection: { value: 0 },
-      },
-      transparent: true,
-      vertexShader: photoVertexShader,
-      fragmentShader: photoFragmentShader,
-    })
-    this._photoMesh = new THREE.Mesh(photoGeometry, photoMaterial)
-    this._photoMesh.position.copy(this._position)
-  }
   _loadPreview () {
     PhotoPreview.loadTexture(this._photos[0]).then(texture => {
       texture.flipY = true
-      this._photoMesh.material.uniforms.u_textures.value[0] = texture
-      this._photoMesh.material.needsUpdate = true
+      this.material.uniforms.u_textures.value[0] = texture
+      this.material.needsUpdate = true
     })
   }
   _onOpenRequest = ({ modelName, targetX, targetY }) => {
@@ -295,25 +248,24 @@ export default class PhotoPreview {clipFragmentShader
     if (modelName === this._modelName) {
       const targetPosX = this._targetPosition.x
       const targetPosY = this._targetPosition.y
-      const newX = calc.getValueFromProgress(this.x, targetPosX, tweenFactor * 0.1)
-      const newY = calc.getValueFromProgress(this.y, targetPosY, tweenFactor * 0.1)
+      const newX = calc.getValueFromProgress(this.position.x, targetPosX, tweenFactor * 0.1)
+      const newY = calc.getValueFromProgress(this.position.y, targetPosY, tweenFactor * 0.1)
       const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor)
       
-      this.x = newX
-      this.y = newY
-      this.scale = newScale
+      this.position.x = newX
+      this.position.y = newY
+      this.scale.set(newScale, newScale, 1)
 
       this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
       this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
       
-      const diffx = (targetPosX - this.x) * -1
-      const diffy = (targetPosY - this.y) * -1
+      const diffx = (targetPosX - this.position.x) * -1
+      const diffy = (targetPosY - this.position.y) * -1
       this._onSceneDrag({ diffx, diffy })
 
       this._isOpenInSingleView = true
     } else {
-      this.opacity = mapNumber(tweenFactor, 0, 0.75, 1, 0)
-      // this.opacity = 1 - clampNumber(mapNumber(tweenFactor, 0, 0.7, 0, 1), 0, 1)
+      this.material.uniforms.u_opacity.value = mapNumber(tweenFactor, 0, 0.75, 1, 0)
     }
   }
   _onOpenComplete = ({ modelName, diffDuration = 300 }) => {
@@ -331,19 +283,12 @@ export default class PhotoPreview {clipFragmentShader
           for (let i = 0; i < textures.length; i++) {
             const texture = textures[i]
             texture.needsUpdate = true
-            this._photoMesh.material.uniforms.u_textures.value[i + 1] = texture
+            this.material.uniforms.u_textures.value[i + 1] = texture
           }
-          this._photoMesh.material.needsUpdate = true
+          this.material.needsUpdate = true
           this._allTexturesLoaded = true
         })
     }
-
-    // tween({
-    //   from: this._photoMesh.scale.x,
-    //   to: PhotoPreview.SCALE_FACTOR_MIN,
-    //   duration: 250
-    // })
-    // .start(v => this._photoMesh.scale.set(v, v, 1))
 
     tween({
       duration: diffDuration,
@@ -355,7 +300,7 @@ export default class PhotoPreview {clipFragmentShader
   }
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {
-      this._targetPosition.set(this.x, this.y, 1)
+      this._targetPosition.set(this.position.x, this.position.y, 1)
       this._targetScale = this._scale
       window.removeEventListener('keydown', this._onKeyDown)
     }
@@ -371,17 +316,17 @@ export default class PhotoPreview {clipFragmentShader
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
 
-      const diffx = (newX - this.x) * -1
-      const diffy = (newY - this.y) * -1
+      const diffx = (newX - this.position.x) * -1
+      const diffy = (newY - this.position.y) * -1
       this._onSceneDrag({ diffx, diffy })
 
-      this.x = newX
-      this.y = newY
-      this.scale = newScale
+      this.position.x = newX
+      this.position.y = newY
+      this.scale.set(newScale, newScale, 1)
 
       this._isOpenInSingleView = false
     } else {
-      this.opacity = mapNumber(tweenFactor, 0.25, 1, 0, 1)
+      this.material.uniforms.u_opacity.value = mapNumber(tweenFactor, 0.25, 1, 0, 1)
     }
   }
   _onCloseComplete () {
@@ -404,19 +349,19 @@ export default class PhotoPreview {clipFragmentShader
       if (this._sliderIdx > 2) {
         this._sliderIdx = 0
       }
-      this._photoMesh.material.uniforms.u_texIdx0.value = oldSliderIdx
-      this._photoMesh.material.uniforms.u_texIdx1.value = this._sliderIdx
+      this.material.uniforms.u_texIdx0.value = oldSliderIdx
+      this.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
       tweenFrom = 1
       tweenTo = 0
       if (this._sliderIdx < 0) {
         this._sliderIdx = 2
       }
-      this._photoMesh.material.uniforms.u_texIdx0.value = this._sliderIdx
-      this._photoMesh.material.uniforms.u_texIdx1.value = oldSliderIdx
+      this.material.uniforms.u_texIdx0.value = this._sliderIdx
+      this.material.uniforms.u_texIdx1.value = oldSliderIdx
     }
-    this._photoMesh.material.uniforms.u_photoMixFactor.value = 0
-    this._photoMesh.material.uniforms.u_horizontalDirection.value = direction
+    this.material.uniforms.u_photoMixFactor.value = 0
+    this.material.uniforms.u_horizontalDirection.value = direction
 
     this._isSliderCurrentlyTransitioning = true
 
@@ -426,7 +371,7 @@ export default class PhotoPreview {clipFragmentShader
       duration: 800,
     }).start({
       update: v => {
-        this._photoMesh.material.uniforms.u_photoMixFactor.value = v
+        this.material.uniforms.u_photoMixFactor.value = v
       },
       complete: () => {
         this._isSliderCurrentlyTransitioning = false
@@ -442,7 +387,7 @@ export default class PhotoPreview {clipFragmentShader
       to: PhotoPreview.SCALE_FACTOR_MIN,
       duration: 250
     })
-    .start(v => this._photoMesh.scale.set(v, v, 1))
+    .start(v => this.scale.set(v, v, 1))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
     // if (!this._isInteractable) {
@@ -460,7 +405,7 @@ export default class PhotoPreview {clipFragmentShader
       to: PhotoPreview.SCALE_FACTOR_MAX,
       duration: 250
     })
-    .start(v => this._photoMesh.scale.set(v, v, 1))
+    .start(v => this.scale.set(v, v, 1))
     this._diffVectorTarget.x = 0
     this._diffVectorTarget.y = 0
   }
@@ -470,9 +415,10 @@ export default class PhotoPreview {clipFragmentShader
   }
   _onResize = ({ cameraPositionX, cameraPositionY }) => {
     if (this._isOpenInSingleView) {
-      this.x = cameraPositionX - innerWidth * 0.25
-      this.y = cameraPositionY
-      this.scale = getSiglePagePhotoScale()
+      this.position.x = cameraPositionX - innerWidth * 0.25
+      this.position.y = cameraPositionY
+      const scale = getSiglePagePhotoScale()
+      this.scale.set(scale, scale, 1)
     }
     this._openedPageTargetScale = getSiglePagePhotoScale()
   }

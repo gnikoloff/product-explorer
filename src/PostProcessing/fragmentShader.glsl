@@ -42,7 +42,7 @@ vec4 blur9 (sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 void main () {
   vec2 uv = v_uv;
   vec4 baseColor = vec4(vec3(0.89), 1.0);
-  vec4 clipColor = texture2D(u_tDiffuseClip, uv);
+  // vec4 clipColor = texture2D(u_tDiffuseClip, uv);
   vec4 photoColor = texture2D(u_tDiffusePhoto, uv);
   vec4 cursorColor = texture2D(u_tDiffuseCursor, uv);
   vec4 maskColor = texture2D(u_tDiffuseMask, uv);
@@ -52,7 +52,8 @@ void main () {
     baseColor = vec4(vec3(0.99), 1.0); 
   }
 
-  vec4 color = mix(clipColor, photoColor, clipColor.r);
+  // vec4 color = mix(clipColor, photoColor, clipColor.r);
+  vec4 color = photoColor;
   color = mix(baseColor, color, color.a);
 
   vec2 mouse = vec2(u_mouse.x, u_resolution.y - u_mouse.y);

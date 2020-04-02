@@ -173,8 +173,8 @@ function onProjectsLoad (res) {
       photos: info.sliderPhotos || [],
       position: new THREE.Vector3(info.posX, info.posY, 0)
     })
-    clipScene.add(photoPreview.clipMesh)
-    photoScene.add(photoPreview.photoMesh)
+    // clipScene.add(photoPreview.clipMesh)
+    photoScene.add(photoPreview)
     return photoPreview
   })
 }
@@ -327,7 +327,7 @@ function updateFrame(ts) {
 
   if (!isDragging) {
     raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
-    const intersectsTests = photoPreviews.filter(a => a.isInteractable).map(({ clipMesh }) => clipMesh)
+    const intersectsTests = photoPreviews.filter(a => a.isInteractable)
     const intersects = raycaster.intersectObjects(intersectsTests)
     if (intersects.length > 0) {
       if (cameraSystem.isDragCameraMoving) {
