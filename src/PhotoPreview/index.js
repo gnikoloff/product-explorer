@@ -85,7 +85,6 @@ export default class PhotoPreview extends THREE.Mesh {
     this._allTexturesLoaded = false
     this._isInteractable = true
     this._targetScale = 1
-    this._scale = this._targetScale
     this._sliderIdx = 0
     this._isSliderCurrentlyTransitioning = false
     this._isSingleViewCurrentlyTransitioning = false
@@ -247,7 +246,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._isInteractable = false
     if (modelName === this._modelName) {
       this._targetPosition.set(targetX, targetY, 1)
-      this._targetScale = this._scale
+      this._targetScale = this.scale.x
     }
   }
   _onOpen = ({ modelName, tweenFactor }) => {
