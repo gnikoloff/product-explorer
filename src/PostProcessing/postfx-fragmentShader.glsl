@@ -9,6 +9,7 @@ uniform float u_time;
 uniform float u_cursorSize;
 uniform float u_hoverMixFactor;
 uniform float u_cutOffFactor;
+uniform float u_blurMixFactor;
 
 varying vec2 v_uv;
 
@@ -42,7 +43,7 @@ void main () {
   color = mix(baseColor, color, color.a);
 
   vec2 mouse = vec2(u_mouse.x, u_resolution.y - u_mouse.y);
-  float cursorAlpha = circle(gl_FragCoord.xy, u_mouse, u_cursorSize);
+  float cursorAlpha = circle(gl_FragCoord.xy, u_mouse, u_cursorSize * (1.0 - u_blurMixFactor));
 
   vec4 cursorCircleColor = color;
   vec2 uvRandom = uv;

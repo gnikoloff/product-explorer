@@ -42,6 +42,7 @@ import {
   EVT_CLICK_PREV_PROJECT,
   EVT_CLICK_NEXT_PROJECT,
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
+  EVT_OPEN_REQUEST_INFO_SECTION,
 } from './constants'
 
 import './style'
@@ -79,6 +80,7 @@ const raycaster = new THREE.Raycaster()
 let oldTime = 0
 let photoPreviews = []
 let isDragging = false
+let isInfoSectionOpen = false
 let cursorArrowOffset = 0
 let cursorArrowOffsetTarget = 0
 let hoveredElement = null
@@ -144,8 +146,14 @@ function init () {
   eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
   eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
+  eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION, onInfoSectionOpenRequest)
   
   requestAnimationFrame(updateFrame)
+}
+
+function onInfoSectionOpenRequest () {
+  document.body.style.setProperty('cursor', 'default')
+  isInfoSectionOpen = true
 }
 
 function onPrevProjectClick ({ modelName }) {
@@ -230,6 +238,10 @@ function onMouseDown (e) {
   mousePos.x = e.pageX
   mousePos.y = e.pageY
 
+  if (isInfoSectionOpen) {
+    return
+  }
+
   eventEmitter.emit(EVT_ON_SCENE_DRAG_START)
 
   if (hoveredElement && !clickedElement) {
@@ -276,12 +288,12 @@ function onMouseMove (e) {
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
-  if (isDragging && !openModelTween && !closeModelTween && !clickedElement) {
+  if (isDragging && !openModelTween && !closeModelTween && !clickedElement && !isInfoSectionOpen) {
     const diffx = e.pageX - mousePos.x
     const diffy = e.pageY - mousePos.y
     eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
   } else {
-    
+    // ...
   }
   mousePos.x = e.pageX
   mousePos.y = e.pageY
@@ -316,8 +328,10 @@ function onMouseUp () {
   }
   isDragging = false
   cursorArrowOffsetTarget = 0
-  eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END) 
-  eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
+  if (!isInfoSectionOpen) {
+    eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
+    eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
+  }
 }
 
 function updateFrame(ts) {
@@ -327,7 +341,7 @@ function updateFrame(ts) {
 
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
 
-  if (!isDragging) {
+  if (!isDragging && !isInfoSectionOpen) {
     raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
     const intersectsTests = photoPreviews.filter(a => a.isInteractable)
     const intersects = raycaster.intersectObjects(intersectsTests)

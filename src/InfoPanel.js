@@ -9,6 +9,7 @@ import {
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_OPENING_INFO_SECTION,
+  EVT_OPEN_REQUEST_INFO_SECTION,
 } from './constants'
 import { mapNumber } from './helpers'
 
@@ -42,9 +43,15 @@ export default class InfoPanel {
     this.$els.toggleButton.addEventListener('click', this._onOpenRequest, false)
   }
   _onOpenRequest = () => {
-    document.body.style.setProperty('cursor', 'default')
-    tween().start(tweenFactor => {
-      eventEmitter.emit(EVT_OPENING_INFO_SECTION, { tweenFactor })
+    eventEmitter.emit(EVT_OPEN_REQUEST_INFO_SECTION)
+    tween().start({
+      update: tweenFactor => {
+        eventEmitter.emit(EVT_OPENING_INFO_SECTION, { tweenFactor })
+        this.stylers.toggleButton.set('opacity', 1 - tweenFactor)
+      },
+      complete: () => {
+        this.stylers.toggleButton.set('pointerEvents', 'none')
+      }
     })
   }
 }
