@@ -55,12 +55,12 @@ export default class PhotoPreview extends THREE.Mesh {
     position,
   }) {
     const diffVector = new THREE.Vector2(0, 0)
-    const photoGeometry = new THREE.PlaneGeometry(width + 100, height + 100)
+    const photoGeometry = new THREE.PlaneGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
       uniforms: {
         u_dragOffsetVec: { value: diffVector },
-        u_planeSize: { value: new THREE.Vector2(width + 100, height + 100) },
-        u_imageSize: { value: new THREE.Vector2(750, 1200) },
+        u_planeSize: { value: new THREE.Vector2(width, height) },
+        u_imageSize: { value: new THREE.Vector2(0, 0) },
         u_textures: { value: [ new THREE.Texture(), ...new Array(3).fill(null) ] },
         u_opacity: { value: 1.0 },
         u_photoMixFactor: { value: 0.0 },
@@ -229,6 +229,15 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _loadPreview () {
     PhotoPreview.loadTexture(this._photos[0]).then(texture => {
+      const {
+        image: {
+          naturalWidth: imgWidth,
+          naturalHeight: imgHeight,
+        }
+      } = texture
+      console.log(imgWidth, imgHeight)
+      this.material.uniforms.u_imageSize.value.set(imgWidth, imgHeight)
+
       texture.flipY = true
       this.material.uniforms.u_textures.value[0] = texture
       this.material.needsUpdate = true
@@ -298,7 +307,7 @@ export default class PhotoPreview extends THREE.Mesh {
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {
       this._targetPosition.set(this.position.x, this.position.y, 1)
-      this._targetScale = this._scale
+      this._targetScale = this.scale.x
       window.removeEventListener('keydown', this._onKeyDown)
     }
   }
