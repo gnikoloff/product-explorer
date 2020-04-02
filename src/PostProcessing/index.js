@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 
 import eventEmitter from '../event-emitter'
+import Effect from './Effect'
 
 import {
   EVT_RAF_UPDATE_APP,
@@ -16,18 +17,20 @@ import {
   EVT_MOUSEMOVE_APP,
   EVT_RENDER_CURSOR_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
+  EVT_RENDER_PHOTO_POSTFX_FRAME,
+  EVT_OPENING_INFO_SECTION,
   EVT_APP_RESIZE,
 } from '../constants'
 
 import {
-  clampNumber,
   mapNumber,
 } from '../helpers'
 
 import vertexShader from './vertexShader.glsl'
-import fragmentShader from './fragmentShader.glsl'
+import fragmentShaderPostFX from './postfx-fragmentShader.glsl'
+import fragmentShaderBlur from './postfx-fragmentBlurShader.glsl'
 
-export default class PostProcessing extends THREE.Mesh {
+export default class PostProcessing {
   static HIDDEN_CURSOR_SIZE = 0
   static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio || 1)
   static HOVER_CURSOR_SIZE = 80 * (devicePixelRatio || 1)
@@ -37,31 +40,42 @@ export default class PostProcessing extends THREE.Mesh {
     width,
     height,
   }) {
-    const geometry = new THREE.PlaneGeometry(width, height)
-    const material = new THREE.ShaderMaterial({
+    const dpr = devicePixelRatio || 1
+    this._mainEffect = new Effect({
+      width,
+      height,
       uniforms: {
         u_time: { value: 0.0 },
         u_tDiffusePhoto: { value: null },
         u_tDiffuseCursor: { value: null },
         u_tDiffuseMask: { value: null },
-        u_resolution: { value: new THREE.Vector2(width, height) },
+        u_resolution: { value: new THREE.Vector2(width * dpr, height * dpr) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
         u_cursorSize: { value: PostProcessing.DEFAULT_CURSOR_SIZE },
         u_hoverMixFactor: { value: 1.0 },
+        u_blurMixFactor: { value: 0.0 },
         u_cutOffFactor: { value: 0.0 },
       },
       transparent: true,
       vertexShader,
-      fragmentShader,
+      fragmentShader: fragmentShaderPostFX,
     })
+    this._blurEffect = new Effect({
+      width,
+      height,
+      uniforms: {
+        u_resolution: { value: new THREE.Vector2(width * dpr, height * dpr) },
+        u_tDiffuse: { value: null },
+        u_blurMixFactor: { value: 0.0 },
+        u_direction: { value: new THREE.Vector2() },
+      },
+      vertexShader,
+      fragmentShader: fragmentShaderBlur,
+    })
+
     new THREE.TextureLoader().load('/mask3.png', texture => {
-      material.uniforms.u_tDiffuseMask.value = texture
+      this._mainEffect.uniforms.u_tDiffuseMask.value = texture
     })
-    
-    super(geometry, material)
-    
-    this._width = width
-    this._height = height
 
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorTargetPosition = new THREE.Vector2(0, 0)
@@ -82,23 +96,38 @@ export default class PostProcessing extends THREE.Mesh {
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
-    eventEmitter.on(EVT_RENDER_CURSOR_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseCursor', texture))
-    eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', texture))
+    eventEmitter.on(EVT_RENDER_CURSOR_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseCursor', '_mainEffect', texture))
+    eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', '_mainEffect', texture))
+    eventEmitter.on(EVT_RENDER_PHOTO_POSTFX_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuse', '_blurEffect', texture))
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+    eventEmitter.on(EVT_OPENING_INFO_SECTION, this._onBlur)
   }
-  _updateFrameTexture = (uniformName, texture) => {
-    this.material.uniforms[uniformName].value = texture
+  get mainEffectPlane () {
+    return this._mainEffect
+  }
+  get blurEffect () {
+    return this._blurEffect
+  }
+  setBlurDirection = ({ x, y }) => {
+    this._blurEffect.uniforms.u_direction.value.set(x, y)
+  }
+  _onBlur = ({ tweenFactor }) => {
+    this._mainEffect.uniforms.u_blurMixFactor.value = tweenFactor
+    this._blurEffect.uniforms.u_blurMixFactor.value = tweenFactor
+  }
+  _updateFrameTexture = (uniformName, effectName, texture) => {
+    this[effectName].uniforms[uniformName].value = texture
   }
   _onClosingSingleProject = ({ tweenFactor }) => {
     const tween = this._currCutOffFactor - mapNumber(tweenFactor, 0, 1, 0, this._currCutOffFactor)
-    this.material.uniforms.u_cutOffFactor.value = tween
+    this._mainEffect.uniforms.u_cutOffFactor.value = tween
   }
   _onOpenSingleProject = () => {
     this._preventClick = true
   }
   _onOpeningSingleProject = ({ tweenFactor }) => {
     this._currCutOffFactor = tweenFactor
-    this.material.uniforms.u_cutOffFactor.value = tweenFactor
+    this._mainEffect.uniforms.u_cutOffFactor.value = tweenFactor
   }
   _onDragStart = () => {
     if (this._isHidden || this._preventClick) {
@@ -141,16 +170,13 @@ export default class PostProcessing extends THREE.Mesh {
     this._isHidden = false
   }
   _onUpdate = (ts, dt) => {
-    this.material.uniforms.u_time.value = ts
-    this.material.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this.material.uniforms.u_cursorSize.value) * (dt * 10)
-    this.material.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this.material.uniforms.u_hoverMixFactor.value) * (dt * 10)
-    this.material.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this.material.uniforms.u_mouse.value.x) * (dt * 12)
-    this.material.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this.material.uniforms.u_mouse.value.y) * (dt * 12)
+    this._mainEffect.uniforms.u_time.value = ts
+    this._mainEffect.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this._mainEffect.uniforms.u_cursorSize.value) * (dt * 10)
+    this._mainEffect.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this._mainEffect.uniforms.u_hoverMixFactor.value) * (dt * 10)
+    this._mainEffect.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 12)
+    this._mainEffect.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 12)
   }
   _onResize = () => {
-    const scaleDeltaX = innerWidth / this._width
-    const scaleDeltaY = innerHeight / this._height
-    this.scale.set(scaleDeltaX, scaleDeltaY, 1)
-    this.material.uniforms.u_resolution.value.set(innerWidth, innerHeight)
+    this.this._mainEffect.onResize()
   }
 }

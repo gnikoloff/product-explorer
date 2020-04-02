@@ -14,6 +14,7 @@ import {
   WORLD_HEIGHT,
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
   TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION,
+  BLUR_ITERATIONS,
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
@@ -36,6 +37,7 @@ import {
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_RENDER_CURSOR_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
+  EVT_RENDER_PHOTO_POSTFX_FRAME,
   EVT_APP_RESIZE,
   EVT_CLICK_PREV_PROJECT,
   EVT_CLICK_NEXT_PROJECT,
@@ -65,9 +67,13 @@ const raycastMouse = new THREE.Vector2(0, 0)
 const renderer = new THREE.WebGLRenderer({ alpha: true })
 const photoScene = new THREE.Scene()
 const postFXScene = new THREE.Scene()
+const postFXBlurScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
 const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const cursorRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+const postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+const postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+const postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const raycaster = new THREE.Raycaster()
 
 let oldTime = 0
@@ -84,9 +90,11 @@ let openModelTweenFactor = 1
 photoScene.add(cameraSystem.photoCamera)
 cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
+postFXBlurScene.add(cameraSystem.postFXBlurCamera)
 
 const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
-postFXScene.add(postFXMesh)
+postFXScene.add(postFXMesh.mainEffectPlane)
+postFXBlurScene.add(postFXMesh.blurEffect)
 
 const cursorArrowLeft = new THREE.Mesh(
   new THREE.PlaneGeometry(15, 15),
@@ -370,8 +378,35 @@ function updateFrame(ts) {
   renderer.render(photoScene, cameraSystem.photoCamera)
   eventEmitter.emit(EVT_RENDER_PHOTO_SCENE_FRAME, { texture: photoRenderTarget.texture })
 
-  renderer.setRenderTarget(null)
+  renderer.setRenderTarget(postFXRenderTarget)
   renderer.render(postFXScene, cameraSystem.postFXCamera)
+  
+
+  let writeBuffer = postFXBlurHorizontalTarget
+  let readBuffer = postFXBlurVerticalTarget
+
+  for (let i = 0; i < BLUR_ITERATIONS; i++) {
+    renderer.setRenderTarget(writeBuffer)
+
+    const radius = (BLUR_ITERATIONS - i - 1)
+
+    if (i === 0) {
+      eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: postFXRenderTarget.texture })
+    } else {
+      eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: readBuffer.texture })
+    }
+
+    postFXMesh.setBlurDirection(i % 2 === 0 ? { x: radius, y: 0} : { x: 0, y: radius })
+
+    renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
+
+    let t = writeBuffer
+    writeBuffer = readBuffer
+    readBuffer = t
+  }
+
+  renderer.setRenderTarget(null)
+  renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
 
   requestAnimationFrame(updateFrame)
 }

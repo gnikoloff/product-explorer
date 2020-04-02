@@ -51,6 +51,7 @@ export default class CameraSystem {
 
     this._photoCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
     this._postFXCamera = this._photoCamera.clone()
+    this._postFXBlurCamera = this._photoCamera.clone()
     this._cursorCamera = this._photoCamera.clone()
 
     this._photoCamera.position.copy(position)
@@ -61,6 +62,9 @@ export default class CameraSystem {
     
     this._postFXCamera.position.copy(position)
     this._postFXCamera.lookAt(cameraLookAt)
+
+    this._postFXBlurCamera.position.copy(position)
+    this._postFXBlurCamera.lookAt(cameraLookAt)
 
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onRequestOpenProject)
     eventEmitter.on(EVT_CLOSE_REQUEST_SINGLE_PROJECT, this._onRequestCloseProject)
@@ -75,6 +79,9 @@ export default class CameraSystem {
   }
   get postFXCamera () {
     return this._postFXCamera
+  }
+  get postFXBlurCamera () {
+    return this._postFXBlurCamera
   }
   get cursorCamera () {
     return this._cursorCamera
