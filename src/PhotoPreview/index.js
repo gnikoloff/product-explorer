@@ -5,7 +5,6 @@ import {
 } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
-import CameraSystem from '../CameraSystem'
 
 import {
   clampNumber,
@@ -32,11 +31,8 @@ import {
   EVT_APP_RESIZE,
 } from '../constants'
 
-import photoVertexShader from './photo-vertexShader.glsl'
-import photoFragmentShader from './photo-fragmentShader.glsl'
-
-import clipVertexShader from './clip-vertexShader.glsl'
-import clipFragmentShader from './clip-fragmentShader.glsl'
+import photoVertexShader from './vertexShader.glsl'
+import photoFragmentShader from './fragmentShader.glsl'
 
 export default class PhotoPreview extends THREE.Mesh {
 
@@ -58,9 +54,11 @@ export default class PhotoPreview extends THREE.Mesh {
     photos,
     position,
   }) {
+    const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneGeometry(width + 100, height + 100)
     const photoMaterial = new THREE.ShaderMaterial({
       uniforms: {
+        u_dragOffsetVec: { value: diffVector },
         u_planeSize: { value: new THREE.Vector2(width + 100, height + 100) },
         u_imageSize: { value: new THREE.Vector2(750, 1200) },
         u_textures: { value: [ new THREE.Texture(), ...new Array(3).fill(null) ] },
@@ -94,11 +92,10 @@ export default class PhotoPreview extends THREE.Mesh {
     this._isOpenInSingleView = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
 
-    this._diffVector = new THREE.Vector2(0, 0)
+    this._diffVector = diffVector
     this._diffVectorTarget = new THREE.Vector2(0, 0)
     this._originalPositionOpenPositionDiff = new THREE.Vector2(0, 0)
 
-    
     this._loadPreview()
 
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onOpenRequest)
@@ -390,9 +387,6 @@ export default class PhotoPreview extends THREE.Mesh {
     .start(v => this.scale.set(v, v, 1))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
-    // if (!this._isInteractable) {
-    //   return
-    // }
     this._diffVectorTarget.x = clampNumber(diffx * 5, -25, 25)
     this._diffVectorTarget.y = clampNumber(diffy * 5, -25, 25)
   }
