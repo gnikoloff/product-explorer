@@ -35,7 +35,6 @@ import {
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_RENDER_CURSOR_SCENE_FRAME,
-  EVT_RENDER_CLIP_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_APP_RESIZE,
   EVT_CLICK_PREV_PROJECT,
@@ -64,11 +63,9 @@ const dpr = window.devicePixelRatio || 1
 const mousePos = new THREE.Vector2(0, 0)
 const raycastMouse = new THREE.Vector2(0, 0)
 const renderer = new THREE.WebGLRenderer({ alpha: true })
-const clipScene = new THREE.Scene()
 const photoScene = new THREE.Scene()
 const postFXScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
-const clipRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const cursorRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const raycaster = new THREE.Raycaster()
@@ -84,7 +81,6 @@ let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
 
-clipScene.add(cameraSystem.clipCamera)
 photoScene.add(cameraSystem.photoCamera)
 cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
@@ -148,8 +144,8 @@ function onPrevProjectClick ({ modelName }) {
   eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, {
     modelName,
     direction: -1,
-    targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
-    targetY: cameraSystem.clipCamera.position.y,
+    targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
+    targetY: cameraSystem.photoCamera.position.y,
   })
 }
 
@@ -157,8 +153,8 @@ function onNextProjectClick ({ modelName }) {
   eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, {
     modelName,
     direction: 1,
-    targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
-    targetY: cameraSystem.clipCamera.position.y,
+    targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
+    targetY: cameraSystem.photoCamera.position.y,
   })
 }
 
@@ -173,7 +169,6 @@ function onProjectsLoad (res) {
       photos: info.sliderPhotos || [],
       position: new THREE.Vector3(info.posX, info.posY, 0)
     })
-    // clipScene.add(photoPreview.clipMesh)
     photoScene.add(photoPreview)
     return photoPreview
   })
@@ -203,15 +198,14 @@ function onResize () {
   appHeight = window.innerHeight
 
   renderer.setSize(appWidth, appHeight)
-  clipRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
   photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
   cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
 
   eventEmitter.emit(EVT_APP_RESIZE, {
     appWidth,
     appHeight,
-    cameraPositionX: cameraSystem.clipCamera.position.x,
-    cameraPositionY: cameraSystem.clipCamera.position.y,
+    cameraPositionX: cameraSystem.photoCamera.position.x,
+    cameraPositionY: cameraSystem.photoCamera.position.y,
   })
 }
 
@@ -239,8 +233,8 @@ function onMouseDown (e) {
       const { modelName } = hoveredElement
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
         modelName,
-        targetX: cameraSystem.clipCamera.position.x - appWidth * 0.25,
-        targetY: cameraSystem.clipCamera.position.y,
+        targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
+        targetY: cameraSystem.photoCamera.position.y,
       }))
       openModelTween = chain(
         delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
@@ -371,10 +365,6 @@ function updateFrame(ts) {
   renderer.setRenderTarget(cursorRenderTarget)
   renderer.render(cursorScene, cameraSystem.cursorCamera)
   eventEmitter.emit(EVT_RENDER_CURSOR_SCENE_FRAME, { texture: cursorRenderTarget.texture })
-  
-  renderer.setRenderTarget(clipRenderTarget)
-  renderer.render(clipScene, cameraSystem.clipCamera)
-  eventEmitter.emit(EVT_RENDER_CLIP_SCENE_FRAME, { texture: clipRenderTarget.texture })
   
   renderer.setRenderTarget(photoRenderTarget)
   renderer.render(photoScene, cameraSystem.photoCamera)

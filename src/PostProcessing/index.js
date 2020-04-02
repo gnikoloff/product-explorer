@@ -15,7 +15,6 @@ import {
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
   EVT_MOUSEMOVE_APP,
   EVT_RENDER_CURSOR_SCENE_FRAME,
-  EVT_RENDER_CLIP_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_APP_RESIZE,
 } from '../constants'
@@ -42,7 +41,6 @@ export default class PostProcessing extends THREE.Mesh {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         u_time: { value: 0.0 },
-        u_tDiffuseClip: { value: null },
         u_tDiffusePhoto: { value: null },
         u_tDiffuseCursor: { value: null },
         u_tDiffuseMask: { value: null },
@@ -85,7 +83,6 @@ export default class PostProcessing extends THREE.Mesh {
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     eventEmitter.on(EVT_RENDER_CURSOR_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseCursor', texture))
-    eventEmitter.on(EVT_RENDER_CLIP_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseClip', texture))
     eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', texture))
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
   }

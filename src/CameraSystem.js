@@ -49,13 +49,9 @@ export default class CameraSystem {
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
-    this._clipCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
-    this._photoCamera = this._clipCamera.clone()
-    this._postFXCamera = this._clipCamera.clone()
-    this._cursorCamera = this._clipCamera.clone()
-
-    this._clipCamera.position.copy(position)
-    this._clipCamera.lookAt(cameraLookAt)
+    this._photoCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
+    this._postFXCamera = this._photoCamera.clone()
+    this._cursorCamera = this._photoCamera.clone()
 
     this._photoCamera.position.copy(position)
     this._photoCamera.lookAt(cameraLookAt)
@@ -74,9 +70,6 @@ export default class CameraSystem {
     eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
   }
-  get clipCamera () {
-    return this._clipCamera
-  }
   get photoCamera () {
     return this._photoCamera
   }
@@ -91,7 +84,7 @@ export default class CameraSystem {
   }
   _onRequestOpenProject = () => {
     this._shouldMove = false
-    this._targetPosition.copy(this._clipCamera.position)
+    this._targetPosition.copy(this._photoCamera.position)
   }
   _onRequestCloseProject = () => {
     this._shouldMove = true
@@ -103,8 +96,8 @@ export default class CameraSystem {
     let oldCameraVelocityX = this._velocity.x
     let oldCameraVelocityY = this._velocity.y
 
-    this._velocity.x += (this._targetPosition.x - this._clipCamera.position.x) * dt
-    this._velocity.y += (this._targetPosition.y - this._clipCamera.position.y) * dt
+    this._velocity.x += (this._targetPosition.x - this._photoCamera.position.x) * dt
+    this._velocity.y += (this._targetPosition.y - this._photoCamera.position.y) * dt
 
     const dist = calc.distance({
       x: this._velocity.x,
@@ -116,13 +109,13 @@ export default class CameraSystem {
     
     this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
 
-    this._clipCamera.position.x += this._velocity.x
-    this._clipCamera.position.y += this._velocity.y
+    this._photoCamera.position.x += this._velocity.x
+    this._photoCamera.position.y += this._velocity.y
     this._photoCamera.position.x += this._velocity.x
     this._photoCamera.position.y += this._velocity.y
 
-    this._clipCamera.position.x  *= CameraSystem.friction
-    this._clipCamera.position.y  *= CameraSystem.friction
+    this._photoCamera.position.x  *= CameraSystem.friction
+    this._photoCamera.position.y  *= CameraSystem.friction
     this._photoCamera.position.x *= CameraSystem.friction
     this._photoCamera.position.y *= CameraSystem.friction
 
@@ -152,7 +145,7 @@ export default class CameraSystem {
     this._isZoomedOut = true
     tween().start(tweenFactor => {
       this._zoomFactor = 1 - tweenFactor * 0.125
-      CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom: this._zoomFactor })
+      CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
       // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom: this._zoomFactor })
     })
@@ -164,13 +157,11 @@ export default class CameraSystem {
     this._isZoomedOut = false
     tween().start(tweenFactor => {
       const zoom = this._zoomFactor + tweenFactor * 0.125
-      CameraSystem.controlCameraZoom({ camera: this._clipCamera, zoom })
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
       // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
     })
   }
   _onResize = ({ appWidth, appHeight }) => {
-    CameraSystem.resizeCamera({ camera: this._clipCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._photoCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._cursorCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._postFXCamera, appWidth, appHeight })
