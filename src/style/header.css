@@ -75,3 +75,20 @@
   opacity: 0;
   pointer-events: none;
 }
+
+.info-btn-close {
+  position: fixed;
+  top: 5px;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  margin-left: -25px;
+  border-radius: 50%;
+  background: #111;
+  pointer-events: auto;
+  cursor: default;
+  border: none;
+  transform: translateY(-100px);
+}
+.info-btn-close:hover { cursor: pointer; }
+.info-btn-close:focus { outline: 0; }
