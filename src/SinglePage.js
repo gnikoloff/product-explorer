@@ -116,7 +116,13 @@ export default class SinglePage {
       })
     }, false)
 
-    this._positionButtons()
+    const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
+    const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
+    this.$els.sizer.style.setProperty('width', `${sizerWidth}px`)
+    this.$els.sizer.style.setProperty('height', `${sizerHeight}px`)
+    this.$els.sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
+
+    // this._positionButtons()
   }
 
   _removeBackgroundColor = () => {
@@ -125,11 +131,7 @@ export default class SinglePage {
 
   _positionButtons = () => {
     const { sizer } = this.$els
-    const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
-    const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
-    sizer.style.setProperty('width', `${sizerWidth}px`)
-    sizer.style.setProperty('height', `${sizerHeight}px`)
-    sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
+    
 
     requestAnimationFrame(() => {
       const sizerDimensions = sizer.getBoundingClientRect()
@@ -176,51 +178,51 @@ export default class SinglePage {
   }
 
   _onUpdate = (ts, dt) => {
-    const { sliderButtonPrev, sliderButtonNext } = this.$els
+    // const { sliderButtonPrev, sliderButtonNext } = this.$els
     
-    const sliderBtns = [sliderButtonPrev, sliderButtonNext]
-    sliderBtns.forEach((buttonEl, i) => {
-      const dist = calc.distance({
-        x: buttonEl.pos.origX,
-        y: buttonEl.pos.origY,
-      }, {
-        x: this._mousePos.x,
-        y: this._mousePos.y,
-      })
+    // const sliderBtns = [sliderButtonPrev, sliderButtonNext]
+    // sliderBtns.forEach((buttonEl, i) => {
+    //   const dist = calc.distance({
+    //     x: buttonEl.pos.origX,
+    //     y: buttonEl.pos.origY,
+    //   }, {
+    //     x: this._mousePos.x,
+    //     y: this._mousePos.y,
+    //   })
 
-      if (dist < SinglePage.ARROW_INTERACTION_DIST_THRESHOLD) {
-        buttonEl.pos.vx += (this._mousePos.x - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
-        buttonEl.pos.vy += (this._mousePos.y - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
-        if (i === 0) {
-          this._sliderPrevBtnHovered = true
-          this._sliderNextBtnHovered = false
-        } else {
-          this._sliderPrevBtnHovered = false
-          this._sliderNextBtnHovered = true
-        }
-      } else {
-        buttonEl.pos.vx += (buttonEl.pos.origX - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
-        buttonEl.pos.vy += (buttonEl.pos.origY - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
-        if (i === 0) {
-          this._sliderPrevBtnHovered = false
-        } else {
-          this._sliderNextBtnHovered = false
-        }
-      }
-      buttonEl.pos.x += buttonEl.pos.vx
-      buttonEl.pos.y += buttonEl.pos.vy
-      buttonEl.pos.x *= 0.72
-      buttonEl.pos.y *= 0.72
+    //   if (dist < SinglePage.ARROW_INTERACTION_DIST_THRESHOLD) {
+    //     buttonEl.pos.vx += (this._mousePos.x - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
+    //     buttonEl.pos.vy += (this._mousePos.y - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
+    //     if (i === 0) {
+    //       this._sliderPrevBtnHovered = true
+    //       this._sliderNextBtnHovered = false
+    //     } else {
+    //       this._sliderPrevBtnHovered = false
+    //       this._sliderNextBtnHovered = true
+    //     }
+    //   } else {
+    //     buttonEl.pos.vx += (buttonEl.pos.origX - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
+    //     buttonEl.pos.vy += (buttonEl.pos.origY - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
+    //     if (i === 0) {
+    //       this._sliderPrevBtnHovered = false
+    //     } else {
+    //       this._sliderNextBtnHovered = false
+    //     }
+    //   }
+    //   buttonEl.pos.x += buttonEl.pos.vx
+    //   buttonEl.pos.y += buttonEl.pos.vy
+    //   buttonEl.pos.x *= 0.72
+    //   buttonEl.pos.y *= 0.72
 
-    })
-    this.stylers.sliderButtonPrev.set({
-      x: sliderButtonPrev.pos.x,
-      y: sliderButtonPrev.pos.y,
-    })
-    this.stylers.sliderButtonNext.set({
-      x: sliderButtonNext.pos.x,
-      y: sliderButtonNext.pos.y,
-    })
+    // })
+    // this.stylers.sliderButtonPrev.set({
+    //   x: sliderButtonPrev.pos.x,
+    //   y: sliderButtonPrev.pos.y,
+    // })
+    // this.stylers.sliderButtonNext.set({
+    //   x: sliderButtonNext.pos.x,
+    //   y: sliderButtonNext.pos.y,
+    // })
   }
   
   _onMouseMove = ({ mouseX, mouseY }) => {
