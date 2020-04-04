@@ -15,6 +15,7 @@ import {
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_OPENING_INFO_SECTION,
   EVT_OPEN_REQUEST_INFO_SECTION,
+  EVT_CLOSE_REQUEST_INFO_SECTION,
 } from './constants'
 
 export default class InfoPanel {
@@ -72,6 +73,7 @@ export default class InfoPanel {
     })
   }
   _onCloseRequest = () => {
+    eventEmitter.emit(EVT_CLOSE_REQUEST_INFO_SECTION)
     tween().start({
       update: tweenFactor => {
         eventEmitter.emit(EVT_OPENING_INFO_SECTION, { tweenFactor: 1 - tweenFactor })

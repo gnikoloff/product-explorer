@@ -43,6 +43,7 @@ import {
   EVT_CLICK_NEXT_PROJECT,
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_OPEN_REQUEST_INFO_SECTION,
+  EVT_CLOSE_REQUEST_INFO_SECTION,
 } from './constants'
 
 import './style'
@@ -147,6 +148,7 @@ function init () {
   eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
   eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION, onInfoSectionOpenRequest)
+  eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
   
   requestAnimationFrame(updateFrame)
 }
@@ -154,6 +156,11 @@ function init () {
 function onInfoSectionOpenRequest () {
   document.body.style.setProperty('cursor', 'default')
   isInfoSectionOpen = true
+}
+
+function onInfoSectionCloseRequest () {
+  document.body.style.setProperty('cursor', 'none')
+  isInfoSectionOpen = false
 }
 
 function onPrevProjectClick ({ modelName }) {
