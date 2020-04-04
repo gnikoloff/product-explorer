@@ -29,10 +29,15 @@ import {
   EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO,
   EVT_NEXT_PROJECT_TRANSITIONED_IN,
   EVT_APP_RESIZE,
+  EVT_LAYOUT_MODE_CHANGE,
+  SCENE_LAYOUT_GRID,
+  SCENE_LAYOUT_OVERVIEW,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
 import photoFragmentShader from './fragmentShader.glsl'
+
+let _overviewYCurrentOffset = 0
 
 export default class PhotoPreview extends THREE.Mesh {
 
@@ -48,11 +53,13 @@ export default class PhotoPreview extends THREE.Mesh {
   ))
 
   constructor ({
+    idx,
     modelName,
     width,
     height,
     photos,
-    position,
+    gridPosition,
+    overviewPosition,
   }) {
     const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneGeometry(width, height, 30, 30)
@@ -74,13 +81,16 @@ export default class PhotoPreview extends THREE.Mesh {
     })
     super(photoGeometry, photoMaterial)
 
-    this.position.copy(position)
+    this._idx = idx
+    this._layoutMode = SCENE_LAYOUT_GRID
+    this.position.copy(gridPosition)
 
     this._modelName = modelName
     this._width = width
     this._height = height
     this._photos = photos
-    this._originalPosition = position.clone()
+    this._originalGridPosition = gridPosition.clone()
+    this._originalOverviewPosition = this._calcOverviewPosition()
     this._targetPosition = new THREE.Vector3()
     this._allTexturesLoaded = false
     this._isInteractable = true
@@ -93,7 +103,7 @@ export default class PhotoPreview extends THREE.Mesh {
 
     this._diffVector = diffVector
     this._diffVectorTarget = new THREE.Vector2(0, 0)
-    this._originalPositionOpenPositionDiff = new THREE.Vector2(0, 0)
+    this._openPositionDiff = new THREE.Vector2(0, 0)
 
     this._loadPreview()
 
@@ -120,12 +130,30 @@ export default class PhotoPreview extends THREE.Mesh {
       }
     })
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+    eventEmitter.on(EVT_LAYOUT_MODE_CHANGE, this._onLayoutModeChange)
   }
   get modelName () {
     return this._modelName
   }
   get isInteractable () {
     return this._isInteractable
+  }
+  get originalPosition () {
+    return this._originalGridPosition
+  }
+  get overviewPosition () {
+    return this._originalOverviewPosition
+  }
+  _calcOverviewPosition = () => {
+    const x = (this._idx % 4) * this._width - (this._width * 4) / 2 + this._width / 2
+    const y = _overviewYCurrentOffset
+    if (this._idx % 4 === 0 && this._idx !== 0) {
+      _overviewYCurrentOffset -= this._height
+    }
+    return new THREE.Vector3(x, y, 0)
+  }
+  _onLayoutModeChange = ({ layoutMode }) => {
+    this._layoutMode = layoutMode
   }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
@@ -148,8 +176,8 @@ export default class PhotoPreview extends THREE.Mesh {
           this.material.uniforms.u_opacity.value = 1 - tweenFactor
         }
       }).then(() => {
-        this.position.x = this._originalPosition.x
-        this.position.y = this._originalPosition.y
+        this.position.x = this._originalGridPosition.x
+        this.position.y = this._originalGridPosition.y
         this.scale.set(1, 1, 1)
         this._onOpenComplete({ modelName })
         this._isOpenInSingleView = false
@@ -208,8 +236,8 @@ export default class PhotoPreview extends THREE.Mesh {
         this.position.x = newX
         this.position.y = newY
 
-        this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
-        this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
+        this._openPositionDiff.x = newX - this._originalGridPosition.x
+        this._openPositionDiff.y = newY - this._originalGridPosition.y
         
         onUpdate(tweenFactor)
       },
@@ -261,8 +289,11 @@ export default class PhotoPreview extends THREE.Mesh {
       this.position.y = newY
       this.scale.set(newScale, newScale, 1)
 
-      this._originalPositionOpenPositionDiff.x = newX - this._originalPosition.x
-      this._originalPositionOpenPositionDiff.y = newY - this._originalPosition.y
+      const originalPositionX = this._layoutMode === SCENE_LAYOUT_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
+      const originalPositionY = this._layoutMode === SCENE_LAYOUT_GRID ? this._originalGridPosition.y : this._originalOverviewPosition.y
+      
+      this._openPositionDiff.x = newX - originalPositionX
+      this._openPositionDiff.y = newY - originalPositionY
       
       const diffx = (targetPosX - this.position.x) * -1
       const diffy = (targetPosY - this.position.y) * -1
@@ -315,8 +346,8 @@ export default class PhotoPreview extends THREE.Mesh {
     if (modelName === this._modelName) {
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y
-      const endX = this._targetPosition.x - this._originalPositionOpenPositionDiff.x
-      const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
+      const endX = this._targetPosition.x - this._openPositionDiff.x
+      const endY = this._targetPosition.y - this._openPositionDiff.y
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)

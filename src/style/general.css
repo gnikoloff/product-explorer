@@ -104,6 +104,8 @@ li {
 }
 
 .webgl-scene-hint {
+  display: flex;
+  align-items: center;
   position: fixed;
   bottom: 24px;
   left: 50%;
@@ -113,6 +115,14 @@ li {
 .hint {
   display: flex;
   align-items: center;
+}
+
+.hint:first-of-type {
+  margin-right: 32px;
+}
+
+.hint * {
+  pointer-events: none;
 }
 
 .hint img {

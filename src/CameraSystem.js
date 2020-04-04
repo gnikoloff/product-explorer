@@ -14,6 +14,9 @@ import {
   EVT_ON_SCENE_DRAG,
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
+  EVT_LAYOUT_MODE_CHANGE,
+  SCENE_LAYOUT_GRID,
+  SCENE_LAYOUT_OVERVIEW,
 } from './constants'
 
 export default class CameraSystem {
@@ -46,6 +49,9 @@ export default class CameraSystem {
     this._zoomFactor = 1
     this._isZoomedOut = false
     this._shouldMove = true
+    this._layoutMode = SCENE_LAYOUT_GRID
+
+    this._worldBounds = new THREE.Vector4()
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -66,6 +72,8 @@ export default class CameraSystem {
     this._postFXBlurCamera.position.copy(position)
     this._postFXBlurCamera.lookAt(cameraLookAt)
 
+    this._onLayoutChange({ layoutMode: SCENE_LAYOUT_GRID })
+
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onRequestOpenProject)
     eventEmitter.on(EVT_CLOSE_REQUEST_SINGLE_PROJECT, this._onRequestCloseProject)
     eventEmitter.on(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, this._handleMovement)
@@ -73,6 +81,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_CAMERA_ZOOM_OUT_DRAG_START, this._onDragZoomOut)
     eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+    eventEmitter.on(EVT_LAYOUT_MODE_CHANGE, this._onLayoutChange)
   }
   get photoCamera () {
     return this._photoCamera
@@ -126,13 +135,12 @@ export default class CameraSystem {
     this._photoCamera.position.x *= CameraSystem.friction
     this._photoCamera.position.y *= CameraSystem.friction
 
-    const screenPaddingX = 1300 - innerWidth
-    const screenPaddingY = 1100 - innerHeight
-
-    const rightBound  = WOLRD_WIDTH / 2 + screenPaddingX / 2
-    const leftBound   = -WOLRD_WIDTH / 2 - screenPaddingX / 2
-    const bottomBound = WORLD_HEIGHT / 2 + screenPaddingY / 2
-    const topBound    = -WORLD_HEIGHT / 2 - screenPaddingY / 2
+    const {
+      x: rightBound,
+      y: leftBound,
+      z: bottomBound,
+      w: topBound,
+    } = this._worldBounds
 
     if (this._targetPosition.x > rightBound) {
       this._targetPosition.x = rightBound
@@ -167,6 +175,26 @@ export default class CameraSystem {
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
       // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
     })
+  }
+  _onLayoutChange = ({ layoutMode }) => {
+    // this._layoutMode = layoutMode
+    const screenPaddingX = 1300 - innerWidth
+    const screenPaddingY = 1100 - innerHeight
+    if (layoutMode === SCENE_LAYOUT_GRID) {
+      this._worldBounds.set(
+        WOLRD_WIDTH / 2 + screenPaddingX / 2,
+        -WOLRD_WIDTH / 2 - screenPaddingX / 2,
+        WORLD_HEIGHT / 2 + screenPaddingY / 2,
+        -WORLD_HEIGHT / 2 - screenPaddingY / 2
+      )
+    } else if (layoutMode === SCENE_LAYOUT_OVERVIEW) {
+      this._worldBounds.set(
+        0,
+        0,
+        WORLD_HEIGHT / 2 + screenPaddingY / 2,
+        -WORLD_HEIGHT / 2 - screenPaddingY / 2
+      )
+    }
   }
   _onResize = ({ appWidth, appHeight }) => {
     CameraSystem.resizeCamera({ camera: this._photoCamera, appWidth, appHeight })

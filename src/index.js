@@ -3,11 +3,11 @@ import { tween, chain, delay } from 'popmotion'
 
 import eventEmitter from './event-emitter'
 
-import PhotoPreview from './PhotoPreview'
 import SinglePage from './SinglePage'
 import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
+import ProductGrid from './ProductGrid'
 
 import {
   WOLRD_WIDTH,
@@ -15,8 +15,6 @@ import {
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
   TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION,
   BLUR_ITERATIONS,
-  PREVIEW_PHOTO_REF_WIDTH,
-  PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_OPENING_SINGLE_PROJECT,
@@ -43,6 +41,9 @@ import {
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_OPEN_REQUEST_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
+  SCENE_LAYOUT_GRID,
+  SCENE_LAYOUT_OVERVIEW,
+  EVT_LAYOUT_MODE_CHANGE,
 } from './constants'
 
 import './style'
@@ -53,6 +54,7 @@ let appHeight = window.innerHeight
 
 const singlePage = new SinglePage()
 const infoPanel = new InfoPanel()
+const productGrid = new ProductGrid()
 const cameraSystem = new CameraSystem({
   appWidth,
   appHeight,
@@ -60,6 +62,7 @@ const cameraSystem = new CameraSystem({
 })
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
+const sceneModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
 const dpr = window.devicePixelRatio || 1
 
 const mousePos = new THREE.Vector2(0, 0)
@@ -76,7 +79,6 @@ const postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, app
 const raycaster = new THREE.Raycaster()
 
 let oldTime = 0
-let photoPreviews = []
 let isDragging = false
 let isInfoSectionOpen = false
 let cursorArrowOffset = 0
@@ -88,6 +90,8 @@ let closeModelTween
 let openModelTweenFactor = 1
 
 photoScene.add(cameraSystem.photoCamera)
+photoScene.add(productGrid)
+
 cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
 postFXBlurScene.add(cameraSystem.postFXBlurCamera)
@@ -144,7 +148,9 @@ function init () {
   webglContainer.addEventListener('mouseup', onMouseUp, false)
   document.body.addEventListener('mouseleave', onMouseLeave, false)
   window.addEventListener('resize', onResize)
-  
+    
+  sceneModeBtnContainer.addEventListener('click', onSceneModeSelect, false)
+
   eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
   eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
@@ -152,6 +158,23 @@ function init () {
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
   
   requestAnimationFrame(updateFrame)
+}
+
+function onSceneModeSelect (e) {
+  if (!e.target.classList.contains('hint')) {
+    return
+  }
+  let layoutMode
+  if (e.target.getAttribute('data-mode') === SCENE_LAYOUT_GRID) {
+    layoutMode = SCENE_LAYOUT_GRID
+  } else if (e.target.getAttribute('data-mode') === SCENE_LAYOUT_OVERVIEW) {
+    layoutMode = SCENE_LAYOUT_OVERVIEW
+  }
+  eventEmitter.emit(EVT_LAYOUT_MODE_CHANGE, {
+    layoutMode,
+    cameraPositionX: cameraSystem.photoCamera.position.x,
+    cameraPositionY: cameraSystem.photoCamera.position.y,
+  })
 }
 
 function onInfoSectionOpenRequest () {
@@ -184,18 +207,6 @@ function onNextProjectClick ({ modelName }) {
 
 function onProjectsLoad (res) {
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
-
-  photoPreviews = res.projects.map(info => {
-    const photoPreview = new PhotoPreview({
-      modelName: info.modelName,
-      width: PREVIEW_PHOTO_REF_WIDTH,
-      height: PREVIEW_PHOTO_REF_HEIGHT,
-      photos: info.sliderPhotos || [],
-      position: new THREE.Vector3(info.posX, info.posY, 0)
-    })
-    photoScene.add(photoPreview)
-    return photoPreview
-  })
 }
 
 function onCloseSingleView (modelName) {
@@ -351,7 +362,7 @@ function updateFrame(ts) {
 
   if (!isDragging && !isInfoSectionOpen) {
     raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
-    const intersectsTests = photoPreviews.filter(a => a.isInteractable)
+    const intersectsTests = productGrid.children.filter(a => a.isInteractable)
     const intersects = raycaster.intersectObjects(intersectsTests)
     if (intersects.length > 0) {
       if (cameraSystem.isDragCameraMoving) {
@@ -402,7 +413,6 @@ function updateFrame(ts) {
   renderer.setRenderTarget(postFXRenderTarget)
   renderer.render(postFXScene, cameraSystem.postFXCamera)
   
-
   let writeBuffer = postFXBlurHorizontalTarget
   let readBuffer = postFXBlurVerticalTarget
 
