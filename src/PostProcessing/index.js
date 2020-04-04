@@ -33,7 +33,7 @@ export default class PostProcessing {
   static HIDDEN_CURSOR_SIZE = 0
   static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio || 1)
   static HOVER_CURSOR_SIZE = 80 * (devicePixelRatio || 1)
-  static DRAG_CURSOR_SIZE = 45 * (devicePixelRatio || 1)
+  static DRAG_CURSOR_SIZE = 33 * (devicePixelRatio || 1)
 
   constructor ({
     width,

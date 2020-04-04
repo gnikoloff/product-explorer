@@ -48,8 +48,6 @@ import {
 import './style'
 import { getArrowTexture } from './helpers'
 
-// import arrowLeft from './assets/arrow.png'
-
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
 
@@ -99,7 +97,7 @@ postFXScene.add(postFXMesh.mainEffectPlane)
 postFXBlurScene.add(postFXMesh.blurEffect)
 
 const cursorArrowLeft = new THREE.Mesh(
-  new THREE.PlaneGeometry(15, 15),
+  new THREE.PlaneGeometry(10, 10),
   new THREE.MeshBasicMaterial({
     opacity: 1,
     map: getArrowTexture(),
@@ -378,20 +376,22 @@ function updateFrame(ts) {
   const cursorBasePosX = (raycastMouse.x * appWidth) / 2
   const cursorBasePosY = (raycastMouse.y * appHeight) / 2
 
-  cursorArrowOffset += (cursorArrowOffsetTarget * 12 - cursorArrowOffset) * (dt * 5)
-  cursorArrowLeft.material.opacity += (cursorArrowOffsetTarget * 0.5 - cursorArrowLeft.material.opacity) * (dt * 10)
+  const arrowIndicatorFactor = dt * 25
 
-  cursorArrowLeft.position.x = cursorBasePosX + 50 + cursorArrowOffset
-  cursorArrowLeft.position.y = cursorBasePosY
+  cursorArrowOffset += (cursorArrowOffsetTarget * 12 - cursorArrowOffset) * arrowIndicatorFactor
+  cursorArrowLeft.material.opacity += (cursorArrowOffsetTarget * 0.5 - cursorArrowLeft.material.opacity) * arrowIndicatorFactor
 
-  cursorArrowRight.position.x = cursorBasePosX - 50 - cursorArrowOffset
-  cursorArrowRight.position.y = cursorBasePosY
+  cursorArrowLeft.position.x += (cursorBasePosX + 33 + cursorArrowOffset - cursorArrowLeft.position.x) * arrowIndicatorFactor
+  cursorArrowLeft.position.y += (cursorBasePosY - cursorArrowLeft.position.y) * arrowIndicatorFactor
 
-  cursorArrowTop.position.x = cursorBasePosX
-  cursorArrowTop.position.y = cursorBasePosY - 50 - cursorArrowOffset
+  cursorArrowRight.position.x += (cursorBasePosX - 33 - cursorArrowOffset - cursorArrowRight.position.x) * arrowIndicatorFactor
+  cursorArrowRight.position.y += (cursorBasePosY - cursorArrowRight.position.y) * arrowIndicatorFactor
 
-  cursorArrowBottom.position.x = cursorBasePosX
-  cursorArrowBottom.position.y = cursorBasePosY + 50 + cursorArrowOffset
+  cursorArrowTop.position.x += (cursorBasePosX - cursorArrowTop.position.x) * arrowIndicatorFactor
+  cursorArrowTop.position.y += (cursorBasePosY - 33 - cursorArrowOffset - cursorArrowTop.position.y) * arrowIndicatorFactor
+
+  cursorArrowBottom.position.x += (cursorBasePosX - cursorArrowBottom.position.x) * arrowIndicatorFactor
+  cursorArrowBottom.position.y += (cursorBasePosY + 33 + cursorArrowOffset - cursorArrowBottom.position.y) * arrowIndicatorFactor
   
   renderer.autoClear = true
   renderer.setRenderTarget(photoRenderTarget)
