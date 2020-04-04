@@ -15,7 +15,6 @@ import {
   EVT_HOVER_SINGLE_PROJECT_ENTER,
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
   EVT_MOUSEMOVE_APP,
-  EVT_RENDER_CURSOR_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_RENDER_PHOTO_POSTFX_FRAME,
   EVT_OPENING_INFO_SECTION,
@@ -47,7 +46,6 @@ export default class PostProcessing {
       uniforms: {
         u_time: { value: 0.0 },
         u_tDiffusePhoto: { value: null },
-        u_tDiffuseCursor: { value: null },
         u_tDiffuseMask: { value: null },
         u_resolution: { value: new THREE.Vector2(width * dpr, height * dpr) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
@@ -96,7 +94,6 @@ export default class PostProcessing {
     eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
-    eventEmitter.on(EVT_RENDER_CURSOR_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuseCursor', '_mainEffect', texture))
     eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', '_mainEffect', texture))
     eventEmitter.on(EVT_RENDER_PHOTO_POSTFX_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuse', '_blurEffect', texture))
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)

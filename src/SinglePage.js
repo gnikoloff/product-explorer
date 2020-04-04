@@ -319,7 +319,7 @@ export default class SinglePage {
     const { sliderButtonPrev, sliderButtonNext } = this.$els
     
     this.stylers.wrapper.set('pointerEvents', 'auto')
-    document.body.style.setProperty('cursor', 'auto')
+    // document.body.style.setProperty('cursor', 'auto')
 
     this._fadeProjectDescription()
 
@@ -352,7 +352,7 @@ export default class SinglePage {
 
     this.stylers.wrapper.set('pointerEvents', 'none')
     this.stylers.wrapper.set('user-select', 'none')
-    document.body.style.setProperty('cursor', 'none')
+    // document.body.style.setProperty('cursor', 'none')
 
     this._fadeProjectDescription({ duration: 300, parralel: true, direction: -1 })
 

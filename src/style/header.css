@@ -59,7 +59,7 @@
   right: 0;
   background: red;
   z-index: 1;
-  cursor: initial;
+  /* cursor: initial; */
   pointer-events: auto;
   transform: translateX(100%);
 }

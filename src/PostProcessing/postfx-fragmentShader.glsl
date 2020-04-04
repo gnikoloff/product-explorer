@@ -1,5 +1,4 @@
 uniform sampler2D u_tDiffusePhoto;
-uniform sampler2D u_tDiffuseCursor;
 uniform sampler2D u_tDiffuseMask;
 
 uniform vec2 u_resolution;
@@ -31,7 +30,6 @@ void main () {
   vec2 uv = v_uv;
   vec4 baseColor = vec4(vec3(0.89), 1.0);
   vec4 photoColor = texture2D(u_tDiffusePhoto, uv);
-  vec4 cursorColor = texture2D(u_tDiffuseCursor, uv);
   vec4 maskColor = texture2D(u_tDiffuseMask, uv);
 
   // if (uv.x > 0.5 && maskColor.r < u_cutOffFactor) {
@@ -49,8 +47,6 @@ void main () {
   vec2 uvRandom = uv;
   uvRandom.y *= random(vec2(uvRandom.y, u_time));
   cursorCircleColor.rgb += random(uvRandom) * 0.075;
-
-  color = mix(color, cursorColor, cursorColor.a);
 
   float fmin = 0.9;
   float fmod = mod(u_time * 3.0 + uv.y * 200.0, 1.75);

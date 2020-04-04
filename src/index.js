@@ -35,7 +35,6 @@ import {
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
-  EVT_RENDER_CURSOR_SCENE_FRAME,
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_RENDER_PHOTO_POSTFX_FRAME,
   EVT_APP_RESIZE,
@@ -47,8 +46,9 @@ import {
 } from './constants'
 
 import './style'
+import { getArrowTexture } from './helpers'
 
-import arrowLeft from './assets/arrow.png'
+// import arrowLeft from './assets/arrow.png'
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
@@ -72,7 +72,6 @@ const postFXScene = new THREE.Scene()
 const postFXBlurScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
 const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-const cursorRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
@@ -101,7 +100,11 @@ postFXBlurScene.add(postFXMesh.blurEffect)
 
 const cursorArrowLeft = new THREE.Mesh(
   new THREE.PlaneGeometry(15, 15),
-  new THREE.MeshBasicMaterial({ opacity: 1 })
+  new THREE.MeshBasicMaterial({
+    opacity: 1,
+    map: getArrowTexture(),
+    transparent: true,
+  })
 )
 cursorArrowLeft.rotation.z = Math.PI
 cursorScene.add(cursorArrowLeft)
@@ -123,10 +126,10 @@ const cursorArrowBottom = cursorArrowLeft.clone()
 cursorArrowBottom.rotation.z = -Math.PI / 2
 cursorScene.add(cursorArrowBottom)
 
-new THREE.TextureLoader().load(arrowLeft, texture => {
-  cursorArrowLeft.material.map = texture
-  cursorArrowLeft.material.needsUpdate = true
-})
+// new THREE.TextureLoader().load(arrowLeft, texture => {
+//   cursorArrowLeft.material.map = texture
+//   cursorArrowLeft.material.needsUpdate = true
+// })
 
 init()
 
@@ -222,7 +225,6 @@ function onResize () {
 
   renderer.setSize(appWidth, appHeight)
   photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
-  cursorRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
 
   eventEmitter.emit(EVT_APP_RESIZE, {
     appWidth,
@@ -390,11 +392,8 @@ function updateFrame(ts) {
 
   cursorArrowBottom.position.x = cursorBasePosX
   cursorArrowBottom.position.y = cursorBasePosY + 50 + cursorArrowOffset
-
-  renderer.setRenderTarget(cursorRenderTarget)
-  renderer.render(cursorScene, cameraSystem.cursorCamera)
-  eventEmitter.emit(EVT_RENDER_CURSOR_SCENE_FRAME, { texture: cursorRenderTarget.texture })
   
+  renderer.autoClear = true
   renderer.setRenderTarget(photoRenderTarget)
   renderer.render(photoScene, cameraSystem.photoCamera)
   eventEmitter.emit(EVT_RENDER_PHOTO_SCENE_FRAME, { texture: photoRenderTarget.texture })
@@ -428,6 +427,9 @@ function updateFrame(ts) {
 
   renderer.setRenderTarget(null)
   renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
+
+  renderer.autoClear = false
+  renderer.render(cursorScene, cameraSystem.cursorCamera)
 
   requestAnimationFrame(updateFrame)
 }

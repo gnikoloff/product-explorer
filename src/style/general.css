@@ -13,7 +13,6 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   line-height: 24px;
-  cursor: none;
 }
 body.dragging {
   /* cursor: grabbing; */
@@ -102,4 +101,27 @@ li {
 
 .close-single-page:hover .close-line:last-of-type:after {
   transform: scaleX(1);
+}
+
+.webgl-scene-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+}
+
+.hint img {
+  width: 36px;
+  height: 36px;
+  margin-right: 18px;
+}
+
+.hint h6 {
+  font-size: 12px;
+  text-transform: uppercase;
 }
