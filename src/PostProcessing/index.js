@@ -7,6 +7,7 @@ import {
   EVT_RAF_UPDATE_APP,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
+  EVT_CLOSE_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_MOUSE_ENTER,
   EVT_SLIDER_BUTTON_MOUSE_LEAVE,
@@ -83,6 +84,7 @@ export default class PostProcessing {
     this._cachedHiddenSize = 0
     this._currCutOffFactor = 0
 
+    eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseSingleProject)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosingSingleProject)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpeningSingleProject)
@@ -114,6 +116,9 @@ export default class PostProcessing {
   }
   _updateFrameTexture = (uniformName, effectName, texture) => {
     this[effectName].uniforms[uniformName].value = texture
+  }
+  _onCloseSingleProject = () => {
+    this._preventClick = false
   }
   _onClosingSingleProject = ({ tweenFactor }) => {
     const tween = this._currCutOffFactor - mapNumber(tweenFactor, 0, 1, 0, this._currCutOffFactor)
@@ -170,10 +175,11 @@ export default class PostProcessing {
     this._mainEffect.uniforms.u_time.value = ts
     this._mainEffect.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this._mainEffect.uniforms.u_cursorSize.value) * (dt * 10)
     this._mainEffect.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this._mainEffect.uniforms.u_hoverMixFactor.value) * (dt * 10)
-    this._mainEffect.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 12)
-    this._mainEffect.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 12)
+    this._mainEffect.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 15)
+    this._mainEffect.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 15)
   }
   _onResize = () => {
-    this.this._mainEffect.onResize()
+    this._mainEffect.onResize()
+    // this._blurEffect.onResize()
   }
 }

@@ -328,6 +328,7 @@ function onMouseUp () {
           complete: () => {
             eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
             closeModelTween = null
+            clickedElement = null
           }
         })
       }
