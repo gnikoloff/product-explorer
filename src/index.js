@@ -88,6 +88,10 @@ let clickedElement = null
 let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
+let cursorArrowTop
+let cursorArrowRight
+let cursorArrowBottom
+let cursorArrowLeft
 
 photoScene.add(cameraSystem.photoCamera)
 photoScene.add(productGrid)
@@ -100,7 +104,7 @@ const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
 postFXScene.add(postFXMesh.mainEffectPlane)
 postFXBlurScene.add(postFXMesh.blurEffect)
 
-const cursorArrowLeft = new THREE.Mesh(
+cursorArrowLeft = new THREE.Mesh(
   new THREE.PlaneGeometry(10, 10),
   new THREE.MeshBasicMaterial({
     opacity: 1,
@@ -116,15 +120,15 @@ cursorScene.add(new THREE.Mesh(
   new THREE.MeshBasicMaterial({ wireframe: true })
 ))
 
-const cursorArrowRight = cursorArrowLeft.clone()
+cursorArrowRight = cursorArrowLeft.clone()
 cursorArrowRight.rotation.z = 0
 cursorScene.add(cursorArrowRight)
 
-const cursorArrowTop = cursorArrowLeft.clone()
+cursorArrowTop = cursorArrowLeft.clone()
 cursorArrowTop.rotation.z = Math.PI / 2
 cursorScene.add(cursorArrowTop)
 
-const cursorArrowBottom = cursorArrowLeft.clone()
+cursorArrowBottom = cursorArrowLeft.clone()
 cursorArrowBottom.rotation.z = -Math.PI / 2
 cursorScene.add(cursorArrowBottom)
 
@@ -167,8 +171,12 @@ function onSceneModeSelect (e) {
   let layoutMode
   if (e.target.getAttribute('data-mode') === SCENE_LAYOUT_GRID) {
     layoutMode = SCENE_LAYOUT_GRID
+    cursorArrowRight.visible = true
+    cursorArrowLeft.visible = true
   } else if (e.target.getAttribute('data-mode') === SCENE_LAYOUT_OVERVIEW) {
     layoutMode = SCENE_LAYOUT_OVERVIEW
+    cursorArrowRight.visible = false
+    cursorArrowLeft.visible = false
   }
   eventEmitter.emit(EVT_LAYOUT_MODE_CHANGE, {
     layoutMode,
