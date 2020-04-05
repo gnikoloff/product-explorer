@@ -181,19 +181,10 @@ function onLayoutModeSelect (e) {
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST, { layoutMode })
   tween().start({
     update: tweenFactor => {
-      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, {
-        tweenFactor,
-        layoutMode,
-        cameraPositionX: cameraSystem.photoCamera.position.x,
-        cameraPositionY: cameraSystem.photoCamera.position.y,
-      })
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor, layoutMode, })
     },
     complete: () => {
-      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, {
-        layoutMode,
-        cameraPositionX: cameraSystem.photoCamera.position.x,
-        cameraPositionY: cameraSystem.photoCamera.position.y,
-      })
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, { layoutMode, })
     },
   })
 }
@@ -268,12 +259,7 @@ function onResize () {
   renderer.setSize(appWidth, appHeight)
   photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
 
-  eventEmitter.emit(EVT_APP_RESIZE, {
-    appWidth,
-    appHeight,
-    cameraPositionX: cameraSystem.photoCamera.position.x,
-    cameraPositionY: cameraSystem.photoCamera.position.y,
-  })
+  eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
 }
 
 function onMouseLeave () {

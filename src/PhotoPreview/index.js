@@ -5,7 +5,7 @@ import {
 } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
-
+import store from '../store'
 import {
   clampNumber,
   mapNumber,
@@ -174,8 +174,6 @@ export default class PhotoPreview extends THREE.Mesh {
       overviewCurrOffsetX = 0
       overviewCurrOffsetY = 0
     }
-
-    console.log('new position', this._idx, x, y, getItemsCountPerGridRow())
     
     return new THREE.Vector3(x, y, 0)
   }
@@ -183,7 +181,8 @@ export default class PhotoPreview extends THREE.Mesh {
     this._targetPosition.x = this.position.x
     this._targetPosition.y = this.position.y
   }
-  _onLayoutModeTransition = ({ tweenFactor, layoutMode, cameraPositionX, cameraPositionY }) => {
+  _onLayoutModeTransition = ({ tweenFactor, layoutMode }) => {
+    const { cameraPositionX, cameraPositionY } = store.getState()
     const startX = this._targetPosition.x
     const startY = this._targetPosition.y
     let targetX
@@ -200,7 +199,11 @@ export default class PhotoPreview extends THREE.Mesh {
     this.position.x = newX
     this.position.y = newY
   }
-  _onLayoutModeTransitionComplete = ({ layoutMode, cameraPositionX, cameraPositionY }) => {
+  _onLayoutModeTransitionComplete = ({ layoutMode }) => {
+    const {
+      cameraPositionX,
+      cameraPositionY,
+    } = store.getState()
     this._layoutMode = layoutMode
     this.position.x -= cameraPositionX
     this.position.y -= cameraPositionY
@@ -494,7 +497,8 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVector.x += (this._diffVectorTarget.x - this._diffVector.x) * dt * 6
     this._diffVector.y += (this._diffVectorTarget.y - this._diffVector.y) * dt * 6
   }
-  _onResize = ({ cameraPositionX, cameraPositionY }) => {
+  _onResize = () => {
+    const { cameraPositionX, cameraPositionY } = store.getState()
     if (this._isOpenInSingleView) {
       this.position.x = cameraPositionX - innerWidth * 0.25
       this.position.y = cameraPositionY

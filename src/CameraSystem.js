@@ -1,6 +1,11 @@
 import * as THREE from 'three'
 import { calc, tween } from 'popmotion'
 
+import store from './store'
+import {
+  setCameraPosition,
+} from './store/actions'
+
 import eventEmitter from './event-emitter'
 
 import {
@@ -150,9 +155,9 @@ export default class CameraSystem {
     this._photoCamera.position.y += this._velocity.y
 
     if (!lockHorizontalMovement) {
-      this._photoCamera.position.x  *= CameraSystem.friction
+      this._photoCamera.position.x *= CameraSystem.friction
     }
-    this._photoCamera.position.y  *= CameraSystem.friction
+    this._photoCamera.position.y *= CameraSystem.friction
 
     let rightBound
     let leftBound
@@ -173,8 +178,6 @@ export default class CameraSystem {
       bottomBound = this._overviewLayoutHeight
     }
 
-    console.log(this._targetPosition.y, topBound, bottomBound)
-
     if (this._targetPosition.x > rightBound) {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = rightBound
@@ -185,11 +188,13 @@ export default class CameraSystem {
       }
     } else if (this._targetPosition.y > topBound) {
       this._targetPosition.y = topBound
-      console.log('hit bottom bound')
     } else if (this._targetPosition.y < bottomBound) {
       this._targetPosition.y = bottomBound
-      console.log('hit top bound')
     }
+    store.dispatch(setCameraPosition({
+      x: this._photoCamera.position.x,
+      y: this._photoCamera.position.y,
+    }))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
     const lockHorizontalMovement = this._layoutMode === LAYOUT_MODE_OVERVIEW
