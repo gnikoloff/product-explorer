@@ -180,14 +180,14 @@ function onLayoutModeSelect (e) {
     cursorArrowLeft.visible = true
     cursorArrowRight.visible = true
     store.dispatch(setLayoutMode(LAYOUT_MODE_GRID))
-    webglContainer.removeEventListener('mousewheel', onOverviewLayoutScroll)
+    webglContainer.removeEventListener('mousewheel', onOverviewLayoutMousewheel)
   } else if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_OVERVIEW) {
     document.body.classList.remove(`layout-mode-grid`)
     document.body.classList.add(`layout-mode-overview`)
     cursorArrowLeft.visible = false
     cursorArrowRight.visible = false
     store.dispatch(setLayoutMode(LAYOUT_MODE_OVERVIEW))
-    webglContainer.addEventListener('mousewheel', onOverviewLayoutScroll, false)
+    webglContainer.addEventListener('mousewheel', onOverviewLayoutMousewheel, false)
   }
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST)
   tween().start({
@@ -200,7 +200,7 @@ function onLayoutModeSelect (e) {
   })
 }
 
-function onOverviewLayoutScroll (e) {
+function onOverviewLayoutMousewheel (e) {
   const scrollY = lastScrollY + e.deltaY
   const diffy = (scrollY - lastScrollY) * -1
   eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx: 0, diffy })

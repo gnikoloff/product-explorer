@@ -192,7 +192,6 @@ export default class PhotoPreview extends THREE.Mesh {
       overviewLayoutWidth,
       layoutMode,
     } = store.getState()
-    // console.log(store.getState())
     const startX = this._targetPosition.x
     const startY = this._targetPosition.y
     let targetX
@@ -208,16 +207,18 @@ export default class PhotoPreview extends THREE.Mesh {
     const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
     this.position.x = newX
     this.position.y = newY
-    // console.log(startX, startY, targetX, targetY, newX, newY)
   }
   _onLayoutModeTransitionComplete = () => {
     const {
       cameraPositionX,
       cameraPositionY,
+      layoutMode,
     } = store.getState()
-    this.position.x -= cameraPositionX
-    this.position.y -= cameraPositionY
-    this._calcOverviewPosition()
+    if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+      this.position.x -= cameraPositionX
+      this.position.y -= cameraPositionY
+      this._calcOverviewPosition()
+    }
   }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
