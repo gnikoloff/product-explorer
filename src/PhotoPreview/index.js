@@ -476,15 +476,16 @@ export default class PhotoPreview extends THREE.Mesh {
     })
   }
   _onSceneDragStart = () => {
-    if (!this._isInteractable) {
+    const { layoutMode } = store.getState()
+    if (!this._isInteractable || layoutMode === LAYOUT_MODE_OVERVIEW) {
       return
     }
-    tween({
-      from: PhotoPreview.SCALE_FACTOR_MAX,
-      to: PhotoPreview.SCALE_FACTOR_MIN,
-      duration: 250
-    })
-    .start(v => this.scale.set(v, v, 1))
+    // tween({
+    //   from: PhotoPreview.SCALE_FACTOR_MAX,
+    //   to: PhotoPreview.SCALE_FACTOR_MIN,
+    //   duration: 250
+    // })
+    // .start(v => this.scale.set(v, v, 1))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
     const { layoutMode } = store.getState()
@@ -493,15 +494,16 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVectorTarget.y = clampNumber(diffy * 5, -clampY, clampY)
   }
   _onSceneDragEnd = () => {
-    if (!this._isInteractable) {
-      return
-    }
-    tween({
-      from: PhotoPreview.SCALE_FACTOR_MIN,
-      to: PhotoPreview.SCALE_FACTOR_MAX,
-      duration: 250
-    })
-    .start(v => this.scale.set(v, v, 1))
+    // const { layoutMode } = store.getState()
+    // if (!this._isInteractable || layoutMode === LAYOUT_MODE_OVERVIEW) {
+    //   return
+    // }
+    // tween({
+    //   from: PhotoPreview.SCALE_FACTOR_MIN,
+    //   to: PhotoPreview.SCALE_FACTOR_MAX,
+    //   duration: 250
+    // })
+    // .start(v => this.scale.set(v, v, 1))
     this._diffVectorTarget.x = 0
     this._diffVectorTarget.y = 0
   }

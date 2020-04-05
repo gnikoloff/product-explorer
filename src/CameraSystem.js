@@ -199,6 +199,10 @@ export default class CameraSystem {
     this._targetPosition.y += diffy * 2 - 1
   }
   _onDragZoomOut = () => {
+    const { layoutMode } = store.getState()
+    if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+      return
+    }
     this._isZoomedOut = true
     tween().start(tweenFactor => {
       this._zoomFactor = 1 - tweenFactor * 0.125
@@ -208,6 +212,10 @@ export default class CameraSystem {
     })
   }
   _onDragZoomIn = () => {
+    const { layoutMode } = store.getState()
+    if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+      return
+    }
     if (!this._isZoomedOut) {
       return
     }
