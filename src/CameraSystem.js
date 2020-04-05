@@ -18,6 +18,7 @@ import {
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
+  EVT_LAYOUT_OVERVIEW_NEW_HEIGHT,
 } from './constants'
 
 export default class CameraSystem {
@@ -50,7 +51,8 @@ export default class CameraSystem {
     this._zoomFactor = 1
     this._isZoomedOut = false
     this._shouldMove = true
-    this._layoutMode = null
+    this._layoutMode = LAYOUT_MODE_GRID
+    this._overviewLayoutHeight = 0
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -80,6 +82,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeChangeComplete)
+    eventEmitter.on(EVT_LAYOUT_OVERVIEW_NEW_HEIGHT, this._setNewGridHeight)
   }
   get photoCamera () {
     return this._photoCamera
@@ -95,6 +98,10 @@ export default class CameraSystem {
   }
   get isDragCameraMoving () {
     return this._isDragCameraMoving
+  }
+  _setNewGridHeight = ({ height }) => {
+    this._overviewLayoutHeight = height
+    console.log('new height', height)
   }
   _onLayoutModeChange = ({ layoutMode }) => {
     this._layoutMode = layoutMode
@@ -147,13 +154,26 @@ export default class CameraSystem {
     }
     this._photoCamera.position.y  *= CameraSystem.friction
 
-    const screenPaddingX = 1300 - innerWidth
-    const screenPaddingY = 1100 - innerHeight
+    let rightBound
+    let leftBound
+    let topBound
+    let bottomBound
 
-    const rightBound  = WOLRD_WIDTH / 2 + screenPaddingX / 2
-    const leftBound   = -WOLRD_WIDTH / 2 - screenPaddingX / 2
-    const bottomBound = WORLD_HEIGHT / 2 + screenPaddingY / 2
-    const topBound    = -WORLD_HEIGHT / 2 - screenPaddingY / 2
+    if (this._layoutMode === LAYOUT_MODE_GRID) {
+      const screenPaddingX = 1300 - innerWidth
+      const screenPaddingY = 1100 - innerHeight
+      rightBound  =  WOLRD_WIDTH / 2 + screenPaddingX / 2
+      leftBound   = -WOLRD_WIDTH / 2 - screenPaddingX / 2
+      topBound    =  WORLD_HEIGHT / 2 + screenPaddingY / 2
+      bottomBound = -WORLD_HEIGHT / 2 - screenPaddingY / 2
+    } else if (this._layoutMode === LAYOUT_MODE_OVERVIEW) {
+      rightBound = 0
+      leftBound  = 0
+      topBound   = 0
+      bottomBound = this._overviewLayoutHeight
+    }
+
+    console.log(this._targetPosition.y, topBound, bottomBound)
 
     if (this._targetPosition.x > rightBound) {
       if (!lockHorizontalMovement) {
@@ -163,14 +183,19 @@ export default class CameraSystem {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = leftBound
       }
-    } else if (this._targetPosition.y > bottomBound) {
-      this._targetPosition.y = bottomBound
-    } else if (this._targetPosition.y < topBound) {
+    } else if (this._targetPosition.y > topBound) {
       this._targetPosition.y = topBound
+      console.log('hit bottom bound')
+    } else if (this._targetPosition.y < bottomBound) {
+      this._targetPosition.y = bottomBound
+      console.log('hit top bound')
     }
   }
   _onSceneDrag = ({ diffx, diffy }) => {
-    this._targetPosition.x += diffx * -2 + 1
+    const lockHorizontalMovement = this._layoutMode === LAYOUT_MODE_OVERVIEW
+    if (!lockHorizontalMovement) {
+      this._targetPosition.x += diffx * -2 + 1
+    }
     this._targetPosition.y += diffy * 2 - 1
   }
   _onDragZoomOut = () => {

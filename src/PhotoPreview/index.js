@@ -37,6 +37,7 @@ import {
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
+  EVT_LAYOUT_OVERVIEW_NEW_HEIGHT,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -169,6 +170,7 @@ export default class PhotoPreview extends THREE.Mesh {
     }
 
     if (this._isLast) {
+      eventEmitter.emit(EVT_LAYOUT_OVERVIEW_NEW_HEIGHT, { height: overviewCurrOffsetY + this._height / 2 })
       overviewCurrOffsetX = 0
       overviewCurrOffsetY = 0
     }
@@ -202,6 +204,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._layoutMode = layoutMode
     this.position.x -= cameraPositionX
     this.position.y -= cameraPositionY
+    this._calcOverviewPosition()
   }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
