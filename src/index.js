@@ -231,6 +231,7 @@ function onProjectsLoad (res) {
   res.projects.forEach((info, i) => {
     const photoPreview = new PhotoPreview({
       idx: i,
+      isLast: i === res.projects.length - 1,
       modelName: info.modelName,
       width: PREVIEW_PHOTO_REF_WIDTH,
       height: PREVIEW_PHOTO_REF_HEIGHT,

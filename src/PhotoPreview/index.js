@@ -10,6 +10,7 @@ import {
   clampNumber,
   mapNumber,
   getSiglePagePhotoScale,
+  getItemsCountPerGridRow,
 } from '../helpers'
 
 import {
@@ -59,6 +60,7 @@ export default class PhotoPreview extends THREE.Mesh {
 
   constructor ({
     idx,
+    isLast = false,
     modelName,
     width,
     height,
@@ -86,9 +88,10 @@ export default class PhotoPreview extends THREE.Mesh {
     super(photoGeometry, photoMaterial)
 
     this._idx = idx
+    this._isLast = isLast
     this.position.copy(gridPosition)
 
-    this._totalGridWidth = 4 * (PREVIEW_PHOTO_REF_WIDTH + 20)
+    this._totalGridWidth = getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + 20)
     this._modelName = modelName
     this._width = width
     this._height = height
@@ -104,6 +107,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._isSingleViewCurrentlyTransitioning = false
     this._isOpenInSingleView = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
+    this._layoutMode = null
 
     this._diffVector = diffVector
     this._diffVectorTarget = new THREE.Vector2(0, 0)
@@ -123,6 +127,10 @@ export default class PhotoPreview extends THREE.Mesh {
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, this._onNavChangeTransitionOut)
     eventEmitter.on(EVT_TRANSITION_IN_CURRENT_PRODUCT_PHOTO, this._onNavChangeTransitionIn)
+    eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeTransitionRequest)
+    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION, this._onLayoutModeTransition)
+    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeTransitionComplete)
     eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, ({ modelName }) => {
       if (modelName === this._modelName) {
         this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_LEFT)
@@ -133,10 +141,6 @@ export default class PhotoPreview extends THREE.Mesh {
         this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_RIGHT)
       }
     })
-    eventEmitter.on(EVT_APP_RESIZE, this._onResize)
-    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeTransitionRequest)
-    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION, this._onLayoutModeTransition)
-    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeTransitionComplete)
   }
   get modelName () {
     return this._modelName
@@ -149,7 +153,7 @@ export default class PhotoPreview extends THREE.Mesh {
     const height = PREVIEW_PHOTO_REF_HEIGHT
 
     if (this._idx === 0) {
-      overviewCurrOffsetX += width * 1 + 20
+      overviewCurrOffsetX += width + 20
       return new THREE.Vector3(0, 0, 0)
     }
     const idx = this._idx + 1
@@ -159,10 +163,17 @@ export default class PhotoPreview extends THREE.Mesh {
 
     overviewCurrOffsetX += width * 1 + 20
 
-    if (idx % 4 === 0) {
+    if (idx % getItemsCountPerGridRow() === 0) {
       overviewCurrOffsetX = 0
       overviewCurrOffsetY -= height + 20
     }
+
+    if (this._isLast) {
+      overviewCurrOffsetX = 0
+      overviewCurrOffsetY = 0
+    }
+
+    console.log('new position', this._idx, x, y, getItemsCountPerGridRow())
     
     return new THREE.Vector3(x, y, 0)
   }
@@ -188,6 +199,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this.position.y = newY
   }
   _onLayoutModeTransitionComplete = ({ layoutMode, cameraPositionX, cameraPositionY }) => {
+    this._layoutMode = layoutMode
     this.position.x -= cameraPositionX
     this.position.y -= cameraPositionY
   }
@@ -487,5 +499,11 @@ export default class PhotoPreview extends THREE.Mesh {
       this.scale.set(scale, scale, 1)
     }
     this._openedPageTargetScale = getSiglePagePhotoScale()
+    this._totalGridWidth = getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + 20)
+    this._originalOverviewPosition = this._calcOverviewPosition()
+    if (this._layoutMode === LAYOUT_MODE_OVERVIEW) {
+      this.position.copy(this._originalOverviewPosition)
+      this.position.x += cameraPositionX - this._totalGridWidth / 2 + this._width / 2
+    }
   }
 }

@@ -1,5 +1,9 @@
 import * as THREE from 'three'
 
+import {
+  PREVIEW_PHOTO_REF_WIDTH,
+} from './helpers'
+
 export const clampNumber = (num, min, max) => Math.min(Math.max(num, min), max)
 
 export const mapNumber = (num, inMin, inMax, outMin, outMax) => (num - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
@@ -15,6 +19,18 @@ export const getSiglePagePhotoScale = () => {
     scaleFactor = 1.75
   }
   return scaleFactor
+}
+
+export const getItemsCountPerGridRow = () => {
+  let itemsCount = 1
+  if (innerWidth > 760 && innerWidth <= 1140) {
+    itemsCount = 2
+  } else if (innerWidth > 1140 && innerWidth <= 1550) {
+    itemsCount = 3
+  } else if (innerWidth > 1550) {
+    itemsCount = 4
+  }
+  return itemsCount
 }
 
 export const getArrowTexture = () => {
