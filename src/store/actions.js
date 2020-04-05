@@ -16,3 +16,9 @@ export const setOverviewLayoutHeight = height => ({
   type: SET_OVERVIEW_LAYOUT_HEIGHT,
   height,
 })
+
+export const SET_LAYOUT_MODE = 'SET_LAYOUT_MODE'
+export const setLayoutMode = layoutMode => ({
+  type: SET_LAYOUT_MODE,
+  layoutMode,
+})

@@ -9,6 +9,12 @@ import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
 
+import { getArrowTexture } from './helpers'
+import store from './store'
+import {
+  setLayoutMode,
+} from './store/actions'
+
 import {
   WOLRD_WIDTH,
   WORLD_HEIGHT,
@@ -51,7 +57,6 @@ import {
 } from './constants'
 
 import './style'
-import { getArrowTexture } from './helpers'
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
@@ -168,23 +173,22 @@ function onLayoutModeSelect (e) {
   if (!e.target.classList.contains('hint')) {
     return
   }
-  let layoutMode
   if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_GRID) {
     document.body.classList.add(`layout-mode-grid`)
     document.body.classList.remove(`layout-mode-overview`)
-    layoutMode = LAYOUT_MODE_GRID
+    store.dispatch(setLayoutMode(LAYOUT_MODE_GRID))
   } else if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_OVERVIEW) {
     document.body.classList.remove(`layout-mode-grid`)
     document.body.classList.add(`layout-mode-overview`)
-    layoutMode = LAYOUT_MODE_OVERVIEW
+    store.dispatch(setLayoutMode(LAYOUT_MODE_OVERVIEW))
   }
-  eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST, { layoutMode })
+  eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST)
   tween().start({
     update: tweenFactor => {
-      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor, layoutMode, })
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor })
     },
     complete: () => {
-      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, { layoutMode, })
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE)
     },
   })
 }

@@ -55,7 +55,6 @@ export default class CameraSystem {
     this._zoomFactor = 1
     this._isZoomedOut = false
     this._shouldMove = true
-    this._layoutMode = LAYOUT_MODE_GRID
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -101,10 +100,10 @@ export default class CameraSystem {
   get isDragCameraMoving () {
     return this._isDragCameraMoving
   }
-  _onLayoutModeChange = ({ layoutMode }) => {
-    this._layoutMode = layoutMode
+  _onLayoutModeChange = () => {
+    // ...
   }
-  _onLayoutModeChangeComplete = ({ layoutMode }) => {
+  _onLayoutModeChangeComplete = () => {
     this._photoCamera.position.x = 0
     this._photoCamera.position.y = 0
     this._targetPosition.copy(this._photoCamera.position)
@@ -122,9 +121,9 @@ export default class CameraSystem {
       return
     }
 
-    const { overviewLayoutHeight } = store.getState()
+    const { overviewLayoutHeight, layoutMode } = store.getState()
 
-    const lockHorizontalMovement = this._layoutMode === LAYOUT_MODE_OVERVIEW
+    const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
 
     let oldCameraVelocityX = this._velocity.x
     let oldCameraVelocityY = this._velocity.y
@@ -159,14 +158,14 @@ export default class CameraSystem {
     let topBound
     let bottomBound
 
-    if (this._layoutMode === LAYOUT_MODE_GRID) {
+    if (layoutMode === LAYOUT_MODE_GRID) {
       const screenPaddingX = 1300 - innerWidth
       const screenPaddingY = 1100 - innerHeight
       rightBound  =  WOLRD_WIDTH / 2 + screenPaddingX / 2
       leftBound   = -WOLRD_WIDTH / 2 - screenPaddingX / 2
       topBound    =  WORLD_HEIGHT / 2 + screenPaddingY / 2
       bottomBound = -WORLD_HEIGHT / 2 - screenPaddingY / 2
-    } else if (this._layoutMode === LAYOUT_MODE_OVERVIEW) {
+    } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       rightBound = 0
       leftBound  = 0
       topBound   = 0
@@ -192,7 +191,8 @@ export default class CameraSystem {
     }))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
-    const lockHorizontalMovement = this._layoutMode === LAYOUT_MODE_OVERVIEW
+    const { layoutMode } = store.getState()
+    const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
     if (!lockHorizontalMovement) {
       this._targetPosition.x += diffx * -2 + 1
     }

@@ -111,7 +111,6 @@ export default class PhotoPreview extends THREE.Mesh {
     this._isSingleViewCurrentlyTransitioning = false
     this._isOpenInSingleView = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
-    this._layoutMode = null
 
     this._diffVector = diffVector
     this._diffVectorTarget = new THREE.Vector2(0, 0)
@@ -182,12 +181,17 @@ export default class PhotoPreview extends THREE.Mesh {
     
     return new THREE.Vector3(x, y, 0)
   }
-  _onLayoutModeTransitionRequest = ({ layoutMode }) => {
+  _onLayoutModeTransitionRequest = () => {
     this._targetPosition.x = this.position.x
     this._targetPosition.y = this.position.y
   }
-  _onLayoutModeTransition = ({ tweenFactor, layoutMode }) => {
-    const { cameraPositionX, cameraPositionY, overviewLayoutWidth } = store.getState()
+  _onLayoutModeTransition = ({ tweenFactor }) => {
+    const {
+      cameraPositionX,
+      cameraPositionY,
+      overviewLayoutWidth,
+      layoutMode,
+    } = store.getState()
     // console.log(store.getState())
     const startX = this._targetPosition.x
     const startY = this._targetPosition.y
@@ -206,12 +210,11 @@ export default class PhotoPreview extends THREE.Mesh {
     this.position.y = newY
     // console.log(startX, startY, targetX, targetY, newX, newY)
   }
-  _onLayoutModeTransitionComplete = ({ layoutMode }) => {
+  _onLayoutModeTransitionComplete = () => {
     const {
       cameraPositionX,
       cameraPositionY,
     } = store.getState()
-    this._layoutMode = layoutMode
     this.position.x -= cameraPositionX
     this.position.y -= cameraPositionY
     this._calcOverviewPosition()
@@ -505,7 +508,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVector.y += (this._diffVectorTarget.y - this._diffVector.y) * dt * 6
   }
   _onResize = () => {
-    const { cameraPositionX, cameraPositionY } = store.getState()
+    const { cameraPositionX, cameraPositionY, layoutMode } = store.getState()
     if (this._isOpenInSingleView) {
       this.position.x = cameraPositionX - innerWidth * 0.25
       this.position.y = cameraPositionY
@@ -515,7 +518,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._openedPageTargetScale = getSiglePagePhotoScale()
     const overviewLayoutWidth = getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + 20)
     this._originalOverviewPosition = this._calcOverviewPosition()
-    if (this._layoutMode === LAYOUT_MODE_OVERVIEW) {
+    if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       this.position.copy(this._originalOverviewPosition)
       this.position.x += cameraPositionX - overviewLayoutWidth / 2 + this._width / 2
     }
