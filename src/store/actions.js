@@ -4,3 +4,15 @@ export const setCameraPosition = ({ x, y }) => ({
   x,
   y,
 })
+
+export const SET_OVERVIEW_LAYOUT_WIDTH = 'SET_OVERVIEW_LAYOUT_WIDTH'
+export const setOverviewLayoutWidth = width => ({
+  type: SET_OVERVIEW_LAYOUT_WIDTH,
+  width,
+})
+
+export const SET_OVERVIEW_LAYOUT_HEIGHT = 'SET_OVERVIEW_LAYOUT_HEIGHT'
+export const setOverviewLayoutHeight = height => ({
+  type: SET_OVERVIEW_LAYOUT_HEIGHT,
+  height,
+})

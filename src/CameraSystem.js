@@ -23,7 +23,6 @@ import {
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
-  EVT_LAYOUT_OVERVIEW_NEW_HEIGHT,
 } from './constants'
 
 export default class CameraSystem {
@@ -57,7 +56,6 @@ export default class CameraSystem {
     this._isZoomedOut = false
     this._shouldMove = true
     this._layoutMode = LAYOUT_MODE_GRID
-    this._overviewLayoutHeight = 0
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -87,7 +85,6 @@ export default class CameraSystem {
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeChangeComplete)
-    eventEmitter.on(EVT_LAYOUT_OVERVIEW_NEW_HEIGHT, this._setNewGridHeight)
   }
   get photoCamera () {
     return this._photoCamera
@@ -103,10 +100,6 @@ export default class CameraSystem {
   }
   get isDragCameraMoving () {
     return this._isDragCameraMoving
-  }
-  _setNewGridHeight = ({ height }) => {
-    this._overviewLayoutHeight = height
-    console.log('new height', height)
   }
   _onLayoutModeChange = ({ layoutMode }) => {
     this._layoutMode = layoutMode
@@ -128,6 +121,8 @@ export default class CameraSystem {
     if (!this._shouldMove) {
       return
     }
+
+    const { overviewLayoutHeight } = store.getState()
 
     const lockHorizontalMovement = this._layoutMode === LAYOUT_MODE_OVERVIEW
 
@@ -175,7 +170,7 @@ export default class CameraSystem {
       rightBound = 0
       leftBound  = 0
       topBound   = 0
-      bottomBound = this._overviewLayoutHeight
+      bottomBound = overviewLayoutHeight
     }
 
     if (this._targetPosition.x > rightBound) {
