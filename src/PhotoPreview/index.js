@@ -487,8 +487,10 @@ export default class PhotoPreview extends THREE.Mesh {
     .start(v => this.scale.set(v, v, 1))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
+    const { layoutMode } = store.getState()
+    const clampY = layoutMode === LAYOUT_MODE_GRID ? 25 : 35
     this._diffVectorTarget.x = clampNumber(diffx * 5, -25, 25)
-    this._diffVectorTarget.y = clampNumber(diffy * 5, -25, 25)
+    this._diffVectorTarget.y = clampNumber(diffy * 5, -clampY, clampY)
   }
   _onSceneDragEnd = () => {
     if (!this._isInteractable) {

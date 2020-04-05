@@ -176,10 +176,14 @@ function onLayoutModeSelect (e) {
   if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_GRID) {
     document.body.classList.add(`layout-mode-grid`)
     document.body.classList.remove(`layout-mode-overview`)
+    cursorArrowLeft.visible = true
+    cursorArrowRight.visible = true
     store.dispatch(setLayoutMode(LAYOUT_MODE_GRID))
   } else if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_OVERVIEW) {
     document.body.classList.remove(`layout-mode-grid`)
     document.body.classList.add(`layout-mode-overview`)
+    cursorArrowLeft.visible = false
+    cursorArrowRight.visible = false
     store.dispatch(setLayoutMode(LAYOUT_MODE_OVERVIEW))
   }
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST)
@@ -324,13 +328,14 @@ function onMouseDown (e) {
 }
 
 function onMouseMove (e) {
+  const { layoutMode } = store.getState()
   eventEmitter.emit(EVT_MOUSEMOVE_APP, { mouseX: mousePos.x, mouseY: mousePos.y})
 
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
   if (isDragging && !openModelTween && !closeModelTween && !clickedElement && !isInfoSectionOpen) {
-    const diffx = e.pageX - mousePos.x
+    const diffx = layoutMode === LAYOUT_MODE_GRID ? e.pageX - mousePos.x : 0
     const diffy = e.pageY - mousePos.y
     eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
   } else {
