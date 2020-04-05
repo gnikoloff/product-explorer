@@ -14,6 +14,9 @@ import {
   EVT_ON_SCENE_DRAG,
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
+  EVT_LAYOUT_MODE_TRANSITION_REQUEST,
+  LAYOUT_MODE_GRID,
+  LAYOUT_MODE_OVERVIEW,
 } from './constants'
 
 export default class CameraSystem {
@@ -46,6 +49,7 @@ export default class CameraSystem {
     this._zoomFactor = 1
     this._isZoomedOut = false
     this._shouldMove = true
+    this._layoutMode = null
 
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
@@ -73,6 +77,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_CAMERA_ZOOM_OUT_DRAG_START, this._onDragZoomOut)
     eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
   }
   get photoCamera () {
     return this._photoCamera
@@ -89,6 +94,9 @@ export default class CameraSystem {
   get isDragCameraMoving () {
     return this._isDragCameraMoving
   }
+  _onLayoutModeChange = ({ layoutMode }) => {
+    this._layoutMode = layoutMode
+  }
   _onRequestOpenProject = () => {
     this._shouldMove = false
     this._targetPosition.copy(this._photoCamera.position)
@@ -100,10 +108,15 @@ export default class CameraSystem {
     if (!this._shouldMove) {
       return
     }
+
+    const lockHorizontalMovement = this._layoutMode === LAYOUT_MODE_OVERVIEW
+
     let oldCameraVelocityX = this._velocity.x
     let oldCameraVelocityY = this._velocity.y
 
-    this._velocity.x += (this._targetPosition.x - this._photoCamera.position.x) * dt
+    if (!lockHorizontalMovement) {
+      this._velocity.x += (this._targetPosition.x - this._photoCamera.position.x) * dt
+    }
     this._velocity.y += (this._targetPosition.y - this._photoCamera.position.y) * dt
 
     const dist = calc.distance({
@@ -115,16 +128,16 @@ export default class CameraSystem {
     })
     
     this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
-
-    this._photoCamera.position.x += this._velocity.x
+    
+    if (!lockHorizontalMovement) {
+      this._photoCamera.position.x += this._velocity.x
+    }
     this._photoCamera.position.y += this._velocity.y
-    this._photoCamera.position.x += this._velocity.x
-    this._photoCamera.position.y += this._velocity.y
 
-    this._photoCamera.position.x  *= CameraSystem.friction
+    if (!lockHorizontalMovement) {
+      this._photoCamera.position.x  *= CameraSystem.friction
+    }
     this._photoCamera.position.y  *= CameraSystem.friction
-    this._photoCamera.position.x *= CameraSystem.friction
-    this._photoCamera.position.y *= CameraSystem.friction
 
     const screenPaddingX = 1300 - innerWidth
     const screenPaddingY = 1100 - innerHeight
@@ -135,9 +148,13 @@ export default class CameraSystem {
     const topBound    = -WORLD_HEIGHT / 2 - screenPaddingY / 2
 
     if (this._targetPosition.x > rightBound) {
-      this._targetPosition.x = rightBound
+      if (!lockHorizontalMovement) {
+        this._targetPosition.x = rightBound
+      }
     } else if (this._targetPosition.x < leftBound) {
-      this._targetPosition.x = leftBound
+      if (!lockHorizontalMovement) {
+        this._targetPosition.x = leftBound
+      }
     } else if (this._targetPosition.y > bottomBound) {
       this._targetPosition.y = bottomBound
     } else if (this._targetPosition.y < topBound) {

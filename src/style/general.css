@@ -104,6 +104,8 @@ li {
 }
 
 .webgl-scene-hint {
+  display: flex;
+  align-items: center;
   position: fixed;
   bottom: 24px;
   left: 50%;
@@ -115,6 +117,18 @@ li {
   align-items: center;
 }
 
+.hint:hover {
+  cursor: pointer;
+}
+
+.hint:first-of-type {
+  margin-right: 36px;
+}
+
+.hint * {
+  pointer-events: none;
+}
+
 .hint img {
   width: 36px;
   height: 36px;
@@ -124,4 +138,13 @@ li {
 .hint h6 {
   font-size: 12px;
   text-transform: uppercase;
+  transition: color 0.175s ease;
+}
+
+body.layout-mode-grid .hint[data-layout-mode="overview"] {
+  color: rgba(0, 0, 0, 0.62);
+}
+
+body.layout-mode-overview .hint[data-layout-mode="grid"] {
+  color: rgba(0, 0, 0, 0.62);
 }

@@ -43,6 +43,10 @@ import {
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_OPEN_REQUEST_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
+  LAYOUT_MODE_GRID,
+  LAYOUT_MODE_OVERVIEW,
+  EVT_LAYOUT_MODE_TRANSITION_REQUEST,
+  EVT_LAYOUT_MODE_TRANSITION,
 } from './constants'
 
 import './style'
@@ -60,6 +64,8 @@ const cameraSystem = new CameraSystem({
 })
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
+const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
+
 const dpr = window.devicePixelRatio || 1
 
 const mousePos = new THREE.Vector2(0, 0)
@@ -74,9 +80,9 @@ const postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight
 const postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const raycaster = new THREE.Raycaster()
+const photoMeshContainer = new THREE.Group()
 
 let oldTime = 0
-let photoPreviews = []
 let isDragging = false
 let isInfoSectionOpen = false
 let cursorArrowOffset = 0
@@ -88,6 +94,7 @@ let closeModelTween
 let openModelTweenFactor = 1
 
 photoScene.add(cameraSystem.photoCamera)
+photoScene.add(photoMeshContainer)
 cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
 postFXBlurScene.add(cameraSystem.postFXBlurCamera)
@@ -144,6 +151,8 @@ function init () {
   webglContainer.addEventListener('mouseup', onMouseUp, false)
   document.body.addEventListener('mouseleave', onMouseLeave, false)
   window.addEventListener('resize', onResize)
+
+  layoutModeBtnContainer.addEventListener('click', onLayoutModeSelect, false)
   
   eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
   eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
@@ -152,6 +161,28 @@ function init () {
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
   
   requestAnimationFrame(updateFrame)
+}
+
+function onLayoutModeSelect (e) {
+  if (!e.target.classList.contains('hint')) {
+    return
+  }
+  let layoutMode
+  if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_GRID) {
+    document.body.classList.add(`layout-mode-grid`)
+    document.body.classList.remove(`layout-mode-overview`)
+    layoutMode = LAYOUT_MODE_GRID
+  } else if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_OVERVIEW) {
+    document.body.classList.remove(`layout-mode-grid`)
+    document.body.classList.add(`layout-mode-overview`)
+    layoutMode = LAYOUT_MODE_OVERVIEW
+  }
+  eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST, { layoutMode })
+  tween().start({
+    update: tweenFactor => {
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor, layoutMode })
+    },
+  })
 }
 
 function onInfoSectionOpenRequest () {
@@ -184,17 +215,16 @@ function onNextProjectClick ({ modelName }) {
 
 function onProjectsLoad (res) {
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
-
-  photoPreviews = res.projects.map(info => {
+  res.projects.forEach((info, i) => {
     const photoPreview = new PhotoPreview({
+      idx: i,
       modelName: info.modelName,
       width: PREVIEW_PHOTO_REF_WIDTH,
       height: PREVIEW_PHOTO_REF_HEIGHT,
       photos: info.sliderPhotos || [],
-      position: new THREE.Vector3(info.posX, info.posY, 0)
+      gridPosition: new THREE.Vector3(info.posX, info.posY, 0),
     })
-    photoScene.add(photoPreview)
-    return photoPreview
+    photoMeshContainer.add(photoPreview)
   })
 }
 
@@ -351,7 +381,7 @@ function updateFrame(ts) {
 
   if (!isDragging && !isInfoSectionOpen) {
     raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
-    const intersectsTests = photoPreviews.filter(a => a.isInteractable)
+    const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
     const intersects = raycaster.intersectObjects(intersectsTests)
     if (intersects.length > 0) {
       if (cameraSystem.isDragCameraMoving) {
