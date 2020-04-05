@@ -1,6 +1,6 @@
 uniform vec2 u_planeSize;
 uniform vec2 u_imageSize;
-uniform sampler2D u_textures[3];
+uniform sampler2D u_textures[9];
 uniform float u_opacity;
 uniform int u_texIdx0;
 uniform int u_texIdx1;
@@ -10,7 +10,7 @@ uniform float u_horizontalDirection;
 varying vec2 v_uv;
 
 vec4 getTexture (int index, vec2 uv) {
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 9; i++) {
     if (i == index){
       return texture2D(u_textures[i], uv);
     }

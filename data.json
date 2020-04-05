@@ -3,20 +3,51 @@
     {
       "posX": -200,
       "posY": 100,
-      "modelName": "J61-GTV",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J6dssaf1-GTV is a fully featured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
+      "modelName": "J1A-GT",
+      "subheading": "3L Gore-Tex® Pro Interops Jacket",
+      "description": "Generation two point two. J1A was the first ever jacket designed by Acronym. Originally conceived in the years between 1999 and 2001, it is the progenitor of the Type 2371*, and of every other Acronym jacket that has followed. This is iteration fifteen.<br/><br/>J1A-GT is the culmination of everything we have learned about building apparel since that time. Everything is new. Everything is the same. The very idea of ǍCROŇYMř rendered in physical, wearable form. A carefully balanced array of functional and aesthetic systems presented here in completely remastered form. Asymmetric. Dynamic. ǍCROŇYMř among equals.<br/><br/>Combine with 3A-1 or 3A-3TS for full INTEROPSǽ functionality. Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "3L GORE-TEX® PRO [Next generation technology]",
+        "(70% PA, 30% ePTFE)",
+        "With MICROGRID® Backer",
+        "Guaranteed To Keep You Dry®"
       ],
-      "websiteURL": "https://acrnm.com/products/J61-GTV_FW1920",
+      "systems": [
+        "ǍCROŇYMř INTEROPSǽ (PAT.)",
+        "ǍCROŇYMř SOUNDǽ (PAT.)"
+      ],
+      "subsystems": [
+        "ForceLockǽ",
+        "JacketSlingǽ",
+        "EscapeZipǽ",
+        "SpeedLockǽ",
+        "Gravity Pocketǽ",
+        "AuxZipǽ ( F )",
+        "Pockets: 9",
+        "_External: 9",
+        "_Internal: 0"
+      ],
+      "includes": [
+        "ForceLockǽ [ Removable ]",
+        "JacketSlingǽ [ Removable ]",
+        "Storm Hood [ Removable ]",
+        "Logo tape [ Removable ]"
+      ],
+      "interfaceWith": [
+        "All ǍCROŇYMř INTEROPSǽ bags",
+        "All ǍCROŇYMř AuxZipǽ ( M ) units"
+      ],
+      "websiteURL": "https://acrnm.com/products/J1A-GT_NA",
       "sliderPhotos": [
-        "photos/01/01.png",
-        "photos/01/02.png",
-        "photos/01/03.png",
-        "photos/01/04.png"
+        "photos/J1A-GT_NA/preview.jpg",
+        "photos/J1A-GT_NA/slider-1.jpg",
+        "photos/J1A-GT_NA/slider-2.jpg",
+        "photos/J1A-GT_NA/slider-3.jpg",
+        "photos/J1A-GT_NA/slider-4.jpg",
+        "photos/J1A-GT_NA/slider-5.jpg",
+        "photos/J1A-GT_NA/slider-6.jpg",
+        "photos/J1A-GT_NA/slider-7.jpg",
+        "photos/J1A-GT_NA/slider-8.jpg"
       ]
     },
     {

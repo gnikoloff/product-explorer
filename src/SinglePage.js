@@ -50,10 +50,16 @@ export default class SinglePage {
     this.$els = {
       wrapper,
       singlePageInfo: wrapper.getElementsByClassName('single-page-info')[0],
+      singlePageContainer: wrapper.getElementsByClassName('single-page-container')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
       subtitle: wrapper.getElementsByClassName('single-page-subheading')[0],
       description: wrapper.getElementsByClassName('single-page-description')[0],
       descriptionList: wrapper.getElementsByClassName('single-page-features')[0],
+      fabricTechnologyList: wrapper.getElementsByClassName('fabric-technology')[0],
+      systemsList: wrapper.getElementsByClassName('systems')[0],
+      subsystemsList: wrapper.getElementsByClassName('subsystems')[0],
+      includesList: wrapper.getElementsByClassName('includes')[0],
+      interfaceWithList: wrapper.getElementsByClassName('interface-with')[0],
       sliderButtonPrev: wrapper.getElementsByClassName('slider-btn-prev')[0],
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
@@ -68,6 +74,7 @@ export default class SinglePage {
       sliderButtonPrev: styler(this.$els.sliderButtonPrev),
       sliderButtonNext: styler(this.$els.sliderButtonNext),
       closeButton: styler(this.$els.closeButton),
+      singlePageContainer: styler(this.$els.singlePageContainer),
     }
     
     eventEmitter.on(EVT_LOADED_PROJECTS, this._onProjectsLoaded)
@@ -92,7 +99,7 @@ export default class SinglePage {
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._prevModelName)
       this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
-      this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
+      this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
       this.$els.prevProductButton.classList.add('clicked')
@@ -107,7 +114,7 @@ export default class SinglePage {
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
       this._nextModelName = this._projectsData[currNextIdx + 1] ? this._projectsData[currNextIdx + 1].modelName : this._projectsData[0].modelName
       eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
-      this.stylers.singlePageInfo.set('background-color', SinglePage.pageBackground)
+      this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('clicked')
@@ -119,14 +126,14 @@ export default class SinglePage {
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
     const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
     this.$els.sizer.style.setProperty('width', `${sizerWidth}px`)
-    this.$els.sizer.style.setProperty('height', `${sizerHeight}px`)
+    this.$els.sizer.style.setProperty('height', `${Math.min(sizerHeight, innerHeight)}px`)
     this.$els.sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
 
     // this._positionButtons()
   }
 
   _removeBackgroundColor = () => {
-    this.stylers.singlePageInfo.set('background-color', 'transparent')
+    this.stylers.singlePageContainer.set('background-color', 'transparent')
   }
 
   _positionButtons = () => {
@@ -235,14 +242,32 @@ export default class SinglePage {
     this.$els.title.textContent = project.modelName
     this.$els.subtitle.textContent = project.subheading
     this.$els.description.innerHTML = project.description
-    this.$els.descriptionList.innerHTML = ''
-    project.fabricTechnologies.forEach(desc => {
-      const li = document.createElement('li')
-      li.textContent = desc
-      this.$els.descriptionList.appendChild(li)
-    })
+    
+    this._setProjectDescList(this.$els.descriptionList, null)
+    this._setProjectDescList(this.$els.fabricTechnologyList, project.fabricTechnologies)
+    this._setProjectDescList(this.$els.systemsList, project.systems)
+    this._setProjectDescList(this.$els.subsystemsList, project.subsystems)
+    this._setProjectDescList(this.$els.includesList, project.includes)
+    this._setProjectDescList(this.$els.interfaceWithList, project.interfaceWith)
+    
     this.$els.prevProductButton.children[0].textContent = this._prevModelName
     this.$els.nextProductButton.children[0].textContent = this._nextModelName
+  }
+
+  _setProjectDescList = (element, list) => {
+    const label = element.getElementsByTagName('h2')[0]
+    const listWrapper = element.getElementsByTagName('ul')[0]
+    listWrapper.innerHTML = ''
+    if (!list) {
+      element.style.display = 'none'
+    } else {
+      element.style.display = 'block'
+      list.forEach(el => {
+        const li = document.createElement('li')
+        li.textContent = el
+        listWrapper.appendChild(li)
+      })
+    }
   }
 
   _fadeProjectDescription = ({ direction = 1, duration = 300, includeButtons = true, parralel = false } = {}) => new Promise(resolve => {

@@ -17,14 +17,24 @@
 }
 
 .single-page-info {
+  position: relative;
+  height: 100%;
+  cursor: initial;
+}
+
+.single-page-info-wrapper {
+  position: relative;
+  height: calc(100% - 62px);
+  overflow: auto;
+}
+
+.single-page-container {
   position: absolute;
-  width: 50vw;
   right: 0;
-  top: 0;
-  bottom: 0;
+  width: 50%;
+  min-height: 100%;
   padding: 150px 42px 24px 42px;
   box-sizing: border-box;
-  cursor: initial;
 }
 
 .single-page-title {
@@ -37,14 +47,31 @@
 
 .single-page-section {
   padding: 0 0 24px 0;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .single-page-nav {
   position: absolute;
   bottom: 0;
+  right: 0;
+  width: 50%;
+  display: flex;
+}
+
+.single-page-nav:before {
+  content: '';
+  position: absolute;
+  top: -96px;
   left: 0;
   right: 0;
-  display: flex;
+  height: 96px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg, 
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,1) 100%
+  );
 }
 
 .single-page-btn {
