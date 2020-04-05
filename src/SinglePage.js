@@ -53,6 +53,10 @@ export default class SinglePage {
       singlePageContainer: wrapper.getElementsByClassName('single-page-container')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
       subtitle: wrapper.getElementsByClassName('single-page-subheading')[0],
+      pricing: wrapper.getElementsByClassName('single-page-pricing')[0],
+      type: wrapper.getElementsByClassName('single-page-type')[0],
+      generation: wrapper.getElementsByClassName('single-page-gen')[0],
+      style: wrapper.getElementsByClassName('single-page-style')[0],
       description: wrapper.getElementsByClassName('single-page-description')[0],
       descriptionList: wrapper.getElementsByClassName('single-page-features')[0],
       fabricTechnologyList: wrapper.getElementsByClassName('fabric-technology')[0],
@@ -242,6 +246,10 @@ export default class SinglePage {
     this.$els.title.textContent = project.modelName
     this.$els.subtitle.textContent = project.subheading
     this.$els.description.innerHTML = project.description
+    this.$els.pricing.textContent = project.pricing
+    this.$els.type.innerHTML = `Type  <span class="meta-desc">${project.type}</span>`
+    this.$els.generation.innerHTML = `Gen.  <span class="meta-desc">${project.gen}</span>`
+    this.$els.style.innerHTML = `Style  <span class="meta-desc">${project.style}</span>`
     
     this._setProjectDescList(this.$els.descriptionList, null)
     this._setProjectDescList(this.$els.fabricTechnologyList, project.fabricTechnologies)
@@ -263,8 +271,10 @@ export default class SinglePage {
     } else {
       element.style.display = 'block'
       list.forEach(el => {
+        el = el.trim()
         const li = document.createElement('li')
-        li.textContent = el
+        li.innerHTML = el
+        el === '<br/>' && li.style.setProperty('list-style', 'none')
         listWrapper.appendChild(li)
       })
     }

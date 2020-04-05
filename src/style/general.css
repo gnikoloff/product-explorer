@@ -25,7 +25,7 @@ h3 {
 }
 
 li {
-  list-style: square;
+  list-style: none;
 }
 
 .fade-in {

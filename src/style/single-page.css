@@ -45,6 +45,23 @@
   font-size: 10px;
 }
 
+.single-page-meta {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.meta-item {
+  margin-right: 32px;
+}
+.meta-item:last-of-type {
+  margin-right: 0;
+}
+
+.meta-desc {
+  margin-left: 9px;
+}
+
 .single-page-section {
   padding: 0 0 24px 0;
   font-size: 12px;

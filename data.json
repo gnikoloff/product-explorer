@@ -5,12 +5,17 @@
       "posY": 100,
       "modelName": "J1A-GT",
       "subheading": "3L Gore-Tex® Pro Interops Jacket",
-      "description": "Generation two point two. J1A was the first ever jacket designed by Acronym. Originally conceived in the years between 1999 and 2001, it is the progenitor of the Type 2371*, and of every other Acronym jacket that has followed. This is iteration fifteen.<br/><br/>J1A-GT is the culmination of everything we have learned about building apparel since that time. Everything is new. Everything is the same. The very idea of ǍCROŇYMř rendered in physical, wearable form. A carefully balanced array of functional and aesthetic systems presented here in completely remastered form. Asymmetric. Dynamic. ǍCROŇYMř among equals.<br/><br/>Combine with 3A-1 or 3A-3TS for full INTEROPSǽ functionality. Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.Shown in size:<br/><br/>M (Erlsn, 183 cm), XS (Delia, 175 cm), L (Ian, 190 cm)<br/><br/>[ Fits: STRAIGHT ]<br/><br/>Modifications from Gen 2.0 include: new multi-position convertible storm collar, storm hood with redesigned visor/circumference adjustment, repositioned and resized GravityPocketsǽ, elongated liner access zip, addition of manubrium height center front snap closure, reintroduction of sleeve hitch tabs.<br/><br/>*Together with 3A-1, the Type 2371 jacket was released in 2002 as one of the main components of ACR KIT-1. KIT-1 was the first commercially available Acronym product.",
+      "pricing": "Sold out",
+      "type": "WP",
+      "gen": "2.2",
+      "style": "Hardshell",
+      "description": "Generation two point two. J1A was the first ever jacket designed by Acronym. Originally conceived in the years between 1999 and 2001, it is the progenitor of the Type 2371*, and of every other Acronym jacket that has followed. This is iteration fifteen.<br/><br/>J1A-GT is the culmination of everything we have learned about building apparel since that time. Everything is new. Everything is the same. The very idea of ǍCROŇYMř rendered in physical, wearable form. A carefully balanced array of functional and aesthetic systems presented here in completely remastered form. Asymmetric. Dynamic. ǍCROŇYMř among equals.<br/><br/>Combine with 3A-1 or 3A-3TS for full INTEROPSǽ functionality. Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.<br/><br/>[ Fits: STRAIGHT ]<br/><br/>Modifications from Gen 2.0 include: new multi-position convertible storm collar, storm hood with redesigned visor/circumference adjustment, repositioned and resized GravityPocketsǽ, elongated liner access zip, addition of manubrium height center front snap closure, reintroduction of sleeve hitch tabs.<br/><br/>*Together with 3A-1, the Type 2371 jacket was released in 2002 as one of the main components of ACR KIT-1. KIT-1 was the first commercially available Acronym product.",
       "fabricTechnologies": [
         "3L GORE-TEX® PRO [Next generation technology]",
         "(70% PA, 30% ePTFE)",
         "With MICROGRID® Backer",
-        "Guaranteed To Keep You Dry®"
+        "Guaranteed To Keep You Dry®",
+        "**Up to 28% more breathability compared to previous generation Gore-Tex®  Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use."
       ],
       "systems": [
         "ǍCROŇYMř INTEROPSǽ (PAT.)",
@@ -23,7 +28,7 @@
         "SpeedLockǽ",
         "Gravity Pocketǽ",
         "AuxZipǽ ( F )",
-        "<br/><br/>",
+        "<br/>",
         "Pockets: 9",
         "_External: 9",
         "_Internal: 0"
@@ -56,13 +61,17 @@
       "posY": -300,
       "modelName": "J47-GT_SS20",
       "subheading": "3L Gore-Tex® Pro Interops Jacket",
+      "pricing": "Coming soon",
+      "type": "WP",
+      "gen": "1.1",
+      "style": "Hardshell",
       "description": "Streamlined new riff on age old Acronym themes of kinetics and concealment. All the unusual Acronym suspects lined up behind our double center front zip configuration. More of what we do. Less of what everyone else does. Peerless. Now, for the first time, with Acronym Interopsǽ.<br/><br/>Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.<br/><br/>[ **Up to 28% more breathability compared to previous generation Gore-Tex® Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use. ]<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
       "fabricTechnologies": [
         "3L GORE-TEX® PRO [Next generation technology]",
         "(70% PA, 30% ePTFE)",
         "With MICROGRID® Backer",
         "Guaranteed To Keep You Dry®",
-        "**Up to 28% more breathability compared to previous generation Gore-Tex® Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use."
+        "**Up to 28% more breathability compared to previous generation Gore-Tex®","Pro products. Garments engineered with Gore-Tex® Pro product technology  are built for maximized ruggedness and are ideal for extreme and extended  use."
       ],
       "systems": [
         "ǍCROŇYMř INTEROPSǽ (PAT.)",
@@ -75,7 +84,7 @@
         "SpeedLockǽ ",
         "Gravity Pocketǽ",
         "AuxZipǽ ( F )",
-        "<br/><br/>",
+        "<br/>",
         "Pockets: 6",
         "_External: 5",
         "_Internal: 1"
@@ -89,7 +98,7 @@
         "All ǍCROŇYMř INTEROPSǽ bags",
         "All ǍCROŇYMř AuxZipǽ ( M ) units"
       ],
-      "websiteURL": "https://acrnm.com/products/J59-GT_SS19",
+      "websiteURL": "https://acrnm.com/products/J47-GT_SS20",
       "sliderPhotos": [
         "photos/J47-GT_SS20/preview.jpg",
         "photos/J47-GT_SS20/slider-1.jpg",
@@ -107,6 +116,10 @@
       "posY": -550,
       "modelName": "J59-GT",
       "subheading": "3L Gore-Tex® Pro Jacket",
+      "pricing": "Price 1,479.00 EUR",
+      "type": "WP",
+      "gen": 1,
+      "style": "Harshell",
       "description": "Our beloved oversize uniform fit block returns for the first time in 3L Gore-Tex® Pro fabric. J59 is smooth, loose, and stanced to accommodate extras as needed; be they additional layers, or more degrees of possibility. Cavernous detached entry and chest pockets will swallow just about everything, while the sleeve anchor loops and rear shock cord waist conform volume as desired. Newly engineered Gore-Tex Fabric with Stretch Technology cuffs and hem maintain both climate and casualness.<br/><br/>Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.<br/><br/>[ Shown in size: M. Fits: LOOSE ]",
       "fabricTechnologies": [
         "3L GORE-TEX® PRO [Next generation technology]",
@@ -116,10 +129,9 @@
         "**Up to 28% more breathability compared to previous generation Gore-Tex® Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use."
       ],
       "subsystems": [
-        "Subsystems",
         "JacketSlingǽ",
         "AuxZipǽ ( F )",
-        "<br/><br/>",
+        "<br/>",
         "Pockets: 3",
         "_External: 3",
         "_Internal: 0"
@@ -128,7 +140,10 @@
         "JacketSlingǽ [ Removable ]",
         "Storm Hood [ Removable ]"
       ],
-      "websiteURL": "https://acrnm.com/products/J82-WS_SS20",
+      "interfaceWith": [
+        "All ǍCROŇYMř AuxZipǽ ( M ) units"
+      ],
+      "websiteURL": "https://acrnm.com/products/J59-GT_SS19",
       "sliderPhotos": [
         "photos/J59-GT_SS19/preview.jpg",
         "photos/J59-GT_SS19/slider-1.jpg",
@@ -146,6 +161,10 @@
       "posY": 450,
       "modelName": "J33-E",
       "subheading": "Encapsulated Nylon Jacket",
+      "pricing": "Price 1,455.00 EUR",
+      "type": "WR",
+      "gen": "1",
+      "style": "Lightshell",
       "description": "Urbane asymmetrics borne of mid-century European military and civilian mountain jackets, J33 is a precisely cut 3/4-length lightshell jacket. Volumes reference both the formality of parade dress, and the refractoriality of biker jackets and parkas. The asym CF zipper closes up for double breasted protection, or drapes softly when opened. Seven ergonomically distributed pockets provide copious amounts of mobile storage.<br/><br/>A combination of old world and new, the KG fit block is a hybrid of vintage Japanese kimono and modern technical sportswear pattern making. Generous (zero resistance DFMA fit) yet economical (minimal seams, tape, and weight), it feels light and effortless.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
       "fabricTechnologies": [
         "ENCAPSULATED NYLON",
@@ -163,7 +182,7 @@
         "SpeedLockǽ",
         "Gravity Pocketǽ",
         "AuxZipǽ ( F )",
-        "<br/><br/>",
+        "<br/>",
         "POCKETS:",
         "Total: 7",
         "_External: 6",
@@ -195,6 +214,10 @@
       "posY": -130,
       "modelName": "J58-WS_FW1920",
       "subheading": "Windstopper® PrimaLoft® Modular Liner Jacket",
+      "pricing": "Price 1,089.00 EUR",
+      "type": "WR",
+      "gen": "1.2",
+      "style": "Insulator",
       "description": "The definitive modular liner for Acronym shells, J58-WS is a lightweight, exceedingly comfortable envelope of warmth and well being. The outstanding properties of PrimaLoft® insulation and WINDSTOPPER® shell make it formidable as both a component piece or a jacket on its own.<br/><br/>PrimaLoft® insulation is designed to regulate comfort levels during intense activity while offering uncompromising performance in all conditions. Combined with 2 layer Gore Windstopper®, the results are incredibly soft, warm, light, and protective. Effortless and effective.<br/><br/>[ Shown in size: M. Fits: PROFILE ]",
       "fabricTechnologies": [
         "2L GORE WINDSTOPPER® shell fabric",
@@ -205,7 +228,7 @@
       "subsystems": [
         "JacketSlingǽ",
         "AuxZipǽ ( M )",
-        "<br/><br/>",
+        "<br/>",
         "Pockets: 4",
         "_External: 4",
         "_Internal: 0"
@@ -234,6 +257,10 @@
       "posY": 300,
       "modelName": "J46-FO",
       "subheading": "2L Gore-Tex Infinium™ Climashield® Coat",
+      "pricing": "Price 1,900.00 EUR",
+      "type": "WR",
+      "gen": "1.1",
+      "style": "Insulator",
       "description": "J46 is an old dog with an arsenal of new tricks. Climashield® continuous filament insulation on the inside. New Gore-Tex Infinium® shell fabric on the outside. Press buttons and an 8 MM 2-way metal zip protect the center line. An additional 5 MM zip ingeniously converts the collar to protect your neck. Despite being able to pack down into the convertible collar, the new stowable Storm Hood is one of our finest ever. Two front facing flap pockets nod to tradition; while 2 canted WR zipped back pockets have an eye on the approaching horizon. All held together by impeccable Acronym tailoring, and an internally or externally deployable JacketSlingæ.<br/><br/>Gore-Tex Infinium® is a completely new type of GORE-TEX® laminate. It shifts focus from toughness to softness, from resistance to well being. A new proprietary technology forms a component fabric with persistent beading and extremely low water pick up. This means no bulky face fabric is needed. The result is comfort and quiet unlike anything before it.<br/><br/>The laminated face of the fabric will 'break-in' and develop its own individual shine and patina with time. Durability and appearance will vary with type and style of use. Additionally, we advise the user to adhere to the following care instructions to ensure fabric integrity and longevity:<br/><br/>_Z-strength warning: Under no circumstances should adhesives (stickers, glue, tape, etc.) of any type be applied to the surface of this fabric. Removal of such adhesives may cause the laminate to split along the z-axis causing partial delamination and discoloration of the fabric.<br/><br/>_Never attach pins, needles or staples to the fabric.<br/><br/>_Zip up the garment before washing. Place garment in a wash bag and machine wash cold with liquid detergent. Rinse twice. Do not use powder detergent, fabric softener or bleach. No Ironing.<br/><br/>[ Shown in size: M ]<br/><br/>[ Fits: STRAIGHT ]",
       "fabricTechnologies": [
         "GORE-TEX INFINIUM™ Product Technology shell fabric",
@@ -248,7 +275,7 @@
       "subsystems": [
         "ForceLockǽ",
         "JacketSlingǽ",
-        "<br/><br/>",
+        "<br/>",
         "Pockets: 6",
         "_External: 4",
         "_Internal: 2"
@@ -277,6 +304,10 @@
       "posY": -300,
       "modelName": "S23-AK",
       "subheading": "Cashllama Long Sleeve Sweater",
+      "pricing": "Coming soon",
+      "type": "NTS",
+      "gen": "1",
+      "style": "Next to Skin",
       "description": "Exceptionally lightweight and summer ready, S23 is an ergonomically patterned sweater cut with a hip-length two-part hem. Fully fashioned knit construction. Gusseted underarm with half drop, half dolman sleeve design.<br/><br/>Knit in Bolivia from the finest quality Cashllama wool.",
       "fabricTechnologies": [
         "CASHLLAMA WOOL finest quality",
@@ -303,6 +334,10 @@
       "posY": -500,
       "modelName": "H5-AJ",
       "subheading": "Air Jet Wool Hat",
+      "pricing": "Price 284.00 EUR",
+      "type": "NTS",
+      "gen": "1",
+      "style": "Next to Skin",
       "description": "H5-AJ is the first ǍCROŇYMř accessory made using the remarkable Babyllama Air Jet Wool construction. Minimalist utility and luxury deliver organic comfort and well-being in a way no other beanie can. Loose hollowcore Babyllama fibers are injected into a tubular nylon yarn yielding insulation above and beyond expected volume to weight ratios. So light you will forget you are wearing it. Handmade high-tech.",
       "fabricTechnologies": [
         "BABYLLAMA AIR JET WOOL",
@@ -330,6 +365,10 @@
       "posY": -500,
       "modelName": "J77-AM",
       "subheading": "Cashllama Silk Mesh Hooded Jacket",
+      "pricing": "Price 1,100.00 EUR",
+      "type": "NTS",
+      "gen": "1",
+      "style": "Next To Skin",
       "description": "Hooded zip front jacket in grid mesh Cashllama wool and silk blend knit construction. Low profile 'scuba' hood ideal for layering.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
       "fabricTechnologies": [
         "CASHLLAMA SILK Blend",
@@ -362,6 +401,10 @@
       "posY": 300,
       "modelName": "NG5-AK",
       "subheading": "Cashllama Neck Gaiter",
+      "pricing": "Price 357.00 EUR",
+      "type": "NTS",
+      "gen": "1",
+      "style": "Next to Skin",
       "description": "See and be unseen. NG5-AK is a simple and luxurious solution to winter comfort. Finest quality Cashllama wool knit semi-mesh construction.",
       "fabricTechnologies": [
         "CASHLLAMA WOOL finest quality",
@@ -388,6 +431,10 @@
       "posY": 520,
       "modelName": "C1-AM",
       "subheading": "Cashllama Silk Mesh Crewneck Sweatshirt",
+      "pricing": "Coming soon",
+      "type": "NTS",
+      "gen": "1.1",
+      "style": "Next to Skin",
       "description": "Crew neck sweatshirt in grid mesh Cashllama wool and silk blend knit construction. Generous holster position pockets for best possible weight distribution and stability on a soft framed style.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
       "fabricTechnologies": [
         "CASHLLAMA SILK Blend",
@@ -420,6 +467,10 @@
       "posY": 400,
       "modelName": "J65-AJ",
       "subheading": "Air Jet Wool Vest",
+      "pricing": "Price 669.00 EUR",
+      "type": "NTS",
+      "gen": "1.2",
+      "style": "Next to Skin",
       "description": "J65-AJ is the first ǍCROŇYMř garment made using the remarkable Babyllama Air Jet Wool construction. Minimalist utility and luxury deliver organic comfort and well-being in a way no other mid-layer can. Loose hollowcore Babyllama fibers are injected into a tubular nylon yarn yielding insulation above and beyond expected volume to weight ratios. Unique short sleeved construction strikes a perfect balance between jacket and vest. Handmade high-tech.<br/><br/>[ Shown in size: M. Fits: PROFILE ]",
       "fabricTechnologies": [
         "BABYLLAMA AIR JET WOOL",
