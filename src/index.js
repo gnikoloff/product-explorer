@@ -89,6 +89,7 @@ const raycaster = new THREE.Raycaster()
 const photoMeshContainer = new THREE.Group()
 
 let oldTime = 0
+let lastScrollY = 0
 let isDragging = false
 let isInfoSectionOpen = false
 let cursorArrowOffset = 0
@@ -179,12 +180,14 @@ function onLayoutModeSelect (e) {
     cursorArrowLeft.visible = true
     cursorArrowRight.visible = true
     store.dispatch(setLayoutMode(LAYOUT_MODE_GRID))
+    webglContainer.removeEventListener('mousewheel', onOverviewLayoutScroll)
   } else if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_OVERVIEW) {
     document.body.classList.remove(`layout-mode-grid`)
     document.body.classList.add(`layout-mode-overview`)
     cursorArrowLeft.visible = false
     cursorArrowRight.visible = false
     store.dispatch(setLayoutMode(LAYOUT_MODE_OVERVIEW))
+    webglContainer.addEventListener('mousewheel', onOverviewLayoutScroll, false)
   }
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST)
   tween().start({
@@ -195,6 +198,13 @@ function onLayoutModeSelect (e) {
       eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE)
     },
   })
+}
+
+function onOverviewLayoutScroll (e) {
+  const scrollY = lastScrollY + e.deltaY
+  const diffy = (scrollY - lastScrollY) * -1
+  eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx: 0, diffy })
+  lastScrollY = scrollY
 }
 
 function onInfoSectionOpenRequest () {
