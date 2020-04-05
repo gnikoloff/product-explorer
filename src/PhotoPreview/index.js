@@ -58,6 +58,7 @@ export default class PhotoPreview extends THREE.Mesh {
   static ARROW_LEFT_KEY_CODE = 37
   static SLIDER_DIRECTION_LEFT = -1
   static SLIDER_DIRECTION_RIGHT = 1
+  static OVERVIEW_LAYOUT_COLUMN_GUTTER = 20
 
   static loadTexture = texName => new Promise(resolve =>
     new THREE.TextureLoader().load(texName, texture => resolve(texture)
@@ -114,9 +115,9 @@ export default class PhotoPreview extends THREE.Mesh {
 
     this._diffVector = diffVector
     this._diffVectorTarget = new THREE.Vector2(0, 0)
-    this._originalPositionOpenPositionDiff = new THREE.Vector2(0, 0)
+    this._openPositionDiff = new THREE.Vector2(0, 0)
 
-    store.dispatch(setOverviewLayoutWidth(getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + 20)))
+    store.dispatch(setOverviewLayoutWidth(getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)))
 
     this._loadPreview()
 
@@ -158,7 +159,7 @@ export default class PhotoPreview extends THREE.Mesh {
     const height = PREVIEW_PHOTO_REF_HEIGHT
 
     if (this._idx === 0) {
-      overviewCurrOffsetX += width + 20
+      overviewCurrOffsetX += width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
       return new THREE.Vector3(0, 0, 0)
     }
     const idx = this._idx + 1
@@ -166,11 +167,11 @@ export default class PhotoPreview extends THREE.Mesh {
     const x = overviewCurrOffsetX
     const y = overviewCurrOffsetY
 
-    overviewCurrOffsetX += width * 1 + 20
+    overviewCurrOffsetX += width * 1 + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
 
     if (idx % getItemsCountPerGridRow() === 0) {
       overviewCurrOffsetX = 0
-      overviewCurrOffsetY -= height + 20
+      overviewCurrOffsetY -= height + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
     }
 
     if (this._isLast) {
@@ -292,6 +293,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._targetPosition.y = startY
     tween().start({
       update: tweenFactor => {
+        const { layoutMode } = store.getState()
         const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
         const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
         const diffx = (newX - this.position.x) * -1 * 5
@@ -300,10 +302,19 @@ export default class PhotoPreview extends THREE.Mesh {
 
         this.position.x = newX
         this.position.y = newY
-
-        this._originalPositionOpenPositionDiff.x = newX - this._originalGridPosition.x
-        this._originalPositionOpenPositionDiff.y = newY - this._originalGridPosition.y
         
+        let originalPositionX
+        let originalPositionY
+        if (layoutMode === LAYOUT_MODE_GRID) {
+          originalPositionX = this._originalGridPosition.x
+          originalPositionY = this._originalGridPosition.y
+        } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+          originalPositionX = this._originalOverviewPosition.x - this._width / 2 - PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+          originalPositionY = this._originalOverviewPosition.y
+        }
+        this._openPositionDiff.x = newX - originalPositionX
+        this._openPositionDiff.y = newY - originalPositionY
+        1
         onUpdate(tweenFactor)
       },
       complete: () => {
@@ -344,6 +355,7 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _onOpen = ({ modelName, tweenFactor }) => {
     if (modelName === this._modelName) {
+      const { layoutMode } = store.getState()
       const targetPosX = this._targetPosition.x
       const targetPosY = this._targetPosition.y
       const newX = calc.getValueFromProgress(this.position.x, targetPosX, tweenFactor * 0.1)
@@ -354,8 +366,19 @@ export default class PhotoPreview extends THREE.Mesh {
       this.position.y = newY
       this.scale.set(newScale, newScale, 1)
 
-      this._originalPositionOpenPositionDiff.x = newX - this._originalGridPosition.x
-      this._originalPositionOpenPositionDiff.y = newY - this._originalGridPosition.y
+      let originalPositionX
+      let originalPositionY
+
+      if (layoutMode === LAYOUT_MODE_GRID) {
+        originalPositionX = this._originalGridPosition.x
+        originalPositionY = this._originalGridPosition.y
+      } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+        originalPositionX = this._originalOverviewPosition.x - this._width / 2 - PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+        originalPositionY = this._originalOverviewPosition.y
+      }
+
+      this._openPositionDiff.x = newX - originalPositionX
+      this._openPositionDiff.y = newY - originalPositionY
       
       const diffx = (targetPosX - this.position.x) * -1
       const diffy = (targetPosY - this.position.y) * -1
@@ -408,8 +431,8 @@ export default class PhotoPreview extends THREE.Mesh {
     if (modelName === this._modelName) {
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y
-      const endX = this._targetPosition.x - this._originalPositionOpenPositionDiff.x
-      const endY = this._targetPosition.y - this._originalPositionOpenPositionDiff.y
+      const endX = startX - this._openPositionDiff.x
+      const endY = startY - this._openPositionDiff.y
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
@@ -521,7 +544,7 @@ export default class PhotoPreview extends THREE.Mesh {
       this.scale.set(scale, scale, 1)
     }
     this._openedPageTargetScale = getSiglePagePhotoScale()
-    const overviewLayoutWidth = getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + 20)
+    const overviewLayoutWidth = getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)
     this._originalOverviewPosition = this._calcOverviewPosition()
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       this.position.copy(this._originalOverviewPosition)

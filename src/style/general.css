@@ -126,6 +126,7 @@ li {
 }
 
 .hint * {
+  user-select: none;
   pointer-events: none;
 }
 
@@ -144,7 +145,13 @@ li {
 body.layout-mode-grid .hint[data-layout-mode="overview"] {
   color: rgba(0, 0, 0, 0.62);
 }
+body.layout-mode-grid .hint[data-layout-mode="grid"] {
+  pointer-events: none;
+}
 
 body.layout-mode-overview .hint[data-layout-mode="grid"] {
   color: rgba(0, 0, 0, 0.62);
+}
+body.layout-mode-overview .hint[data-layout-mode="overview"] {
+  pointer-events: none;
 }
