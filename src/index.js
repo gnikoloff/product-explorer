@@ -47,6 +47,7 @@ import {
   LAYOUT_MODE_OVERVIEW,
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
   EVT_LAYOUT_MODE_TRANSITION,
+  EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
 } from './constants'
 
 import './style'
@@ -180,7 +181,19 @@ function onLayoutModeSelect (e) {
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST, { layoutMode })
   tween().start({
     update: tweenFactor => {
-      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor, layoutMode })
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, {
+        tweenFactor,
+        layoutMode,
+        cameraPositionX: cameraSystem.photoCamera.position.x,
+        cameraPositionY: cameraSystem.photoCamera.position.y,
+      })
+    },
+    complete: () => {
+      eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, {
+        layoutMode,
+        cameraPositionX: cameraSystem.photoCamera.position.x,
+        cameraPositionY: cameraSystem.photoCamera.position.y,
+      })
     },
   })
 }

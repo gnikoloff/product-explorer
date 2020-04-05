@@ -35,6 +35,7 @@ import {
   EVT_LAYOUT_MODE_TRANSITION,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
+  EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -87,6 +88,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._idx = idx
     this.position.copy(gridPosition)
 
+    this._totalGridWidth = 4 * (PREVIEW_PHOTO_REF_WIDTH + 20)
     this._modelName = modelName
     this._width = width
     this._height = height
@@ -134,6 +136,7 @@ export default class PhotoPreview extends THREE.Mesh {
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeTransitionRequest)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION, this._onLayoutModeTransition)
+    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeTransitionComplete)
   }
   get modelName () {
     return this._modelName
@@ -167,7 +170,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._targetPosition.x = this.position.x
     this._targetPosition.y = this.position.y
   }
-  _onLayoutModeTransition = ({ tweenFactor, layoutMode }) => {
+  _onLayoutModeTransition = ({ tweenFactor, layoutMode, cameraPositionX, cameraPositionY }) => {
     const startX = this._targetPosition.x
     const startY = this._targetPosition.y
     let targetX
@@ -176,13 +179,17 @@ export default class PhotoPreview extends THREE.Mesh {
       targetX = this._originalGridPosition.x
       targetY = this._originalGridPosition.y
     } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-      targetX = this._originalOverviewPosition.x
-      targetY = this._originalOverviewPosition.y
+      targetX = this._originalOverviewPosition.x + cameraPositionX - this._totalGridWidth / 2 + this._width / 2
+      targetY = this._originalOverviewPosition.y + cameraPositionY
     }
     const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
     const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
     this.position.x = newX
     this.position.y = newY
+  }
+  _onLayoutModeTransitionComplete = ({ layoutMode, cameraPositionX, cameraPositionY }) => {
+    this.position.x -= cameraPositionX
+    this.position.y -= cameraPositionY
   }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {

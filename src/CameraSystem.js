@@ -15,6 +15,7 @@ import {
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
+  EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
 } from './constants'
@@ -78,6 +79,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
+    eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeChangeComplete)
   }
   get photoCamera () {
     return this._photoCamera
@@ -96,6 +98,12 @@ export default class CameraSystem {
   }
   _onLayoutModeChange = ({ layoutMode }) => {
     this._layoutMode = layoutMode
+  }
+  _onLayoutModeChangeComplete = ({ layoutMode }) => {
+    this._photoCamera.position.x = 0
+    this._photoCamera.position.y = 0
+    this._targetPosition.copy(this._photoCamera.position)
+    this._velocity.set(0, 0)
   }
   _onRequestOpenProject = () => {
     this._shouldMove = false
