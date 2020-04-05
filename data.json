@@ -5,7 +5,7 @@
       "posY": 100,
       "modelName": "J1A-GT",
       "subheading": "3L Gore-Tex® Pro Interops Jacket",
-      "description": "Generation two point two. J1A was the first ever jacket designed by Acronym. Originally conceived in the years between 1999 and 2001, it is the progenitor of the Type 2371*, and of every other Acronym jacket that has followed. This is iteration fifteen.<br/><br/>J1A-GT is the culmination of everything we have learned about building apparel since that time. Everything is new. Everything is the same. The very idea of ǍCROŇYMř rendered in physical, wearable form. A carefully balanced array of functional and aesthetic systems presented here in completely remastered form. Asymmetric. Dynamic. ǍCROŇYMř among equals.<br/><br/>Combine with 3A-1 or 3A-3TS for full INTEROPSǽ functionality. Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.",
+      "description": "Generation two point two. J1A was the first ever jacket designed by Acronym. Originally conceived in the years between 1999 and 2001, it is the progenitor of the Type 2371*, and of every other Acronym jacket that has followed. This is iteration fifteen.<br/><br/>J1A-GT is the culmination of everything we have learned about building apparel since that time. Everything is new. Everything is the same. The very idea of ǍCROŇYMř rendered in physical, wearable form. A carefully balanced array of functional and aesthetic systems presented here in completely remastered form. Asymmetric. Dynamic. ǍCROŇYMř among equals.<br/><br/>Combine with 3A-1 or 3A-3TS for full INTEROPSǽ functionality. Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.Shown in size:<br/><br/>M (Erlsn, 183 cm), XS (Delia, 175 cm), L (Ian, 190 cm)<br/><br/>[ Fits: STRAIGHT ]<br/><br/>Modifications from Gen 2.0 include: new multi-position convertible storm collar, storm hood with redesigned visor/circumference adjustment, repositioned and resized GravityPocketsǽ, elongated liner access zip, addition of manubrium height center front snap closure, reintroduction of sleeve hitch tabs.<br/><br/>*Together with 3A-1, the Type 2371 jacket was released in 2002 as one of the main components of ACR KIT-1. KIT-1 was the first commercially available Acronym product.",
       "fabricTechnologies": [
         "3L GORE-TEX® PRO [Next generation technology]",
         "(70% PA, 30% ePTFE)",
@@ -23,6 +23,7 @@
         "SpeedLockǽ",
         "Gravity Pocketǽ",
         "AuxZipǽ ( F )",
+        "<br/><br/>",
         "Pockets: 9",
         "_External: 9",
         "_Internal: 0"
@@ -53,244 +54,392 @@
     {
       "posX": 270,
       "posY": -300,
-      "modelName": "bJ59-GT",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fuldfs  dsly featured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "J47-GT_SS20",
+      "subheading": "3L Gore-Tex® Pro Interops Jacket",
+      "description": "Streamlined new riff on age old Acronym themes of kinetics and concealment. All the unusual Acronym suspects lined up behind our double center front zip configuration. More of what we do. Less of what everyone else does. Peerless. Now, for the first time, with Acronym Interopsǽ.<br/><br/>Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.<br/><br/>[ **Up to 28% more breathability compared to previous generation Gore-Tex® Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use. ]<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "3L GORE-TEX® PRO [Next generation technology]",
+        "(70% PA, 30% ePTFE)",
+        "With MICROGRID® Backer",
+        "Guaranteed To Keep You Dry®",
+        "**Up to 28% more breathability compared to previous generation Gore-Tex® Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use."
       ],
+      "systems": [
+        "ǍCROŇYMř INTEROPSǽ (PAT.)",
+        "ǍCROŇYMř SOUNDǽ (PAT.)"
+      ],
+      "subsystems": [
+        "ForceLockǽ",
+        "JacketSlingǽ",
+        "EscapeZipǽ ",
+        "SpeedLockǽ ",
+        "Gravity Pocketǽ",
+        "AuxZipǽ ( F )",
+        "<br/><br/>",
+        "Pockets: 6",
+        "_External: 5",
+        "_Internal: 1"
+      ],
+      "includes": [
+        "ForceLockǽ [ Removable ]",
+        "JacketSlingǽ [ Removable ]",
+        "Logo tape [ Removable ]"
+      ],
+      "interfaceWith": [
+        "All ǍCROŇYMř INTEROPSǽ bags",
+        "All ǍCROŇYMř AuxZipǽ ( M ) units"
+      ],
+      "websiteURL": "https://acrnm.com/products/J59-GT_SS19",
       "sliderPhotos": [
-        "photos/01/02.png",
-        "photos/01/01.png",
-        "photos/01/03.png",
-        "photos/01/04.png"
-      ],
-      "websiteURL": "https://acrnm.com/products/J59-GT_SS19"
+        "photos/J47-GT_SS20/preview.jpg",
+        "photos/J47-GT_SS20/slider-1.jpg",
+        "photos/J47-GT_SS20/slider-2.jpg",
+        "photos/J47-GT_SS20/slider-3.jpg",
+        "photos/J47-GT_SS20/slider-4.jpg",
+        "photos/J47-GT_SS20/slider-5.jpg",
+        "photos/J47-GT_SS20/slider-6.jpg",
+        "photos/J47-GT_SS20/slider-7.jpg",
+        "photos/J47-GT_SS20/slider-8.jpg"
+      ]
     },
     {
       "posX": -350,
       "posY": -550,
-      "modelName": "cJ59-GT",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featsdf ds dfs grd rdg ured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "J59-GT",
+      "subheading": "3L Gore-Tex® Pro Jacket",
+      "description": "Our beloved oversize uniform fit block returns for the first time in 3L Gore-Tex® Pro fabric. J59 is smooth, loose, and stanced to accommodate extras as needed; be they additional layers, or more degrees of possibility. Cavernous detached entry and chest pockets will swallow just about everything, while the sleeve anchor loops and rear shock cord waist conform volume as desired. Newly engineered Gore-Tex Fabric with Stretch Technology cuffs and hem maintain both climate and casualness.<br/><br/>Built with next generation Gore-Tex® Pro fabric technology for improved ruggedness, increased breathability**, and greater comfort in more conditions.<br/><br/>[ Shown in size: M. Fits: LOOSE ]",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "3L GORE-TEX® PRO [Next generation technology]",
+        "(70% PA, 30% ePTFE)",
+        "With MICROGRID® Backer",
+        "Guaranteed To Keep You Dry®",
+        "**Up to 28% more breathability compared to previous generation Gore-Tex® Pro products. Garments engineered with Gore-Tex® Pro product technology are built for maximized ruggedness and are ideal for extreme and extended use."
       ],
+      "subsystems": [
+        "Subsystems",
+        "JacketSlingǽ",
+        "AuxZipǽ ( F )",
+        "<br/><br/>",
+        "Pockets: 3",
+        "_External: 3",
+        "_Internal: 0"
+      ],
+      "includes": [
+        "JacketSlingǽ [ Removable ]",
+        "Storm Hood [ Removable ]"
+      ],
+      "websiteURL": "https://acrnm.com/products/J82-WS_SS20",
       "sliderPhotos": [
-        "photos/01/03.png",
-        "photos/01/01.png",
-        "photos/01/03.png",
-        "photos/01/04.png"
-      ],
-      "websiteURL": "https://acrnm.com/products/J82-WS_SS20"
+        "photos/J59-GT_SS19/preview.jpg",
+        "photos/J59-GT_SS19/slider-1.jpg",
+        "photos/J59-GT_SS19/slider-2.jpg",
+        "photos/J59-GT_SS19/slider-3.jpg",
+        "photos/J59-GT_SS19/slider-4.jpg",
+        "photos/J59-GT_SS19/slider-5.jpg",
+        "photos/J59-GT_SS19/slider-6.jpg",
+        "photos/J59-GT_SS19/slider-7.jpg",
+        "photos/J59-GT_SS19/slider-8.jpg"
+      ]
     },
     {
       "posX": 400,
       "posY": 450,
-      "modelName": "bJ59-GTd",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featured, Gore-Tex®, A-frame Interdfg dfg df dopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "J33-E",
+      "subheading": "Encapsulated Nylon Jacket",
+      "description": "Urbane asymmetrics borne of mid-century European military and civilian mountain jackets, J33 is a precisely cut 3/4-length lightshell jacket. Volumes reference both the formality of parade dress, and the refractoriality of biker jackets and parkas. The asym CF zipper closes up for double breasted protection, or drapes softly when opened. Seven ergonomically distributed pockets provide copious amounts of mobile storage.<br/><br/>A combination of old world and new, the KG fit block is a hybrid of vintage Japanese kimono and modern technical sportswear pattern making. Generous (zero resistance DFMA fit) yet economical (minimal seams, tape, and weight), it feels light and effortless.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "ENCAPSULATED NYLON",
+        "(99% PA, 1% EL)",
+        "Water repellent, windproof, breathable",
+        "Made in USA",
+        "Military specification"
       ],
+      "systems": [
+        "ǍCROŇYMř SOUNDǽ (PAT.)"
+      ],
+      "subsystems": [
+        "ForceLockǽ",
+        "JacketSlingǽ",
+        "SpeedLockǽ",
+        "Gravity Pocketǽ",
+        "AuxZipǽ ( F )",
+        "<br/><br/>",
+        "POCKETS:",
+        "Total: 7",
+        "_External: 6",
+        "_Internal: 1"
+      ],
+      "includes": [
+        "ForceLockǽ [ Removable ]",
+        "JacketSlingǽ [ Removable ]",
+        "Logo tape [ Removable ]"
+      ],
+      "interfaceWith": [
+        "All ǍCROŇYMř AuxZipǽ ( M ) units"
+      ],
+      "websiteURL": "https://acrnm.com/products/J33-E_SS19",
       "sliderPhotos": [
-        "photos/01/04.png",
-        "photos/01/01.png",
-        "photos/01/03.png",
-        "photos/01/04.png"
-      ],
-      "websiteURL": "https://acrnm.com/products/J27-GT_FW1920"
+        "photos/J33-E_SS19/preview.jpg",
+        "photos/J33-E_SS19/slider-1.jpg",
+        "photos/J33-E_SS19/slider-2.jpg",
+        "photos/J33-E_SS19/slider-3.jpg",
+        "photos/J33-E_SS19/slider-4.jpg",
+        "photos/J33-E_SS19/slider-5.jpg",
+        "photos/J33-E_SS19/slider-6.jpg",
+        "photos/J33-E_SS19/slider-7.jpg",
+        "photos/J33-E_SS19/slider-8.jpg"
+      ]
     },
     {
       "posX": -820,
       "posY": -130,
-      "modelName": "H5-AJd",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than tdfg fdgfd  Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "J58-WS_FW1920",
+      "subheading": "Windstopper® PrimaLoft® Modular Liner Jacket",
+      "description": "The definitive modular liner for Acronym shells, J58-WS is a lightweight, exceedingly comfortable envelope of warmth and well being. The outstanding properties of PrimaLoft® insulation and WINDSTOPPER® shell make it formidable as both a component piece or a jacket on its own.<br/><br/>PrimaLoft® insulation is designed to regulate comfort levels during intense activity while offering uncompromising performance in all conditions. Combined with 2 layer Gore Windstopper®, the results are incredibly soft, warm, light, and protective. Effortless and effective.<br/><br/>[ Shown in size: M. Fits: PROFILE ]",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "2L GORE WINDSTOPPER® shell fabric",
+        "(78% PES, 22% ePTFE)",
+        "PrimaLoft® insulation",
+        "(100% PES)"
       ],
+      "subsystems": [
+        "JacketSlingǽ",
+        "AuxZipǽ ( M )",
+        "<br/><br/>",
+        "Pockets: 4",
+        "_External: 4",
+        "_Internal: 0"
+      ],
+      "includes": [
+        "JacketSlingǽ [ Removable ]"
+      ],
+      "interfaceWith": [
+        "All ǍCROŇYMř AuxZipǽ ( F ) units"
+      ],
+      "websiteURL": "https://acrnm.com/products/J58-WS_FW1920",
       "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/H5-AJ_FW1920"
+        "photos/J58-WS_FW1920/preview.jpg",
+        "photos/J58-WS_FW1920/slider-1.jpg",
+        "photos/J58-WS_FW1920/slider-2.jpg",
+        "photos/J58-WS_FW1920/slider-3.jpg",
+        "photos/J58-WS_FW1920/slider-4.jpg",
+        "photos/J58-WS_FW1920/slider-5.jpg",
+        "photos/J58-WS_FW1920/slider-6.jpg",
+        "photos/J58-WS_FW1920/slider-7.jpg",
+        "photos/J58-WS_FW1920/slider-8.jpg"
+      ]
     },
     {
       "posX": 900,
       "posY": 300,
-      "modelName": "P32-dS",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featured, Gore dfgf gdf fd-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "J46-FO",
+      "subheading": "2L Gore-Tex Infinium™ Climashield® Coat",
+      "description": "J46 is an old dog with an arsenal of new tricks. Climashield® continuous filament insulation on the inside. New Gore-Tex Infinium® shell fabric on the outside. Press buttons and an 8 MM 2-way metal zip protect the center line. An additional 5 MM zip ingeniously converts the collar to protect your neck. Despite being able to pack down into the convertible collar, the new stowable Storm Hood is one of our finest ever. Two front facing flap pockets nod to tradition; while 2 canted WR zipped back pockets have an eye on the approaching horizon. All held together by impeccable Acronym tailoring, and an internally or externally deployable JacketSlingæ.<br/><br/>Gore-Tex Infinium® is a completely new type of GORE-TEX® laminate. It shifts focus from toughness to softness, from resistance to well being. A new proprietary technology forms a component fabric with persistent beading and extremely low water pick up. This means no bulky face fabric is needed. The result is comfort and quiet unlike anything before it.<br/><br/>The laminated face of the fabric will 'break-in' and develop its own individual shine and patina with time. Durability and appearance will vary with type and style of use. Additionally, we advise the user to adhere to the following care instructions to ensure fabric integrity and longevity:<br/><br/>_Z-strength warning: Under no circumstances should adhesives (stickers, glue, tape, etc.) of any type be applied to the surface of this fabric. Removal of such adhesives may cause the laminate to split along the z-axis causing partial delamination and discoloration of the fabric.<br/><br/>_Never attach pins, needles or staples to the fabric.<br/><br/>_Zip up the garment before washing. Place garment in a wash bag and machine wash cold with liquid detergent. Rinse twice. Do not use powder detergent, fabric softener or bleach. No Ironing.<br/><br/>[ Shown in size: M ]<br/><br/>[ Fits: STRAIGHT ]",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "GORE-TEX INFINIUM™ Product Technology shell fabric",
+        "(61% ePTFE, 39% PA)",
+        "With persistent beading",
+        "CLIMASHIELD® continuous filament insulation",
+        "(100% PES)"
       ],
+      "systems": [
+        "ǍCROŇYMř SOUNDǽ (PAT.)"
+      ],
+      "subsystems": [
+        "ForceLockǽ",
+        "JacketSlingǽ",
+        "<br/><br/>",
+        "Pockets: 6",
+        "_External: 4",
+        "_Internal: 2"
+      ],
+      "includes": [
+        "ForceLockǽ [ Removable ]",
+        "JacketSlingǽ [ Removable ]",
+        "Logo tape [ Removable ]"
+      ],
+
+      "websiteURL": "https://acrnm.com/products/J46-FO_FW1819",
       "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
-    },
-    {
-      "posX": -600,
-      "posY": 520,
-      "modelName": "Pa32-S",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully dgd fdg dfar 43432 featured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
-      "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
-      ],
-      "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
-    },
-    {
-      "posX": 850,
-      "posY": -500,
-      "modelName": "P3ds2-S",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featured, Gore-Tex®, A-frame4444444 Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
-      "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
-      ],
-      "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
-    },
-    {
-      "posX": -1300,
-      "posY": -500,
-      "modelName": "P32sdsaf-S",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a full sfes fse  r ert e4 te4t 4y featured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
-      "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
-      ],
-      "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
-    },
-    {
-      "posX": -1250,
-      "posY": 300,
-      "modelName": "P332-S",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully f e4t ret 656 86 5765665atured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
-      "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
-      ],
-      "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
+        "photos/J26-FO_FW1819/preview.jpg",
+        "photos/J26-FO_FW1819/slider-1.jpg",
+        "photos/J26-FO_FW1819/slider-2.jpg",
+        "photos/J26-FO_FW1819/slider-3.jpg",
+        "photos/J26-FO_FW1819/slider-4.jpg",
+        "photos/J26-FO_FW1819/slider-5.jpg",
+        "photos/J26-FO_FW1819/slider-6.jpg",
+        "photos/J26-FO_FW1819/slider-7.jpg",
+        "photos/J26-FO_FW1819/slider-8.jpg"
+      ]
     },
     {
       "posX": 1400,
       "posY": -300,
-      "modelName": "P432-S",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featured, Gore-Tex®, A-frf hf dg g 554645 456 435ame Interopsǽ parka. A full 21 cm longer than the J61-WS, it delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "S23-AK",
+      "subheading": "Cashllama Long Sleeve Sweater",
+      "description": "Exceptionally lightweight and summer ready, S23 is an ergonomically patterned sweater cut with a hip-length two-part hem. Fully fashioned knit construction. Gusseted underarm with half drop, half dolman sleeve design.<br/><br/>Knit in Bolivia from the finest quality Cashllama wool.",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "CASHLLAMA WOOL finest quality",
+        "(100% WO)",
+        "LlamaSoft® dehairing technology",
+        "Average fiber diameter 20.5-21.1 microns",
+        "Made in Bolivia"
       ],
+      "websiteURL": "https://acrnm.com/products/S23-AK_SS20",
       "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
+        "photos/S23-AK_SS20/preview.jpg",
+        "photos/S23-AK_SS20/slider-1.jpg",
+        "photos/S23-AK_SS20/slider-2.jpg",
+        "photos/S23-AK_SS20/slider-3.jpg",
+        "photos/S23-AK_SS20/slider-4.jpg",
+        "photos/S23-AK_SS20/slider-5.jpg",
+        "photos/S23-AK_SS20/slider-6.jpg",
+        "photos/S23-AK_SS20/slider-7.jpg",
+        "photos/S23-AK_SS20/slider-8.jpg"
+      ]
+    },
+    {
+      "posX": 850,
+      "posY": -500,
+      "modelName": "H5-AJ",
+      "subheading": "Air Jet Wool Hat",
+      "description": "H5-AJ is the first ǍCROŇYMř accessory made using the remarkable Babyllama Air Jet Wool construction. Minimalist utility and luxury deliver organic comfort and well-being in a way no other beanie can. Loose hollowcore Babyllama fibers are injected into a tubular nylon yarn yielding insulation above and beyond expected volume to weight ratios. So light you will forget you are wearing it. Handmade high-tech.",
+      "fabricTechnologies": [
+        "BABYLLAMA AIR JET WOOL",
+        "(80% WL, 20% PA)",
+        "LlamaSoft® dehairing technology",
+        "Average fiber diameter 20.5-22.5 microns",
+        "Made in Bolivia"
       ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
+
+      "websiteURL": "https://acrnm.com/products/H5-AJ_FW1920",
+      "sliderPhotos": [
+        "photos/H5-AJ_FW1920/preview.jpg",
+        "photos/H5-AJ_FW1920/slider-1.jpg",
+        "photos/H5-AJ_FW1920/slider-2.jpg",
+        "photos/H5-AJ_FW1920/slider-3.jpg",
+        "photos/H5-AJ_FW1920/slider-4.jpg",
+        "photos/H5-AJ_FW1920/slider-5.jpg",
+        "photos/H5-AJ_FW1920/slider-6.jpg",
+        "photos/H5-AJ_FW1920/slider-7.jpg",
+        "photos/H5-AJ_FW1920/slider-8.jpg"
+      ]
+    },
+    {
+      "posX": -1300,
+      "posY": -500,
+      "modelName": "J77-AM",
+      "subheading": "Cashllama Silk Mesh Hooded Jacket",
+      "description": "Hooded zip front jacket in grid mesh Cashllama wool and silk blend knit construction. Low profile 'scuba' hood ideal for layering.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
+      "fabricTechnologies": [
+        "CASHLLAMA SILK Blend",
+        "(70% WO, 30% SE)",
+        "Made in Bolivia",
+        "CASHLLAMA WOOL finest quality",
+        "LlamaSoft® dehairing technology",
+        "Average fiber diameter 20.5-21.1 microns"
+      ],
+      "subsystems": [
+        "Pockets: 4",
+        "_External: 4",
+        "_Internal: 0"
+      ],
+      "websiteURL": "https://acrnm.com/products/P32-S_SS19",
+      "sliderPhotos": [
+        "photos/J77-AM_FW1920/preview.jpg",
+        "photos/J77-AM_FW1920/slider-1.jpg",
+        "photos/J77-AM_FW1920/slider-2.jpg",
+        "photos/J77-AM_FW1920/slider-3.jpg",
+        "photos/J77-AM_FW1920/slider-4.jpg",
+        "photos/J77-AM_FW1920/slider-5.jpg",
+        "photos/J77-AM_FW1920/slider-6.jpg",
+        "photos/J77-AM_FW1920/slider-7.jpg",
+        "photos/J77-AM_FW1920/slider-8.jpg"
+      ]
+    },
+    {
+      "posX": -1250,
+      "posY": 300,
+      "modelName": "NG5-AK",
+      "subheading": "Cashllama Neck Gaiter",
+      "description": "See and be unseen. NG5-AK is a simple and luxurious solution to winter comfort. Finest quality Cashllama wool knit semi-mesh construction.",
+      "fabricTechnologies": [
+        "CASHLLAMA WOOL finest quality",
+        "(100% WO)",
+        "LlamaSoft® dehairing technology",
+        "Average fiber diameter 20.5-21.1 microns",
+        "Made in Bolivia"
+      ],
+      "websiteURL": "https://acrnm.com/products/NG5-AK_FW1920",
+      "sliderPhotos": [
+        "photos/NG5-AK_FW1920/preview.jpg",
+        "photos/NG5-AK_FW1920/slider-1.jpg",
+        "photos/NG5-AK_FW1920/slider-2.jpg",
+        "photos/NG5-AK_FW1920/slider-3.jpg",
+        "photos/NG5-AK_FW1920/slider-4.jpg",
+        "photos/NG5-AK_FW1920/slider-5.jpg",
+        "photos/NG5-AK_FW1920/slider-6.jpg",
+        "photos/NG5-AK_FW1920/slider-7.jpg",
+        "photos/NG5-AK_FW1920/slider-8.jpg"
+      ]
+    },
+    {
+      "posX": -600,
+      "posY": 520,
+      "modelName": "C1-AM",
+      "subheading": "Cashllama Silk Mesh Crewneck Sweatshirt",
+      "description": "Crew neck sweatshirt in grid mesh Cashllama wool and silk blend knit construction. Generous holster position pockets for best possible weight distribution and stability on a soft framed style.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
+      "fabricTechnologies": [
+        "CASHLLAMA SILK Blend",
+        "(70% WO, 30% SE)",
+        "Made in Bolivia",
+        "CASHLLAMA WOOL finest quality",
+        "LlamaSoft® dehairing technology",
+        "Average fiber diameter 20.5-21.1 microns"
+      ],
+      "subsystems": [
+        "Pockets: 2",
+        "_External: 2",
+        "_Internal: 0"
+      ],
+      "websiteURL": "https://acrnm.com/products/C1-AM_SS20",
+      "sliderPhotos": [
+        "photos/C1-AM_SS20/preview.jpg",
+        "photos/C1-AM_SS20/slider-1.jpg",
+        "photos/C1-AM_SS20/slider-2.jpg",
+        "photos/C1-AM_SS20/slider-3.jpg",
+        "photos/C1-AM_SS20/slider-4.jpg",
+        "photos/C1-AM_SS20/slider-5.jpg",
+        "photos/C1-AM_SS20/slider-6.jpg",
+        "photos/C1-AM_SS20/slider-7.jpg",
+        "photos/C1-AM_SS20/slider-8.jpg"
+      ]
     },
     {
       "posX": 1350,
       "posY": 400,
-      "modelName": "P32-0S",
-      "subheading": "2.5L Gore-Tex Interops Parka",
-      "description": "J61-GTV is a fully featured, Gore-Tex®, A-frame Interopsǽ parka. A full 21 cm longer than the J61-WS, it54 6 645 645  dd delivers full coverage and elemental defence. Hood and waist level shock cords customise vision and visual. ǍCROŇYMř Interopsǽ and the 2-way overlap zip snorkel hood reveal and conceal. Cut to layer with AuxZipǽ liners.<br/><br/>2.5L GORE-TEX® product technology delivers a supple feel and reduced audio signature.<br/><br/>[ Shown in size: M. Fits: STRAIGHT ]",
-      "bigHeadingViewBox": "0 0 185 80",
-      "bigHeadingTextY": "60",
-      "bigHeadingFontSize": "56px",
+      "modelName": "J65-AJ",
+      "subheading": "Air Jet Wool Vest",
+      "description": "J65-AJ is the first ǍCROŇYMř garment made using the remarkable Babyllama Air Jet Wool construction. Minimalist utility and luxury deliver organic comfort and well-being in a way no other mid-layer can. Loose hollowcore Babyllama fibers are injected into a tubular nylon yarn yielding insulation above and beyond expected volume to weight ratios. Unique short sleeved construction strikes a perfect balance between jacket and vest. Handmade high-tech.<br/><br/>[ Shown in size: M. Fits: PROFILE ]",
       "fabricTechnologies": [
-        "2.5L GORE-TEX®",
-        "(Face fabric: 100% PES, Membrane: ePTFE)",
-        "With Polymer Dot Backer"
+        "BABYLLAMA AIR JET WOOL",
+        "(80% WL, 20% PA)",
+        "LlamaSoft® dehairing technology",
+        "Average fiber diameter 20.5-22.5 microns",
+        "Made in Bolivia"
       ],
+      "websiteURL": "https://acrnm.com/products/J65-AJ_FW1920",
       "sliderPhotos": [
-        "photos/02/preview.jpg",
-        "photos/03/preview.jpg",
-        "photos/04/preview.jpg",
-        "photos/05/preview.jpg"
-      ],
-      "websiteURL": "https://acrnm.com/products/P32-S_SS19"
+        "photos/J65-AJ_FW1920/preview.jpg",
+        "photos/J65-AJ_FW1920/slider-1.jpg",
+        "photos/J65-AJ_FW1920/slider-2.jpg",
+        "photos/J65-AJ_FW1920/slider-3.jpg",
+        "photos/J65-AJ_FW1920/slider-4.jpg",
+        "photos/J65-AJ_FW1920/slider-5.jpg",
+        "photos/J65-AJ_FW1920/slider-6.jpg",
+        "photos/J65-AJ_FW1920/slider-7.jpg",
+        "photos/J65-AJ_FW1920/slider-8.jpg"
+      ]
     }
   ]
 }
