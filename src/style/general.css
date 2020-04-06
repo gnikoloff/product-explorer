@@ -13,6 +13,8 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   line-height: 24px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 body.dragging {
   /* cursor: grabbing; */
@@ -155,4 +157,19 @@ body.layout-mode-overview .hint[data-layout-mode="grid"] {
 }
 body.layout-mode-overview .hint[data-layout-mode="overview"] {
   pointer-events: none;
+}
+
+.ae-lig {
+  vertical-align: super;
+  font-size: 10px;
+  position: relative;
+  top: 1px;
+  line-height: 0;
+}
+
+.reg-lig {
+  font-size: 16px;
+  font-family: sans-serif;
+  position: relative;
+  top: 1px;
 }

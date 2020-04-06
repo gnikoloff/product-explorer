@@ -11,9 +11,8 @@
 }
 
 .single-page-wrapper h2 {
-  font-size: 14px;
-  margin-bottom: 10px;
-  text-transform: uppercase;
+  font-size: 16px;
+  margin-bottom: 12px;
 }
 
 .single-page-info {
@@ -33,22 +32,25 @@
   right: 0;
   width: 50%;
   min-height: 100%;
-  padding: 150px 42px 24px 42px;
+  padding: 150px 15% 24px 42px;
   box-sizing: border-box;
 }
 
 .single-page-title {
-  margin-bottom: 12px;
+  margin-bottom: 28px;
 }
 
 .single-page-subheading {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .single-page-meta {
-  margin-top: 12px;
   display: flex;
   align-items: center;
+}
+
+.single-page-pricing {
+  margin-top: 24px;
 }
 
 .meta-item {
@@ -63,9 +65,13 @@
 }
 
 .single-page-section {
-  padding: 0 0 24px 0;
+  padding: 0 0 3rem 0;
   font-size: 12px;
   line-height: 18px;
+}
+
+.title-section {
+  padding-bottom: 24px;
 }
 
 .single-page-nav {
@@ -86,8 +92,8 @@
   pointer-events: none;
   background: linear-gradient(
     180deg, 
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,1) 100%
+    rgba(255,255,255, 0) 0%,
+    rgba(252, 252, 252, 1) 100%
   );
 }
 

@@ -243,10 +243,10 @@ export default class SinglePage {
 
   _setContentTexts = ({ modelName }) => {
     const project = this._projectsData.find(project => project.modelName === modelName)
-    this.$els.title.textContent = project.modelName
-    this.$els.subtitle.textContent = project.subheading
+    this.$els.title.innerHTML = project.modelName
+    this.$els.subtitle.innerHTML = project.subheading
     this.$els.description.innerHTML = project.description
-    this.$els.pricing.textContent = project.pricing
+    this.$els.pricing.innerHTML = project.pricing
     this.$els.type.innerHTML = `Type  <span class="meta-desc">${project.type}</span>`
     this.$els.generation.innerHTML = `Gen.  <span class="meta-desc">${project.gen}</span>`
     this.$els.style.innerHTML = `Style  <span class="meta-desc">${project.style}</span>`
