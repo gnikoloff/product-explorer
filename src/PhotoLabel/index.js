@@ -8,9 +8,12 @@ import {
 } from '../helpers'
 
 import {
+  PREVIEW_PHOTO_REF_WIDTH,
+  PREVIEW_PHOTO_REF_HEIGHT,
   EVT_TEXTURE_LABEL_MASK_ONLOAD,
   EVT_HOVER_SINGLE_PROJECT_ENTER,
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
+  EVT_PHOTO_PREVIEW_RELAYOUTED,
 } from '../constants'
 
 import vertexShader from './vertexShader.glsl'
@@ -46,6 +49,7 @@ export default class PhotoLabel extends THREE.Mesh {
     eventEmitter.on(EVT_TEXTURE_LABEL_MASK_ONLOAD, this._onMaskTextureLoad)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onProjectHover)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onProjectUnhover)
+    eventEmitter.on(EVT_PHOTO_PREVIEW_RELAYOUTED, this._onRelayout)
   }
   _onMaskTextureLoad = ({ texture }) => {
     this.material.uniforms.u_mask.value = texture
@@ -91,12 +95,19 @@ export default class PhotoLabel extends THREE.Mesh {
       easing: easing.circOut,
     }).start({
       update: tweenFactor => {
-        console.log(1 - tweenFactor)
         this.material.uniforms.u_maskBlendFactor.value = 1 - tweenFactor
       },
       complete: () => {
         // this._revealTween = null
       },
     })
+  }
+  _onRelayout = ({ modelName, x, y }) => {
+    if (this._modelName !== modelName) {
+      return
+    }
+    const newx = x - PREVIEW_PHOTO_REF_WIDTH * 0.25
+    const newy = y - PREVIEW_PHOTO_REF_HEIGHT * 0.5
+    this.position.set(newx, newy, 0)
   }
 }

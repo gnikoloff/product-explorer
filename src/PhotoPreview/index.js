@@ -42,6 +42,7 @@ import {
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
+  EVT_PHOTO_PREVIEW_RELAYOUTED,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -228,6 +229,12 @@ export default class PhotoPreview extends THREE.Mesh {
     }
     this._diffVectorTarget.x = 0
     this._diffVectorTarget.y = 0
+
+    eventEmitter.emit(EVT_PHOTO_PREVIEW_RELAYOUTED, {
+      modelName: this._modelName,
+      x: this.position.x,
+      y: this.position.y,
+    })
   }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
@@ -552,6 +559,11 @@ export default class PhotoPreview extends THREE.Mesh {
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       this.position.copy(this._originalOverviewPosition)
       this.position.x += cameraPositionX - overviewLayoutWidth / 2 + this._width / 2
+      eventEmitter.emit(EVT_PHOTO_PREVIEW_RELAYOUTED, {
+        modelName: this._modelName,
+        x: this.position.x,
+        y: this.position.y,
+      })
     }
     store.dispatch(setOverviewLayoutWidth(overviewLayoutWidth))
   }
