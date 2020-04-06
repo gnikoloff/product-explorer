@@ -57,6 +57,7 @@ export default class PhotoLabel extends THREE.Mesh {
   }
   _onProjectHover = ({ modelName }) => {
     if (this._modelName !== modelName) {
+      this._onProjectUnhover()
       return
     }
     if (this._openTween) {
