@@ -69,6 +69,7 @@ export default class SinglePage {
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
       nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
       closeButton: wrapper.getElementsByClassName('close-single-page')[0],
+      openExternalLink: wrapper.getElementsByClassName('open-product-page')[0],
       sizer: wrapper.getElementsByClassName('single-page-slider-sizer')[0],
     }
 
@@ -345,12 +346,15 @@ export default class SinglePage {
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
 
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
+    const project = this._projectsData.find(project => project.modelName === modelName)
 
     this._setContentTexts({ modelName })
 
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     document.body.addEventListener('click', this._checkSliderClick, false)
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
+    this.$els.openExternalLink.setAttribute('href', project.websiteURL)
+
     const { sliderButtonPrev, sliderButtonNext } = this.$els
     
     this.stylers.wrapper.set('pointerEvents', 'auto')
