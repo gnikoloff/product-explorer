@@ -49,9 +49,31 @@ export const getArrowTexture = () => {
   ctx.moveTo(0, 0)
   ctx.lineTo(40, -40)
   ctx.stroke()
-  // canvas.style.position = 'fixed'
-  // canvas.style.zIndex = '999'
-  // canvas.style.left = canvas.style.bottom = '10px'
-  // document.body.appendChild(canvas)
+  // debugCanvas(canvas)
   return new THREE.CanvasTexture(canvas)
+}
+
+export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  canvas.width = sizeX
+  canvas.height = sizeY
+  ctx.fillStyle = '#111'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = '#fff'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = 'normal 58px Helvetica'
+  ctx.fillText(label, canvas.width / 2, canvas.height / 2)
+  // debugCanvas(canvas)
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.isFlipped = true
+  return texture
+}
+
+function debugCanvas (canvas) {
+  canvas.style.position = 'fixed'
+  canvas.style.zIndex = '999'
+  canvas.style.left = canvas.style.bottom = '10px'
+  document.body.appendChild(canvas)
 }

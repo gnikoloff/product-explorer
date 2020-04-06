@@ -207,6 +207,11 @@ export default class PhotoPreview extends THREE.Mesh {
     }
     const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
     const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
+    
+    const diffx = (newX - this.position.x) * -1
+    const diffy = (newY - this.position.y) * -1
+    this._onSceneDrag({ diffx, diffy })
+
     this.position.x = newX
     this.position.y = newY
   }
@@ -221,6 +226,8 @@ export default class PhotoPreview extends THREE.Mesh {
       this.position.y -= cameraPositionY
       this._calcOverviewPosition()
     }
+    this._diffVectorTarget.x = 0
+    this._diffVectorTarget.y = 0
   }
   _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
@@ -412,13 +419,8 @@ export default class PhotoPreview extends THREE.Mesh {
         })
     }
 
-    tween({
-      duration: diffDuration,
-    }).start(v => {
-      const diffx = calc.getValueFromProgress(this._diffVector.x, 0, v)
-      const diffy = calc.getValueFromProgress(this._diffVector.y, 0, v)
-      this._onSceneDrag({ diffx, diffy })
-    })
+    this._diffVectorTarget.x = 0
+    this._diffVectorTarget.y = 0
   }
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {

@@ -4,6 +4,7 @@ import { tween, chain, delay } from 'popmotion'
 import eventEmitter from './event-emitter'
 
 import PhotoPreview from './PhotoPreview'
+import PhotoLabel from './PhotoLabel'
 import SinglePage from './SinglePage'
 import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
@@ -54,6 +55,7 @@ import {
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
   EVT_LAYOUT_MODE_TRANSITION,
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
+  EVT_TEXTURE_LABEL_MASK_ONLOAD,
 } from './constants'
 
 import './style'
@@ -122,11 +124,6 @@ const cursorArrowLeft = new THREE.Mesh(
 )
 cursorArrowLeft.rotation.z = Math.PI
 cursorScene.add(cursorArrowLeft)
-
-cursorScene.add(new THREE.Mesh(
-  new THREE.PlaneGeometry(WOLRD_WIDTH * 2, WORLD_HEIGHT * 2),
-  new THREE.MeshBasicMaterial({ wireframe: true })
-))
 
 const cursorArrowRight = cursorArrowLeft.clone()
 cursorArrowRight.rotation.z = 0
@@ -249,7 +246,16 @@ function onProjectsLoad (res) {
       photos: info.sliderPhotos || [],
       gridPosition: new THREE.Vector3(info.posX, info.posY, 0),
     })
+    const previewLabel = new PhotoLabel({
+      modelName: info.modelName,
+      position: new THREE.Vector3(info.posX - PREVIEW_PHOTO_REF_WIDTH * 0.25, info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2, 25),
+    })
+    previewLabel.position.z = 40
     photoMeshContainer.add(photoPreview)
+    photoMeshContainer.add(previewLabel)
+  })
+  new THREE.TextureLoader().load('/mask.png', texture => {
+    eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
   })
 }
 
@@ -266,6 +272,7 @@ function onCloseSingleView (modelName) {
     },
     complete: () => {
       eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
+      photoMeshContainer.add(openedProjectScene.children[1])
       closeModelTween = null
       clickedElement = null
     }
