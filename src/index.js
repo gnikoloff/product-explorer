@@ -81,6 +81,7 @@ const photoScene = new THREE.Scene()
 const postFXScene = new THREE.Scene()
 const postFXBlurScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
+const openedProjectScene = new THREE.Scene()
 const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
@@ -105,6 +106,7 @@ photoScene.add(photoMeshContainer)
 cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
 postFXBlurScene.add(cameraSystem.postFXBlurCamera)
+openedProjectScene.add(cameraSystem.openedProjectCamera)
 
 const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
 postFXScene.add(postFXMesh.mainEffectPlane)
@@ -306,6 +308,9 @@ function onMouseDown (e) {
         closeModelTween = null
       }
       const { modelName } = hoveredElement
+
+      openedProjectScene.add(hoveredElement)
+
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
         modelName,
         targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
@@ -375,6 +380,7 @@ function onMouseUp () {
             eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
           },
           complete: () => {
+            photoMeshContainer.add(openedProjectScene.children[1])
             eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
             closeModelTween = null
             clickedElement = null
@@ -447,11 +453,12 @@ function updateFrame(ts) {
   renderer.setRenderTarget(photoRenderTarget)
   renderer.render(photoScene, cameraSystem.photoCamera)
   eventEmitter.emit(EVT_RENDER_PHOTO_SCENE_FRAME, { texture: photoRenderTarget.texture })
+  
+  renderer.autoClear = false
 
   renderer.setRenderTarget(postFXRenderTarget)
   renderer.render(postFXScene, cameraSystem.postFXCamera)
   
-
   let writeBuffer = postFXBlurHorizontalTarget
   let readBuffer = postFXBlurVerticalTarget
 
@@ -478,8 +485,9 @@ function updateFrame(ts) {
   renderer.setRenderTarget(null)
   renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
 
-  renderer.autoClear = false
   renderer.render(cursorScene, cameraSystem.cursorCamera)
+
+  renderer.render(openedProjectScene, cameraSystem.openedProjectCamera)
 
   requestAnimationFrame(updateFrame)
 }

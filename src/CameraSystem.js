@@ -61,12 +61,16 @@ export default class CameraSystem {
     this._postFXCamera = this._photoCamera.clone()
     this._postFXBlurCamera = this._photoCamera.clone()
     this._cursorCamera = this._photoCamera.clone()
+    this._openedProjectCamera = this._photoCamera.clone()
 
     this._photoCamera.position.copy(position)
     this._photoCamera.lookAt(cameraLookAt)
 
     this._cursorCamera.position.copy(position)
     this._cursorCamera.lookAt(cameraLookAt)
+
+    this._openedProjectCamera.position.copy(position)
+    this._openedProjectCamera.lookAt(cameraLookAt)
     
     this._postFXCamera.position.copy(position)
     this._postFXCamera.lookAt(cameraLookAt)
@@ -94,6 +98,9 @@ export default class CameraSystem {
   }
   get cursorCamera () {
     return this._cursorCamera
+  }
+  get openedProjectCamera () {
+    return this._openedProjectCamera
   }
   get isDragCameraMoving () {
     return this._isDragCameraMoving
@@ -181,6 +188,7 @@ export default class CameraSystem {
       this._targetPosition.y = bottomBound
     }
     // console.log(this._photoCamera.position.x, this._photoCamera.position.y)
+    this._openedProjectCamera.position.copy(this._photoCamera.position)
     store.dispatch(setCameraPosition({
       x: this._photoCamera.position.x,
       y: this._photoCamera.position.y,
