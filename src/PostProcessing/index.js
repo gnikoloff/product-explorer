@@ -9,8 +9,6 @@ import {
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
-  EVT_SLIDER_BUTTON_MOUSE_ENTER,
-  EVT_SLIDER_BUTTON_MOUSE_LEAVE,
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG_END,
   EVT_HOVER_SINGLE_PROJECT_ENTER,
@@ -20,6 +18,8 @@ import {
   EVT_RENDER_PHOTO_POSTFX_FRAME,
   EVT_OPENING_INFO_SECTION,
   EVT_APP_RESIZE,
+  EVT_HIDE_CURSOR,
+  EVT_SHOW_CURSOR,
 } from '../constants'
 
 import {
@@ -92,8 +92,8 @@ export default class PostProcessing {
     eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onDragEnd)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onProjectHoverEnter)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onProjectHoverLeave)
-    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_ENTER, this._hideCursor)
-    eventEmitter.on(EVT_SLIDER_BUTTON_MOUSE_LEAVE, this._showCursor)
+    eventEmitter.on(EVT_HIDE_CURSOR, this._hideCursor)
+    eventEmitter.on(EVT_SHOW_CURSOR, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', '_mainEffect', texture))

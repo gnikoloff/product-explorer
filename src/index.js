@@ -56,6 +56,8 @@ import {
   EVT_LAYOUT_MODE_TRANSITION,
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
   EVT_TEXTURE_LABEL_MASK_ONLOAD,
+  EVT_HIDE_CURSOR,
+  EVT_SHOW_CURSOR,
 } from './constants'
 
 import './style'
@@ -153,9 +155,12 @@ function init () {
   webglContainer.appendChild(renderer.domElement)
 
   webglContainer.addEventListener('mousedown', onMouseDown, false)
-  document.body.addEventListener('mousemove', onMouseMove, false)
   webglContainer.addEventListener('mouseup', onMouseUp, false)
-  document.body.addEventListener('mouseleave', onMouseLeave, false)
+  webglContainer.addEventListener('mouseleave', onWebGLSceneMouseLeave)
+  webglContainer.addEventListener('mouseenter', onWebGLSceneMouseEnter)
+
+  document.body.addEventListener('mousemove', onMouseMove, false)
+  document.body.addEventListener('mouseleave', onPageMouseLeave, false)
   window.addEventListener('resize', onResize)
 
   layoutModeBtnContainer.addEventListener('click', onLayoutModeSelect, false)
@@ -289,12 +294,20 @@ function onResize () {
   eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
 }
 
-function onMouseLeave () {
+function onPageMouseLeave () {
   cursorArrowOffsetTarget = 0
   isDragging = false
 
   eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
   eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
+}
+
+function onWebGLSceneMouseLeave () {
+  eventEmitter.emit(EVT_HIDE_CURSOR)
+}
+
+function onWebGLSceneMouseEnter () {
+  eventEmitter.emit(EVT_SHOW_CURSOR)
 }
 
 function onMouseDown (e) {
