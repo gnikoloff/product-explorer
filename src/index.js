@@ -330,6 +330,8 @@ function onMouseDown (e) {
       const { modelName } = hoveredElement
 
       openedProjectScene.add(hoveredElement)
+      const mesh = photoMeshContainer.children.find(mesh => mesh.modelName === modelName && mesh.isLabel)
+      mesh.visible = false
 
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
         modelName,
@@ -401,6 +403,9 @@ function onMouseUp () {
           },
           complete: () => {
             photoMeshContainer.add(openedProjectScene.children[1])
+            photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
+              mesh.visible = true
+            })
             eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
             closeModelTween = null
             clickedElement = null

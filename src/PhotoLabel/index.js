@@ -45,11 +45,18 @@ export default class PhotoLabel extends THREE.Mesh {
     this._closeTween = null
 
     this._modelName = modelName
+    this._isLabel = true
 
     eventEmitter.on(EVT_TEXTURE_LABEL_MASK_ONLOAD, this._onMaskTextureLoad)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onProjectHover)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onProjectUnhover)
     eventEmitter.on(EVT_PHOTO_PREVIEW_RELAYOUTED, this._onRelayout)
+  }
+  get modelName () {
+    return this._modelName
+  }
+  get isLabel () {
+    return this._isLabel
   }
   _onMaskTextureLoad = ({ texture }) => {
     this.material.uniforms.u_mask.value = texture
