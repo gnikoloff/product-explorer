@@ -22,3 +22,9 @@ export const setLayoutMode = layoutMode => ({
   type: SET_LAYOUT_MODE,
   layoutMode,
 })
+
+export const SET_LAYOUT_MODE_TRANSITIONING = 'SET_LAYOUT_MODE_TRANSITIONING'
+export const setLayoutModeTransitioning = isLayoutTransitioning => ({
+  type: SET_LAYOUT_MODE_TRANSITIONING,
+  isLayoutTransitioning,
+})

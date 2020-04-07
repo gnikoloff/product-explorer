@@ -12,6 +12,7 @@ const initialState = {
   overviewLayoutWidth: 0,
   overviewLayoutHeight: 0,
   layoutMode: LAYOUT_MODE_GRID,
+  isLayoutTransitioning: false,
 }
 
 const appState = (state = initialState, action) => {
@@ -35,6 +36,11 @@ const appState = (state = initialState, action) => {
     case actions.SET_LAYOUT_MODE: {
       return Object.assign(state, {
         layoutMode: action.layoutMode,
+      })
+    }
+    case actions.SET_LAYOUT_MODE_TRANSITIONING: {
+      return Object.assign(state, {
+        isLayoutTransitioning: action.isLayoutTransitioning,
       })
     }
     default: {

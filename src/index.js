@@ -15,6 +15,7 @@ import { getArrowTexture, mapNumber, clampNumber } from './helpers'
 import store from './store'
 import {
   setLayoutMode,
+  setLayoutModeTransitioning,
 } from './store/actions'
 
 import {
@@ -106,7 +107,6 @@ let clickedElement = null
 let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
-let isLayoutTransitioning = false
 
 photoScene.add(cameraSystem.photoCamera)
 photoScene.add(photoMeshContainer)
@@ -197,14 +197,14 @@ function onLayoutModeSelect (e) {
     webglContainer.addEventListener('mousewheel', onOverviewLayoutMousewheel, false)
   }
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST)
-  isLayoutTransitioning = true
+  store.dispatch(setLayoutModeTransitioning(true))
   tween().start({
     update: tweenFactor => {
       eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor })
     },
     complete: () => {
       eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_COMPLETE)
-      isLayoutTransitioning = false
+      store.dispatch(setLayoutModeTransitioning(false))
     },
   })
 }
@@ -443,7 +443,7 @@ function updateFrame(ts) {
 
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
 
-  if (!isDragging && !isInfoSectionOpen && !isLayoutTransitioning) {
+  if (!isDragging && !isInfoSectionOpen && !store.getState().isLayoutTransitioning) {
     raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
     const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
     const intersects = raycaster.intersectObjects(intersectsTests)
