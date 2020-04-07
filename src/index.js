@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { tween, chain, delay } from 'popmotion'
+import styler from 'stylefire'
 
 import eventEmitter from './event-emitter'
 
@@ -10,7 +11,7 @@ import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
 
-import { getArrowTexture } from './helpers'
+import { getArrowTexture, mapNumber, clampNumber } from './helpers'
 import store from './store'
 import {
   setLayoutMode,
@@ -75,6 +76,7 @@ const cameraSystem = new CameraSystem({
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
+const layoutModeBtnStyler = styler(layoutModeBtnContainer)
 
 const dpr = window.devicePixelRatio || 1
 
@@ -274,12 +276,15 @@ function onCloseSingleView (modelName) {
     update: tweenFactor => {
       openModelTweenFactor = tweenFactor
       eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
+      const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
+      layoutModeBtnStyler.set('opacity', opacity)
     },
     complete: () => {
       eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
       photoMeshContainer.add(openedProjectScene.children[1])
       closeModelTween = null
       clickedElement = null
+      layoutModeBtnStyler.set('pointer-events', 'auto')
     }
   })
 }
@@ -345,6 +350,8 @@ function onMouseDown (e) {
         update: tweenFactor => {
           openModelTweenFactor = tweenFactor
           eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
+          const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
+          layoutModeBtnStyler.set('opacity', opacity)
         },
         complete: () => {
           isDragging = false
@@ -352,6 +359,7 @@ function onMouseDown (e) {
           openModelTween = null
 
           eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
+          layoutModeBtnStyler.set('pointer-events', 'none')
         },
       })
     } else {
@@ -400,6 +408,8 @@ function onMouseUp () {
           update: tweenFactor => {
             openModelTweenFactor = tweenFactor
             eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
+            const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
+            layoutModeBtnStyler.set('opacity', opacity)
           },
           complete: () => {
             photoMeshContainer.add(openedProjectScene.children[1])
@@ -409,6 +419,7 @@ function onMouseUp () {
             eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
             closeModelTween = null
             clickedElement = null
+            layoutModeBtnStyler.set('pointer-events', 'auto')
           }
         })
       }

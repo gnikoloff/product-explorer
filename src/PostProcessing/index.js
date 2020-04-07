@@ -72,7 +72,7 @@ export default class PostProcessing {
       fragmentShader: fragmentShaderBlur,
     })
 
-    new THREE.TextureLoader().load('/mask3.png', texture => {
+    new THREE.TextureLoader().load('/mask7.png', texture => {
       this._mainEffect.uniforms.u_tDiffuseMask.value = texture
     })
 
