@@ -1,3 +1,5 @@
+export const SERVER_API_ENDPOINT = 'http://192.168.0.11:1102'
+
 export const WOLRD_WIDTH = 2600
 export const WORLD_HEIGHT = 800
 export const TOGGLE_SINGLE_PAGE_TRANSITION_DELAY = 75

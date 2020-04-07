@@ -19,8 +19,7 @@ import {
 } from './store/actions'
 
 import {
-  WOLRD_WIDTH,
-  WORLD_HEIGHT,
+  SERVER_API_ENDPOINT,
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
   TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION,
   BLUR_ITERATIONS,
@@ -150,7 +149,7 @@ cursorScene.add(cursorArrowBottom)
 init()
 
 function init () {
-  fetch('/get_data').then(res => res.json()).then(onProjectsLoad)
+  fetch(`${SERVER_API_ENDPOINT}/get_data`).then(res => res.json()).then(onProjectsLoad)
 
   renderer.setSize(appWidth, appHeight)
   renderer.setPixelRatio(dpr)
@@ -264,7 +263,7 @@ function onProjectsLoad (res) {
     photoMeshContainer.add(photoPreview)
     photoMeshContainer.add(previewLabel)
   })
-  new THREE.TextureLoader().load('/mask.png', texture => {
+  new THREE.TextureLoader().load(`${SERVER_API_ENDPOINT}/mask.png`, texture => {
     eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
   })
 }

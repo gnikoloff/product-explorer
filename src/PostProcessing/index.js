@@ -4,6 +4,7 @@ import eventEmitter from '../event-emitter'
 import Effect from './Effect'
 
 import {
+  SERVER_API_ENDPOINT,
   EVT_RAF_UPDATE_APP,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
@@ -72,7 +73,7 @@ export default class PostProcessing {
       fragmentShader: fragmentShaderBlur,
     })
 
-    new THREE.TextureLoader().load('/mask7.png', texture => {
+    new THREE.TextureLoader().load(`${SERVER_API_ENDPOINT}/mask7.png`, texture => {
       this._mainEffect.uniforms.u_tDiffuseMask.value = texture
     })
 
