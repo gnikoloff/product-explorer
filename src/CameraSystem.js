@@ -234,5 +234,6 @@ export default class CameraSystem {
     CameraSystem.resizeCamera({ camera: this._photoCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._cursorCamera, appWidth, appHeight })
     CameraSystem.resizeCamera({ camera: this._postFXCamera, appWidth, appHeight })
+    CameraSystem.resizeCamera({ camera: this._openedProjectCamera, appWidth, appHeight })
   }
 }

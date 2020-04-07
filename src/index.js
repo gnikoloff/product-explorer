@@ -11,7 +11,8 @@ import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
 
-import { getArrowTexture, mapNumber, clampNumber } from './helpers'
+import { getArrowTexture, mapNumber } from './helpers'
+
 import store from './store'
 import {
   setLayoutMode,
@@ -88,10 +89,10 @@ const postFXScene = new THREE.Scene()
 const postFXBlurScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
 const openedProjectScene = new THREE.Scene()
-const photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-const postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-const postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-const postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+let photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+let postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+let postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+let postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 const raycaster = new THREE.Raycaster()
 const photoMeshContainer = new THREE.Group()
 
@@ -296,9 +297,28 @@ function onResize () {
   appHeight = window.innerHeight
 
   renderer.setSize(appWidth, appHeight)
-  photoRenderTarget.setSize(appWidth * dpr, appHeight * dpr)
 
   eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
+
+  const photoRenderTargetCopy = photoRenderTarget.clone()
+  const postFXRenderTargetCopy = postFXRenderTarget.clone()
+  const postFXBlurHorizontalTargetCopy = postFXBlurHorizontalTarget.clone()
+  const postFXBlurVerticalTargetCopy = postFXBlurVerticalTarget.clone()
+  
+  photoRenderTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+  postFXRenderTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+  postFXBlurHorizontalTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+  postFXBlurVerticalTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+
+  photoRenderTarget.dispose()
+  postFXRenderTarget.dispose()
+  postFXBlurHorizontalTarget.dispose()
+  postFXBlurVerticalTarget.dispose()
+
+  photoRenderTarget = photoRenderTargetCopy
+  postFXRenderTarget = postFXRenderTargetCopy
+  postFXBlurHorizontalTarget = postFXBlurHorizontalTargetCopy
+  postFXBlurVerticalTarget = postFXBlurVerticalTargetCopy
 }
 
 function onPageMouseLeave () {

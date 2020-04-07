@@ -42,6 +42,7 @@ void main () {
 
   vec2 mouse = vec2(u_mouse.x, u_resolution.y - u_mouse.y);
   float cursorAlpha = circle(gl_FragCoord.xy, u_mouse, u_cursorSize * (1.0 - u_blurMixFactor));
+  // gl_FragColor = vec4(vec3(cursorAlpha), 1.0);
 
   vec4 cursorCircleColor = color;
   vec2 uvRandom = uv;

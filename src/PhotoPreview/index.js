@@ -19,8 +19,6 @@ import {
 } from '../helpers'
 
 import {
-  PREVIEW_PHOTO_REF_WIDTH,
-  PREVIEW_PHOTO_REF_HEIGHT,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
@@ -119,7 +117,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVectorTarget = new THREE.Vector2(0, 0)
     this._openPositionDiff = new THREE.Vector2(0, 0)
 
-    store.dispatch(setOverviewLayoutWidth(getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)))
+    store.dispatch(setOverviewLayoutWidth(getItemsCountPerGridRow() * (this._width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)))
 
     this._loadPreview()
 
@@ -158,24 +156,40 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _calcOverviewPosition () {
     const { overviewLayoutWidth } = store.getState()
+    const itemsPerRowCount = getItemsCountPerGridRow()
 
-    const width = PREVIEW_PHOTO_REF_WIDTH
-    const height = PREVIEW_PHOTO_REF_HEIGHT
-
-    const x = overviewCurrOffsetX - overviewLayoutWidth / 2 + this._width / 2
+    let x = overviewCurrOffsetX - overviewLayoutWidth / 2 + this._width / 2
     const y = overviewCurrOffsetY
 
     if (this._idx === 0) {
-      overviewCurrOffsetX += width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
-      return new THREE.Vector3(-(width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER * 2), 0, 0)
+      overviewCurrOffsetX += this._width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+
+      let firstX = null
+      if (itemsPerRowCount === 1) {
+        firstX = -PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+        overviewCurrOffsetY -= this._height + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+      } else if (itemsPerRowCount === 2) {
+        firstX = -(this._width / 2 + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)
+      } else if (itemsPerRowCount === 3) {
+        firstX = -(this._width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER * 1.5)
+      } else if (itemsPerRowCount === 4) {
+        firstX = -(this._width * 1.5 + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER * 2)
+      }
+
+      return new THREE.Vector3(firstX, 0, 0)
     }
+
+    if (this._idx === 1 && itemsPerRowCount === 1) {
+      x = -PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+    }
+
     const idx = this._idx + 1
 
-    overviewCurrOffsetX += width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+    overviewCurrOffsetX += this._width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
 
-    if (idx % getItemsCountPerGridRow() === 0) {
+    if (idx % itemsPerRowCount === 0) {
       overviewCurrOffsetX = 0
-      overviewCurrOffsetY -= height + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+      overviewCurrOffsetY -= this._height + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
     }
 
     if (this._isLast) {
@@ -561,7 +575,7 @@ export default class PhotoPreview extends THREE.Mesh {
       this.scale.set(scale, scale, 1)
     }
     this._openedPageTargetScale = getSiglePagePhotoScale()
-    const overviewLayoutWidth = getItemsCountPerGridRow() * (PREVIEW_PHOTO_REF_WIDTH + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)
+    const overviewLayoutWidth = getItemsCountPerGridRow() * (this._width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER)
     this._originalOverviewPosition = this._calcOverviewPosition()
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       this.position.copy(this._originalOverviewPosition)

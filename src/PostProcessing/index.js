@@ -181,6 +181,6 @@ export default class PostProcessing {
   }
   _onResize = () => {
     this._mainEffect.onResize()
-    // this._blurEffect.onResize()
+    // this._blurEffect.onResize({ shouldScale: false })
   }
 }
