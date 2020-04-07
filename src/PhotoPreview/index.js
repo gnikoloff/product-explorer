@@ -105,6 +105,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._photos = photos
     this._originalGridPosition = gridPosition.clone()
     this._originalOverviewPosition = this._calcOverviewPosition()
+    // console.log(this._modelName, this._originalOverviewPosition.x, this._originalOverviewPosition.y, this._originalOverviewPosition.z)
     this._targetPosition = new THREE.Vector3()
     this._allTexturesLoaded = false
     this._isInteractable = true
@@ -157,19 +158,21 @@ export default class PhotoPreview extends THREE.Mesh {
     return this._isInteractable
   }
   _calcOverviewPosition () {
+    const { overviewLayoutWidth } = store.getState()
+
     const width = PREVIEW_PHOTO_REF_WIDTH
     const height = PREVIEW_PHOTO_REF_HEIGHT
 
+    const x = overviewCurrOffsetX - overviewLayoutWidth / 2 + this._width / 2
+    const y = overviewCurrOffsetY
+
     if (this._idx === 0) {
       overviewCurrOffsetX += width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
-      return new THREE.Vector3(0, 0, 0)
+      return new THREE.Vector3(-(width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER * 2), 0, 0)
     }
     const idx = this._idx + 1
 
-    const x = overviewCurrOffsetX
-    const y = overviewCurrOffsetY
-
-    overviewCurrOffsetX += width * 1 + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+    overviewCurrOffsetX += width + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
 
     if (idx % getItemsCountPerGridRow() === 0) {
       overviewCurrOffsetX = 0
@@ -203,7 +206,7 @@ export default class PhotoPreview extends THREE.Mesh {
       targetX = this._originalGridPosition.x
       targetY = this._originalGridPosition.y
     } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-      targetX = this._originalOverviewPosition.x + cameraPositionX - overviewLayoutWidth / 2 + this._width / 2
+      targetX = this._originalOverviewPosition.x + cameraPositionX
       targetY = this._originalOverviewPosition.y + cameraPositionY
     }
     const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
@@ -353,7 +356,6 @@ export default class PhotoPreview extends THREE.Mesh {
           naturalHeight: imgHeight,
         }
       } = texture
-      console.log(imgWidth, imgHeight)
       this.material.uniforms.u_imageSize.value.set(imgWidth, imgHeight)
 
       texture.flipY = true
@@ -388,7 +390,7 @@ export default class PhotoPreview extends THREE.Mesh {
         originalPositionX = this._originalGridPosition.x
         originalPositionY = this._originalGridPosition.y
       } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-        originalPositionX = this._originalOverviewPosition.x - this._width / 2 - PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+        originalPositionX = this._originalOverviewPosition.x
         originalPositionY = this._originalOverviewPosition.y
       }
 
@@ -558,7 +560,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._originalOverviewPosition = this._calcOverviewPosition()
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       this.position.copy(this._originalOverviewPosition)
-      this.position.x += cameraPositionX - overviewLayoutWidth / 2 + this._width / 2
+      this.position.x += cameraPositionX
       eventEmitter.emit(EVT_PHOTO_PREVIEW_RELAYOUTED, {
         modelName: this._modelName,
         x: this.position.x,
