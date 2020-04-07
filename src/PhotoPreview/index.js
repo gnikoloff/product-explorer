@@ -177,7 +177,7 @@ export default class PhotoPreview extends THREE.Mesh {
     }
 
     if (this._isLast) {
-      store.dispatch(setOverviewLayoutHeight(overviewCurrOffsetY + this._height / 2))
+      store.dispatch(setOverviewLayoutHeight(overviewCurrOffsetY + this._height))
       overviewCurrOffsetX = 0
       overviewCurrOffsetY = 0
     }
