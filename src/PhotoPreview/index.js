@@ -57,7 +57,7 @@ export default class PhotoPreview extends THREE.Mesh {
   static ARROW_LEFT_KEY_CODE = 37
   static SLIDER_DIRECTION_LEFT = -1
   static SLIDER_DIRECTION_RIGHT = 1
-  static OVERVIEW_LAYOUT_COLUMN_GUTTER = 20
+  static OVERVIEW_LAYOUT_COLUMN_GUTTER = 60
   static SLIDER_TEXTURES_COUNT = 9
 
   static loadTexture = texName => new Promise(resolve =>
