@@ -103,6 +103,7 @@ export default class SinglePage {
       this._currModelName = this._prevModelName
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._prevModelName)
       this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
+
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
@@ -118,6 +119,7 @@ export default class SinglePage {
       this._currModelName = this._nextModelName
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
       this._nextModelName = this._projectsData[currNextIdx + 1] ? this._projectsData[currNextIdx + 1].modelName : this._projectsData[0].modelName
+
       eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
       this.$els.prevProductButton.classList.add('non-interactable')
@@ -341,11 +343,11 @@ export default class SinglePage {
   }
 
   _onOpen = ({ modelName }) => {
+    const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
     this._currModelName = modelName
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
 
-    const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     const project = this._projectsData.find(project => project.modelName === modelName)
 
     this._setContentTexts({ modelName })

@@ -105,7 +105,6 @@ export default class PhotoPreview extends THREE.Mesh {
     this._photos = photos
     this._originalGridPosition = gridPosition.clone()
     this._originalOverviewPosition = this._calcOverviewPosition()
-    // console.log(this._modelName, this._originalOverviewPosition.x, this._originalOverviewPosition.y, this._originalOverviewPosition.z)
     this._targetPosition = new THREE.Vector3()
     this._allTexturesLoaded = false
     this._isInteractable = true
@@ -243,6 +242,7 @@ export default class PhotoPreview extends THREE.Mesh {
     if (this._isSingleViewCurrentlyTransitioning) {
       return
     }
+    const { layoutMode } = store.getState()
     if (this._isOpenInSingleView) {
       const dpr = devicePixelRatio || 1
       let offsetX
@@ -260,8 +260,13 @@ export default class PhotoPreview extends THREE.Mesh {
           this.material.uniforms.u_opacity.value = 1 - tweenFactor
         }
       }).then(() => {
-        this.position.x = this._originalGridPosition.x
-        this.position.y = this._originalGridPosition.y
+        if (layoutMode === LAYOUT_MODE_GRID) {
+          this.position.x = this._originalGridPosition.x
+          this.position.y = this._originalGridPosition.y
+        } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+          this.position.x = this._originalOverviewPosition.x
+          this.position.y = this._originalOverviewPosition.y
+        }
         this.scale.set(1, 1, 1)
         this._onOpenComplete({ modelName })
         this._isOpenInSingleView = false
@@ -327,7 +332,7 @@ export default class PhotoPreview extends THREE.Mesh {
           originalPositionX = this._originalGridPosition.x
           originalPositionY = this._originalGridPosition.y
         } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-          originalPositionX = this._originalOverviewPosition.x - this._width / 2 - PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER
+          originalPositionX = this._originalOverviewPosition.x
           originalPositionY = this._originalOverviewPosition.y
         }
         this._openPositionDiff.x = newX - originalPositionX
