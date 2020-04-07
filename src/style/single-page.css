@@ -80,6 +80,12 @@
   right: 0;
   width: 50%;
   display: flex;
+  opacity: 0;
+  transition: opacity 0.175s ease;
+}
+
+.single-page-nav.faded {
+  opacity: 1;
 }
 
 .single-page-nav:before {

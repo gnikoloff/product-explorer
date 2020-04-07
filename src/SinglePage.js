@@ -51,6 +51,7 @@ export default class SinglePage {
       wrapper,
       singlePageInfo: wrapper.getElementsByClassName('single-page-info')[0],
       singlePageContainer: wrapper.getElementsByClassName('single-page-container')[0],
+      singlePageWrapper: wrapper.getElementsByClassName('single-page-info-wrapper')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
       subtitle: wrapper.getElementsByClassName('single-page-subheading')[0],
       pricing: wrapper.getElementsByClassName('single-page-pricing')[0],
@@ -66,6 +67,7 @@ export default class SinglePage {
       interfaceWithList: wrapper.getElementsByClassName('interface-with')[0],
       sliderButtonPrev: wrapper.getElementsByClassName('slider-btn-prev')[0],
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
+      singlePageNav: wrapper.getElementsByClassName('single-page-nav')[0],
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
       nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
       closeButton: wrapper.getElementsByClassName('close-single-page')[0],
@@ -89,7 +91,7 @@ export default class SinglePage {
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_NEXT_PROJECT_TRANSITIONED_IN, this._removeBackgroundColor)
     eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, () => {
-      this._fadeProjectDescription({ duration: 200, direction: 1, includeButtons: false }).then(() => {
+      this._fadeProjectDescription({ duration: 200, direction: 1 }).then(() => {
         this.$els.prevProductButton.classList.remove('non-interactable')
         this.$els.nextProductButton.classList.remove('non-interactable')
         this.$els.prevProductButton.classList.remove('clicked')
@@ -109,7 +111,7 @@ export default class SinglePage {
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
       this.$els.prevProductButton.classList.add('clicked')
-      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false }).then(() => {
+      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1 }).then(() => {
         this._setContentTexts({ modelName: this._currModelName })
       })
     }, false)
@@ -125,7 +127,7 @@ export default class SinglePage {
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('clicked')
-      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1, includeButtons: false }).then(() => {
+      this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1 }).then(() => {
         this._setContentTexts({ modelName: this._currModelName })
       })
     }, false)
@@ -283,27 +285,14 @@ export default class SinglePage {
     }
   }
 
-  _fadeProjectDescription = ({ direction = 1, duration = 300, includeButtons = true, parralel = false } = {}) => new Promise(resolve => {
-    let fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
-    if (!includeButtons) {
-      const buttonNavWrapper = fadeInEls.find(el => el.classList.contains('single-page-nav'))
-      fadeInEls = fadeInEls.filter(el => !el.classList.contains('single-page-nav'))
-      const buttonElPrevLabel = buttonNavWrapper.children[0].children[0]
-      const buttonElNextLabel = buttonNavWrapper.children[1].children[0]
-      const labels = [buttonElPrevLabel, buttonElNextLabel]
-      labels.forEach((el, i) => {
-        const elStyler = styler(el)
-        tween({
-          duration,
-        }).start({
-        update: tweenFactor => {
-          if (direction === -1) {
-            tweenFactor = 1 - tweenFactor
-          }
-          elStyler.set('opacity', tweenFactor)
-        }})
-      })
+  _fadeProjectDescription = ({ direction = 1, duration = 300, parralel = false } = {}) => new Promise(resolve => {
+    if (direction === 1) {
+      this.$els.singlePageNav.classList.add('faded')
+    } else if (direction === -1) {
+      this.$els.singlePageNav.classList.remove('faded')
     }
+    
+    const fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)
       chain(
@@ -362,6 +351,7 @@ export default class SinglePage {
     this.stylers.wrapper.set('pointerEvents', 'auto')
     // document.body.style.setProperty('cursor', 'auto')
 
+    this.$els.singlePageWrapper.scroll(0, 0)
     this._fadeProjectDescription()
 
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
@@ -387,9 +377,7 @@ export default class SinglePage {
 
   _closeButtonClick = () => {
     eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, this._currModelName)
-
     const { sliderButtonPrev, sliderButtonNext, wrapper } = this.$els
-    const fadeInEls = [...wrapper.getElementsByClassName('fade-in')]
 
     this.stylers.wrapper.set('pointerEvents', 'none')
     this.stylers.wrapper.set('user-select', 'none')
