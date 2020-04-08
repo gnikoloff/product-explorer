@@ -58,7 +58,6 @@ export default class PhotoPreview extends THREE.Mesh {
   static SLIDER_DIRECTION_LEFT = -1
   static SLIDER_DIRECTION_RIGHT = 1
   static OVERVIEW_LAYOUT_COLUMN_GUTTER = 60
-  static SLIDER_TEXTURES_COUNT = 4
 
   static loadTexture = texName => new Promise(resolve =>
     new THREE.TextureLoader().load(texName, texture => resolve(texture)
@@ -76,11 +75,14 @@ export default class PhotoPreview extends THREE.Mesh {
     const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneBufferGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
+      defines: {
+        INPUT_TEXTURES_COUNT: store.getState().webglMaxTexturesSupported,
+      },
       uniforms: {
         u_dragOffsetVec: { value: diffVector },
         u_planeSize: { value: new THREE.Vector2(width, height) },
         u_imageSize: { value: new THREE.Vector2(0, 0) },
-        u_textures: { value: [ new THREE.Texture(), ...new Array(PhotoPreview.SLIDER_TEXTURES_COUNT).fill(null) ] },
+        u_textures: { value: [ new THREE.Texture(), ...new Array(store.getState().webglMaxTexturesSupported - 1).fill(null) ] },
         u_opacity: { value: 1.0 },
         u_photoMixFactor: { value: 0.0 },
         u_texIdx0: { value: 0 },
@@ -432,15 +434,18 @@ export default class PhotoPreview extends THREE.Mesh {
 
     window.addEventListener('keydown', this._onKeyDown)
 
+    const { webglMaxTexturesSupported } = store.getState()
+
     if (!this._allTexturesLoaded) {
-      const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0)
+      const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0 && i < webglMaxTexturesSupported)
       Promise
         .all(sliderExtraPhotos.map(PhotoPreview.loadTexture))
         .then(textures => {
-          for (let i = 0; i < textures.length; i++) {
+          for (let i = 1; i < textures.length; i++) {
             const texture = textures[i]
             texture.needsUpdate = true
-            this.material.uniforms.u_textures.value[i + 1] = texture
+            this.material.uniforms.u_textures.value[i] = texture
+            document.body.appendChild(texture.image)
           }
           this.material.needsUpdate = true
           this._allTexturesLoaded = true
@@ -495,10 +500,13 @@ export default class PhotoPreview extends THREE.Mesh {
     const oldSliderIdx = this._sliderIdx
     this._sliderIdx += direction
 
+
+    const { webglMaxTexturesSupported } = store.getState()
+
     if (direction === 1) {
       tweenFrom = 0
       tweenTo = 1
-      if (this._sliderIdx > PhotoPreview.SLIDER_TEXTURES_COUNT - 1) {
+      if (this._sliderIdx >= webglMaxTexturesSupported - 1) {
         this._sliderIdx = 0
       }
       this.material.uniforms.u_texIdx0.value = oldSliderIdx
@@ -507,7 +515,7 @@ export default class PhotoPreview extends THREE.Mesh {
       tweenFrom = 1
       tweenTo = 0
       if (this._sliderIdx < 0) {
-        this._sliderIdx = PhotoPreview.SLIDER_TEXTURES_COUNT - 1
+        this._sliderIdx = webglMaxTexturesSupported - 2
       }
       this.material.uniforms.u_texIdx0.value = this._sliderIdx
       this.material.uniforms.u_texIdx1.value = oldSliderIdx

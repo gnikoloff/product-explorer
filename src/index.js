@@ -21,6 +21,7 @@ import store from './store'
 import {
   setLayoutMode,
   setLayoutModeTransitioning,
+  setWebglMaxTexturesSupported,
 } from './store/actions'
 
 import {
@@ -112,6 +113,9 @@ let clickedElement = null
 let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
+
+const _gl = renderer.getContext()
+store.dispatch(setWebglMaxTexturesSupported(_gl.getParameter(_gl.MAX_TEXTURE_IMAGE_UNITS)))
 
 photoScene.add(cameraSystem.photoCamera)
 photoScene.add(photoMeshContainer)

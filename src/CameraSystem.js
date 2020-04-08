@@ -178,14 +178,21 @@ export default class CameraSystem {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = rightBound
       }
-    } else if (this._targetPosition.x < leftBound) {
+      console.log('hit right bound')
+    }
+    if (this._targetPosition.x < leftBound) {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = leftBound
       }
-    } else if (this._targetPosition.y > topBound) {
+      console.log('hit left bound')
+    }
+    if (this._targetPosition.y > topBound) {
       this._targetPosition.y = topBound
-    } else if (this._targetPosition.y < bottomBound) {
+      console.log('hit top bound')
+    }
+    if (this._targetPosition.y < bottomBound) {
       this._targetPosition.y = bottomBound
+      console.log('hit bottom bound')
     }
     // console.log(this._photoCamera.position.x, this._photoCamera.position.y)
     this._openedProjectCamera.position.copy(this._photoCamera.position)

@@ -28,3 +28,9 @@ export const setLayoutModeTransitioning = isLayoutTransitioning => ({
   type: SET_LAYOUT_MODE_TRANSITIONING,
   isLayoutTransitioning,
 })
+
+export const SET_WEBGL_MAX_TEXUTRES_SUPPORTED = 'SET_WEBGL_MAX_TEXUTRES_SUPPORTED'
+export const setWebglMaxTexturesSupported = webglMaxTexturesSupported => ({
+  type: SET_WEBGL_MAX_TEXUTRES_SUPPORTED,
+  webglMaxTexturesSupported,
+})

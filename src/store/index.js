@@ -13,6 +13,7 @@ const initialState = {
   overviewLayoutHeight: 0,
   layoutMode: LAYOUT_MODE_GRID,
   isLayoutTransitioning: false,
+  webglMaxTexturesSupported: null,
 }
 
 const appState = (state = initialState, action) => {
@@ -41,6 +42,11 @@ const appState = (state = initialState, action) => {
     case actions.SET_LAYOUT_MODE_TRANSITIONING: {
       return Object.assign(state, {
         isLayoutTransitioning: action.isLayoutTransitioning,
+      })
+    }
+    case actions.SET_WEBGL_MAX_TEXUTRES_SUPPORTED: {
+      return Object.assign(state, {
+        webglMaxTexturesSupported: action.webglMaxTexturesSupported,
       })
     }
     default: {
