@@ -5,6 +5,7 @@ import eventEmitter from '../event-emitter'
 
 import {
   getProductLabelTexture,
+  isMobileBrowser,
 } from '../helpers'
 
 import store from '../store'
@@ -24,6 +25,8 @@ import {
 import vertexShader from './vertexShader.glsl'
 import fragmentShader from './fragmentShader.glsl'
 
+const mobileBrowserDetected = isMobileBrowser()
+
 export default class PhotoLabel extends THREE.Mesh {
   constructor ({
     modelName,
@@ -35,7 +38,7 @@ export default class PhotoLabel extends THREE.Mesh {
       uniforms: {
         u_tDiffuse: { value: getProductLabelTexture(modelName) },
         u_mask: { value: null },
-        u_maskBlendFactor: { value: 0 },
+        u_maskBlendFactor: { value: mobileBrowserDetected ? 1 : 0 },
       },
       vertexShader,
       fragmentShader,
@@ -69,6 +72,9 @@ export default class PhotoLabel extends THREE.Mesh {
     this.material.needsUpdate = true
   }
   _onProjectHover = ({ modelName }) => {
+    if (mobileBrowserDetected) {
+      return
+    }
     const { layoutMode } = store.getState()
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       return
@@ -98,6 +104,9 @@ export default class PhotoLabel extends THREE.Mesh {
     })
   }
   _onProjectUnhover = () => {
+    if (mobileBrowserDetected) {
+      return
+    }
     const { layoutMode } = store.getState()
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       return
@@ -125,6 +134,10 @@ export default class PhotoLabel extends THREE.Mesh {
     })
   }
   _onRelayoutRequest = () => {
+    if (mobileBrowserDetected) {
+      this.material.uniforms.u_maskBlendFactor.value = 0
+      return
+    }
     const { layoutMode } = store.getState()
     if (layoutMode === LAYOUT_MODE_GRID) {
       this.material.uniforms.u_maskBlendFactor.value = 0
@@ -134,11 +147,17 @@ export default class PhotoLabel extends THREE.Mesh {
     if (this._modelName !== modelName) {
       return
     }
-    const { layoutMode } = store.getState()
-    if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+    if (mobileBrowserDetected) {
       tween().start(tweenFactor => {
         this.material.uniforms.u_maskBlendFactor.value = tweenFactor
       })
+    } else {
+      const { layoutMode } = store.getState()
+      if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+        tween().start(tweenFactor => {
+          this.material.uniforms.u_maskBlendFactor.value = tweenFactor
+        })
+      }
     }
     const newx = x - PREVIEW_PHOTO_REF_WIDTH * 0.25
     const newy = y - PREVIEW_PHOTO_REF_HEIGHT * 0.5

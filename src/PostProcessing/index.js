@@ -25,11 +25,14 @@ import {
 
 import {
   mapNumber,
+  isMobileBrowser,
 } from '../helpers'
 
 import vertexShader from './vertexShader.glsl'
 import fragmentShaderPostFX from './postfx-fragmentShader.glsl'
 import fragmentShaderBlur from './postfx-fragmentBlurShader.glsl'
+
+const mobileBrowser = isMobileBrowser()
 
 export default class PostProcessing {
   static HIDDEN_CURSOR_SIZE = 0
@@ -146,8 +149,14 @@ export default class PostProcessing {
   }
   _onMouseMove = ({ mouseX, mouseY }) => {
     const dpr = devicePixelRatio || 1
-    this._cursorTargetPosition.x = mouseX * dpr
-    this._cursorTargetPosition.y = (innerHeight - mouseY) * dpr
+    const x = mouseX * dpr
+    const y = (innerHeight - mouseY) * dpr
+    if (mobileBrowser) {
+      this._mainEffect.uniforms.u_mouse.value.x = x
+      this._mainEffect.uniforms.u_mouse.value.y = y
+    }
+    this._cursorTargetPosition.x = x
+    this._cursorTargetPosition.y = y
   }
   _onProjectHoverEnter = () => {
     if (this._isHidden) {

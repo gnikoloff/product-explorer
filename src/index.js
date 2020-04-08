@@ -11,7 +11,11 @@ import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
 
-import { getArrowTexture, mapNumber } from './helpers'
+import {
+  getArrowTexture,
+  mapNumber,
+  isMobileBrowser,
+} from './helpers'
 
 import store from './store'
 import {
@@ -80,6 +84,7 @@ const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint
 const layoutModeBtnStyler = styler(layoutModeBtnContainer)
 
 const dpr = window.devicePixelRatio || 1
+const mobileBrowser = isMobileBrowser()
 
 const mousePos = new THREE.Vector2(0, 0)
 const raycastMouse = new THREE.Vector2(0, 0)
@@ -89,13 +94,13 @@ const postFXScene = new THREE.Scene()
 const postFXBlurScene = new THREE.Scene()
 const cursorScene = new THREE.Scene()
 const openedProjectScene = new THREE.Scene()
+const raycaster = new THREE.Raycaster()
+const photoMeshContainer = new THREE.Group()
+
 let photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 let postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 let postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 let postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-const raycaster = new THREE.Raycaster()
-const photoMeshContainer = new THREE.Group()
-
 let oldTime = 0
 let lastScrollY = 0
 let isDragging = false
@@ -120,7 +125,7 @@ postFXScene.add(postFXMesh.mainEffectPlane)
 postFXBlurScene.add(postFXMesh.blurEffect)
 
 const cursorArrowLeft = new THREE.Mesh(
-  new THREE.PlaneGeometry(10, 10),
+  new THREE.PlaneBufferGeometry(10, 10),
   new THREE.MeshBasicMaterial({
     opacity: 1,
     map: getArrowTexture(),
@@ -165,6 +170,40 @@ function init () {
   document.body.addEventListener('mousemove', onMouseMove, false)
   document.body.addEventListener('mouseleave', onPageMouseLeave, false)
   window.addEventListener('resize', onResize)
+
+  document.body.addEventListener('touchstart', e => {
+    const touch = e.changedTouches[0]
+    mousePos.x = touch.pageX
+    mousePos.y = touch.pageY
+    eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+    eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
+    cursorArrowOffsetTarget = 1
+  }, { passive: true })
+
+  document.body.addEventListener('touchmove', e => {
+    const { layoutMode } = store.getState()
+    const touch = e.changedTouches[0]
+    
+    const diffx = layoutMode === LAYOUT_MODE_GRID ? touch.pageX - mousePos.x : 0
+    const diffy = touch.pageY - mousePos.y
+    eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
+
+    raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
+    raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
+    
+    mousePos.x = touch.pageX
+    mousePos.y = touch.pageY
+    eventEmitter.emit(EVT_MOUSEMOVE_APP, { mouseX: mousePos.x, mouseY: mousePos.y})
+  }, { passive: true })
+
+  document.body.addEventListener('touchend', e => {
+    isDragging = false
+    cursorArrowOffsetTarget = 0
+    if (!isInfoSectionOpen) {
+      eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
+      eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
+    }
+  })
 
   layoutModeBtnContainer.addEventListener('click', onLayoutModeSelect, false)
   
@@ -396,7 +435,6 @@ function onMouseDown (e) {
 
 function onMouseMove (e) {
   const { layoutMode } = store.getState()
-  eventEmitter.emit(EVT_MOUSEMOVE_APP, { mouseX: mousePos.x, mouseY: mousePos.y})
 
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
@@ -410,6 +448,7 @@ function onMouseMove (e) {
   }
   mousePos.x = e.pageX
   mousePos.y = e.pageY
+  eventEmitter.emit(EVT_MOUSEMOVE_APP, { mouseX: mousePos.x, mouseY: mousePos.y})
 }
 
 function onMouseUp () {

@@ -58,7 +58,7 @@ export default class PhotoPreview extends THREE.Mesh {
   static SLIDER_DIRECTION_LEFT = -1
   static SLIDER_DIRECTION_RIGHT = 1
   static OVERVIEW_LAYOUT_COLUMN_GUTTER = 60
-  static SLIDER_TEXTURES_COUNT = 9
+  static SLIDER_TEXTURES_COUNT = 4
 
   static loadTexture = texName => new Promise(resolve =>
     new THREE.TextureLoader().load(texName, texture => resolve(texture)
@@ -74,7 +74,7 @@ export default class PhotoPreview extends THREE.Mesh {
     gridPosition,
   }) {
     const diffVector = new THREE.Vector2(0, 0)
-    const photoGeometry = new THREE.PlaneGeometry(width, height, 30, 30)
+    const photoGeometry = new THREE.PlaneBufferGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
       uniforms: {
         u_dragOffsetVec: { value: diffVector },

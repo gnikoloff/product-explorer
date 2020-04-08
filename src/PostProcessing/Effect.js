@@ -9,7 +9,7 @@ export default class Effect extends THREE.Mesh {
     fragmentShader,
     transparent = true,
   }) {
-    const geometry = new THREE.PlaneGeometry(width, height)
+    const geometry = new THREE.PlaneBufferGeometry(width, height)
     const material = new THREE.ShaderMaterial({
       uniforms,
       vertexShader,

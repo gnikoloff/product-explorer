@@ -144,6 +144,10 @@ li {
   transform: scaleX(1);
 }
 
+.webgl-scene {
+  user-select: none;
+}
+
 .webgl-scene-hint {
   display: flex;
   align-items: center;
