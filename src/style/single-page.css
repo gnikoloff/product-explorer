@@ -27,6 +27,10 @@
   overflow: auto;
 }
 
+.single-page-info-wrapper.non-scrollable {
+  overflow: hidden;
+}
+
 .single-page-container {
   position: absolute;
   right: 0;

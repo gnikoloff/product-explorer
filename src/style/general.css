@@ -51,6 +51,9 @@ li {
   background: #fcfcfc;
   border-radius: 50%;
   z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 .open-product-page:hover .open-product-icon:last-of-type {
   width: 24px;
@@ -89,8 +92,9 @@ li {
   border: 2px solid rgba(0, 0, 0, 0.12);
   background: #fcfcfc;
   border-radius: 50%;
-  pointer-events: auto;
-  transform: translateY(-100px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 .close-single-page:focus { outline: 0; }
 .close-single-page:hover { cursor: pointer; }

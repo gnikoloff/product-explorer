@@ -81,6 +81,7 @@ export default class SinglePage {
       sliderButtonPrev: styler(this.$els.sliderButtonPrev),
       sliderButtonNext: styler(this.$els.sliderButtonNext),
       closeButton: styler(this.$els.closeButton),
+      openExternalLink: styler(this.$els.openExternalLink),
       singlePageContainer: styler(this.$els.singlePageContainer),
     }
     
@@ -92,6 +93,7 @@ export default class SinglePage {
     eventEmitter.on(EVT_NEXT_PROJECT_TRANSITIONED_IN, this._removeBackgroundColor)
     eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, () => {
       this._fadeProjectDescription({ duration: 200, direction: 1 }).then(() => {
+        this.$els.singlePageWrapper.classList.remove('non-scrollable')
         this.$els.prevProductButton.classList.remove('non-interactable')
         this.$els.nextProductButton.classList.remove('non-interactable')
         this.$els.prevProductButton.classList.remove('clicked')
@@ -108,6 +110,7 @@ export default class SinglePage {
 
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
+      this.$els.singlePageWrapper.classList.add('non-scrollable')
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
       this.$els.prevProductButton.classList.add('clicked')
@@ -124,6 +127,7 @@ export default class SinglePage {
 
       eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
+      this.$els.singlePageWrapper.classList.add('non-scrollable')
       this.$els.prevProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('non-interactable')
       this.$els.nextProductButton.classList.add('clicked')
@@ -265,6 +269,10 @@ export default class SinglePage {
     
     this.$els.prevProductButton.children[0].textContent = this._prevModelName
     this.$els.nextProductButton.children[0].textContent = this._nextModelName
+
+    setTimeout(() => {
+      this.$els.singlePageWrapper.scroll(0, 0)
+    }, 0)
   }
 
   _setProjectDescList = (element, list) => {
@@ -286,13 +294,25 @@ export default class SinglePage {
   }
 
   _fadeProjectDescription = ({ direction = 1, duration = 300, parralel = false } = {}) => new Promise(resolve => {
-    if (direction === 1) {
-      this.$els.singlePageNav.classList.add('faded')
-    } else if (direction === -1) {
-      this.$els.singlePageNav.classList.remove('faded')
-    }
+    console.log(direction)
+    // if (direction === 1) {
+    //   this.$els.singlePageNav.classList.add('faded')
+    // } else if (direction === -1) {
+    //   this.$els.singlePageNav.classList.remove('faded')
+    // }
     
-    const fadeInEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
+    const animatedEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
+    const fadeInEls = animatedEls
+      .map(item => {
+        item.y = item.getBoundingClientRect().top
+        return item
+      })
+      .filter(item => item.y < innerHeight)
+    const belowTheFoldEls = animatedEls.filter(item => item.y > innerHeight)
+    belowTheFoldEls.forEach(el => {
+      const stylerEl = styler(el)
+      stylerEl.set('opacity', direction === -1 ? 0 : 1)
+    })
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)
       chain(
@@ -323,12 +343,12 @@ export default class SinglePage {
   })
 
   _onOpening = ({ tweenFactor }) => {
-    const closeButtonTweenY = clampNumber(mapNumber(tweenFactor, 0, 0.75, -100, 0), -100, 0)
-    const closeButtonTweenRotate = clampNumber(mapNumber(tweenFactor, 0, 0.75, -480, 0), -480, 0)
-    this.stylers.closeButton.set({
-      y: closeButtonTweenY,
-      rotate: closeButtonTweenRotate,
-    })
+    // const closeButtonTweenY = clampNumber(mapNumber(tweenFactor, 0, 0.75, -100, 0), -100, 0)
+    // const closeButtonTweenRotate = clampNumber(mapNumber(tweenFactor, 0, 0.75, -480, 0), -480, 0)
+    // this.stylers.closeButton.set({
+    //   y: closeButtonTweenY,
+    //   rotate: closeButtonTweenRotate,
+    // })
   }
 
   _onOpen = ({ modelName }) => {
@@ -338,6 +358,8 @@ export default class SinglePage {
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
 
     const project = this._projectsData.find(project => project.modelName === modelName)
+
+    
 
     this._setContentTexts({ modelName })
 
@@ -351,8 +373,18 @@ export default class SinglePage {
     this.stylers.wrapper.set('pointerEvents', 'auto')
     // document.body.style.setProperty('cursor', 'auto')
 
-    this.$els.singlePageWrapper.scroll(0, 0)
-    this._fadeProjectDescription()
+    
+    this.$els.singlePageNav.classList.add('faded')
+    this._fadeProjectDescription().then(() => {
+      this.stylers.closeButton.set({
+        opacity: 1,
+        pointerEvents: 'auto',
+      })
+      this.stylers.openExternalLink.set({
+        opacity: 1,
+        pointerEvents: 'auto',
+      })
+    })
 
     const sliderBtns = [sliderButtonPrev, sliderButtonNext]
     sliderBtns.forEach((button, i) => {
@@ -367,12 +399,7 @@ export default class SinglePage {
   }
 
   _onClosing = ({ tweenFactor }) => {
-    const closeButtonTweenY = mapNumber(tweenFactor, 0.75, 0, -100, 0)
-    const closeButtonTweenRotate = mapNumber(tweenFactor, 0.75, 0, -480, 0)
-    this.stylers.closeButton.set({
-      y: closeButtonTweenY,
-      rotate: closeButtonTweenRotate,
-    })
+    // ...
   }
 
   _closeButtonClick = () => {
@@ -382,6 +409,16 @@ export default class SinglePage {
     this.stylers.wrapper.set('pointerEvents', 'none')
     this.stylers.wrapper.set('user-select', 'none')
     // document.body.style.setProperty('cursor', 'none')
+
+    this.stylers.closeButton.set({
+      opacity: 0,
+      pointerEvents: 'none',
+    })
+    this.stylers.openExternalLink.set({
+      opacity: 0,
+      pointerEvents: 'none',
+    })
+    this.$els.singlePageNav.classList.remove('faded')
 
     this._fadeProjectDescription({ duration: 300, parralel: true, direction: -1 })
 
