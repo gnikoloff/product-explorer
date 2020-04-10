@@ -37,7 +37,6 @@ import {
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
-  EVT_MOUSEMOVE_APP,
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_LOADED_PROJECTS,
   EVT_CAMERA_HANDLE_MOVEMENT_WORLD,
@@ -194,8 +193,6 @@ function init () {
     raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
     store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
-
-    eventEmitter.emit(EVT_MOUSEMOVE_APP)
   }, { passive: true })
 
   document.body.addEventListener('touchend', e => {
@@ -343,9 +340,10 @@ function onCloseSingleView (modelName) {
     },
     complete: () => {
       eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
-      photoMeshContainer.add(openedProjectScene.children[1])
+      photoMeshContainer.add(openedProjectScene.children[2])
       closeModelTween = null
       clickedElement = null
+      cursor.visible = false
       layoutModeBtnStyler.set('pointer-events', 'auto')
     }
   })
@@ -424,6 +422,7 @@ function onMouseDown (e) {
         targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
         targetY: cameraSystem.photoCamera.position.y,
       }))
+      cursor.visible = false
       openModelTween = chain(
         delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
         tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
@@ -468,7 +467,6 @@ function onMouseMove (e) {
   }
 
   store.dispatch(setMousePosition({ x: e.pageX, y: e.pageY }))
-  eventEmitter.emit(EVT_MOUSEMOVE_APP)
 }
 
 function onMouseUp () {
@@ -493,13 +491,14 @@ function onMouseUp () {
             layoutModeBtnStyler.set('opacity', opacity)
           },
           complete: () => {
-            photoMeshContainer.add(openedProjectScene.children[1])
+            photoMeshContainer.add(openedProjectScene.children[2])
             photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
               mesh.visible = true
             })
             eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
             closeModelTween = null
             clickedElement = null
+            cursor.visible = true
             layoutModeBtnStyler.set('pointer-events', 'auto')
           }
         })

@@ -69,6 +69,22 @@ export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => {
   return texture
 }
 
+export const getHoverLabel = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 114 * 5
+  canvas.height = 24 * 5
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#111'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = '#fff'
+  ctx.textBaseline = 'middle'
+  ctx.font = 'normal 64px Helvetica'
+  ctx.fillText('Hold to see more', 30, canvas.height / 2)
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.isFlipped = true
+  return texture
+}
+
 export const isIPadOS = () => {
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !window.MSStream
 }

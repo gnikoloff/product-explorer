@@ -41,7 +41,7 @@ void main () {
   color = mix(baseColor, color, color.a);
 
   vec2 mouse = vec2(u_mouse.x, u_resolution.y - u_mouse.y);
-  float cursorAlpha = circle(gl_FragCoord.xy, u_mouse, u_cursorSize * (1.0 - u_blurMixFactor));
+  float cursorAlpha = circle(gl_FragCoord.xy, mouse, u_cursorSize * (1.0 - u_blurMixFactor));
   // gl_FragColor = vec4(vec3(cursorAlpha), 1.0);
 
   vec4 cursorCircleColor = color;
@@ -49,8 +49,8 @@ void main () {
   uvRandom.y *= random(vec2(uvRandom.y, u_time));
   cursorCircleColor.rgb += random(uvRandom) * 0.075;
 
-  float fmin = 0.9;
-  float fmod = mod(u_time * 3.0 + uv.y * 200.0, 1.75);
+  float fmin = 0.95;
+  float fmod = mod(u_time * 0.0025 - gl_FragCoord.y, 1.1);
   float fstep = fmin + (1.0 - fmin) * fmod;
 
   vec4 hoverColor = cursorCircleColor;

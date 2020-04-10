@@ -4,15 +4,12 @@ import { tween, chain, delay, calc } from 'popmotion'
 import eventEmitter from './event-emitter'
 
 import {
-  clampNumber,
-  mapNumber,
   getSiglePagePhotoScale,
 } from './helpers'
 
 import {
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
-  EVT_MOUSEMOVE_APP,
   EVT_RAF_UPDATE_APP,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,  
@@ -39,7 +36,6 @@ export default class SinglePage {
   static pageBackground = '#fcfcfc'
 
   constructor () {
-    this._mousePos = { x: 0, y: 0 }
     this._prevModelName = null
     this._currModelName = null
     this._nextModelName = null
@@ -246,8 +242,7 @@ export default class SinglePage {
   }
   
   _onMouseMove = ({ mouseX, mouseY }) => {
-    this._mousePos.x = mouseX
-    this._mousePos.y = mouseY
+    // ...
   }
 
   _setContentTexts = ({ modelName }) => {
@@ -363,7 +358,6 @@ export default class SinglePage {
 
     this._setContentTexts({ modelName })
 
-    eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     document.body.addEventListener('click', this._checkSliderClick, false)
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
     this.$els.openExternalLink.setAttribute('href', project.websiteURL)
@@ -440,8 +434,6 @@ export default class SinglePage {
     
     document.body.removeEventListener('click', this._checkSliderClick)
     this.$els.closeButton.removeEventListener('click', this._closeButtonClick, false)
-    
-    eventEmitter.off(EVT_MOUSEMOVE_APP, this._onMouseMove)
   }
   
 

@@ -14,7 +14,6 @@ import {
   EVT_ON_SCENE_DRAG_END,
   EVT_HOVER_SINGLE_PROJECT_ENTER,
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
-  EVT_MOUSEMOVE_APP,
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_RENDER_PHOTO_POSTFX_FRAME,
   EVT_OPENING_INFO_SECTION,
@@ -83,7 +82,6 @@ export default class PostProcessing {
     })
 
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
-    this._cursorTargetPosition = new THREE.Vector2(0, 0)
     this._cursorScanlineTarget = 0
     this._isHidden = false
     this._preventClick = false
@@ -101,7 +99,6 @@ export default class PostProcessing {
     eventEmitter.on(EVT_HIDE_CURSOR, this._hideCursor)
     eventEmitter.on(EVT_SHOW_CURSOR, this._showCursor)
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
-    eventEmitter.on(EVT_MOUSEMOVE_APP, this._onMouseMove)
     eventEmitter.on(EVT_RENDER_PHOTO_SCENE_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffusePhoto', '_mainEffect', texture))
     eventEmitter.on(EVT_RENDER_PHOTO_POSTFX_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuse', '_blurEffect', texture))
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
@@ -154,21 +151,6 @@ export default class PostProcessing {
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
   }
-  _onMouseMove = () => {
-    const {
-      mousePositionX,
-      mousePositionY,
-    } = store.getState()
-    const dpr = devicePixelRatio || 1
-    const x = mousePositionX * dpr
-    const y = (innerHeight - mousePositionY) * dpr
-    if (mobileBrowser) {
-      this._mainEffect.uniforms.u_mouse.value.x = x
-      this._mainEffect.uniforms.u_mouse.value.y = y
-    }
-    this._cursorTargetPosition.x = x
-    this._cursorTargetPosition.y = y
-  }
   _onProjectHoverEnter = () => {
     if (this._isHidden) {
       return
@@ -193,11 +175,26 @@ export default class PostProcessing {
     this._isHidden = false
   }
   _onUpdate = (ts, dt) => {
+    const {
+      mousePositionX,
+      mousePositionY,
+    } = store.getState()
+
+    const dpr = devicePixelRatio || 1
+    const x = mousePositionX * dpr
+    const y = (innerHeight - mousePositionY) * dpr
+
+    if (mobileBrowser) {
+      this._mainEffect.uniforms.u_mouse.value.x = x
+      this._mainEffect.uniforms.u_mouse.value.y = y
+    } else {
+      this._mainEffect.uniforms.u_mouse.value.x += (mousePositionX - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 25)
+      this._mainEffect.uniforms.u_mouse.value.y += (mousePositionY - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 25)
+    }
+
     this._mainEffect.uniforms.u_time.value = ts
     this._mainEffect.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this._mainEffect.uniforms.u_cursorSize.value) * (dt * 10)
     this._mainEffect.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this._mainEffect.uniforms.u_hoverMixFactor.value) * (dt * 10)
-    this._mainEffect.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 25)
-    this._mainEffect.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 25)
   }
   _onResize = () => {
     this._mainEffect.onResize()
