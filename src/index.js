@@ -340,11 +340,19 @@ function onCloseSingleView (modelName) {
     },
     complete: () => {
       eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
-      photoMeshContainer.add(openedProjectScene.children[2])
+      const photoPreviewMesh = openedProjectScene.children[2]
+      photoMeshContainer.add(photoPreviewMesh)
+      // label.visible = true
       closeModelTween = null
       clickedElement = null
-      cursor.visible = false
+      cursor.visible = true
       layoutModeBtnStyler.set('pointer-events', 'auto')
+
+      const mesh = photoMeshContainer.children
+        .filter(mesh => mesh.isLabel)
+        .forEach(mesh => {
+          mesh.visible = true
+        })
     }
   })
 }
@@ -414,14 +422,18 @@ function onMouseDown (e) {
       const { modelName } = hoveredElement
 
       openedProjectScene.add(hoveredElement)
-      const mesh = photoMeshContainer.children.find(mesh => mesh.modelName === modelName && mesh.isLabel)
-      mesh.visible = false
+      const mesh = photoMeshContainer.children
+        .filter(mesh => mesh.isLabel)
+        .forEach(mesh => {
+          mesh.visible = false
+        })
 
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
         modelName,
         targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
         targetY: cameraSystem.photoCamera.position.y,
       }))
+      eventEmitter.emit(EVT_HIDE_CURSOR)
       cursor.visible = false
       openModelTween = chain(
         delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
@@ -477,31 +489,7 @@ function onMouseUp () {
         openModelTween = null
 
         const { modelName } = hoveredElement
-
-        eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
-
-        closeModelTween = chain(
-          delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-          tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
-        ).start({
-          update: tweenFactor => {
-            openModelTweenFactor = tweenFactor
-            eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
-            const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
-            layoutModeBtnStyler.set('opacity', opacity)
-          },
-          complete: () => {
-            photoMeshContainer.add(openedProjectScene.children[2])
-            photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
-              mesh.visible = true
-            })
-            eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
-            closeModelTween = null
-            clickedElement = null
-            cursor.visible = true
-            layoutModeBtnStyler.set('pointer-events', 'auto')
-          }
-        })
+        onCloseSingleView(modelName)
       }
     }
   }
