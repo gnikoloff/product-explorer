@@ -586,7 +586,7 @@ function updateFrame(ts) {
   for (let i = 0; i < BLUR_ITERATIONS; i++) {
     renderer.setRenderTarget(writeBuffer)
 
-    const radius = (BLUR_ITERATIONS - i - 1)
+    const radius = BLUR_ITERATIONS - i - 1
 
     if (i === 0) {
       eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: postFXRenderTarget.texture })

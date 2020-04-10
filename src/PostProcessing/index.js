@@ -60,7 +60,6 @@ export default class PostProcessing {
         u_blurMixFactor: { value: 0.0 },
         u_cutOffFactor: { value: 0.0 },
       },
-      transparent: true,
       vertexShader,
       fragmentShader: fragmentShaderPostFX,
     })

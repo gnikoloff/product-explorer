@@ -24,4 +24,5 @@ void main () {
   vec4 color = texture2D(u_tDiffuse, v_uv);
   vec4 blurColor = blur13(u_tDiffuse, v_uv, u_resolution, u_direction);
   gl_FragColor = mix(color, blurColor, u_blurMixFactor);
+  gl_FragColor.a = 1.0 - u_blurMixFactor * 0.1;
 }

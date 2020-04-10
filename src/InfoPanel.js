@@ -79,7 +79,7 @@ export default class InfoPanel {
       update: tweenFactor => {
         eventEmitter.emit(EVT_CLOSING_INFO_SECTION, { tweenFactor })
         this.stylers.toggleButton.set('opacity', tweenFactor)
-        this.stylers.logo.set('opacity', 1 - tweenFactor)
+        this.stylers.logo.set('opacity', tweenFactor)
         this.stylers.closeButton.set({
           opacity: tweenFactor,
           y: mapNumber(tweenFactor, 0, 1, 0, -100),
