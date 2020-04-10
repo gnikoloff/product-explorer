@@ -12,6 +12,8 @@ uniform float u_blurMixFactor;
 
 varying vec2 v_uv;
 
+const float CURSOR_BORDER = 1.5;
+
 float random (vec2 p) {
   vec2 K1 = vec2(
     23.14069263277926, // e^pi (Gelfond's constant)
@@ -50,7 +52,7 @@ void main () {
   cursorCircleColor.rgb += random(uvRandom) * 0.075;
 
   float fmin = 0.95;
-  float fmod = mod(u_time * 0.0025 - gl_FragCoord.y, 1.1);
+  float fmod = mod(u_time * 0.0009 - gl_FragCoord.y, 1.0415);
   float fstep = fmin + (1.0 - fmin) * fmod;
 
   vec4 hoverColor = cursorCircleColor;
@@ -58,5 +60,14 @@ void main () {
 
   hoverColor = mix(hoverColor, cursorCircleColor, u_hoverMixFactor);
 
-  gl_FragColor = mix(color, hoverColor, cursorAlpha * (1.0 - u_cutOffFactor));
+  color = mix(color, hoverColor, cursorAlpha * (1.0 - u_cutOffFactor));
+
+  vec2 circleOffset = gl_FragCoord.xy - mouse;
+
+  float dist = sqrt(dot(circleOffset, circleOffset));
+
+  float t = 1.0 + smoothstep(u_cursorSize, u_cursorSize + CURSOR_BORDER, dist) 
+                - smoothstep(u_cursorSize - CURSOR_BORDER, u_cursorSize, dist);
+
+  gl_FragColor = mix(vec4(color.rgb * 0.9, 1.0), color, t);
 }
