@@ -459,15 +459,15 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {
-      const { layoutMode, cameraPositionX, cameraPositionY } = store.getState()
+      const { layoutMode } = store.getState()
       const cameraRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : 0
       const cameraRepositionY = layoutMode === LAYOUT_MODE_GRID ?  this._originalGridPosition.y : this._originalOverviewPosition.y
 
-      const offsetX = cameraRepositionX - cameraPositionX
-      const offsetY = cameraRepositionY - cameraPositionY
-
+      const meshRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
+      const meshRepositionY = cameraRepositionY
+      
       eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, { x: cameraRepositionX, y: cameraRepositionY })
-      this._targetPosition.set(this.position.x, this.position.y, 1)
+      this._targetPosition.set(meshRepositionX - innerWidth * 0.25, meshRepositionY)
       this._targetScale = this.scale.x
       window.removeEventListener('keydown', this._onKeyDown)
     }
@@ -477,8 +477,8 @@ export default class PhotoPreview extends THREE.Mesh {
     if (modelName === this._modelName) {
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y
-      const endX = startX - this._openPositionDiff.x
-      const endY = startY - this._openPositionDiff.y
+      const endX = startX + innerWidth * 0.25
+      const endY = startY
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
