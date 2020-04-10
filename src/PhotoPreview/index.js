@@ -41,6 +41,7 @@ import {
   LAYOUT_MODE_OVERVIEW,
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
   EVT_PHOTO_PREVIEW_RELAYOUTED,
+  EVT_CAMERA_FORCE_REPOSITION,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -458,6 +459,14 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _onCloseRequest = ({ modelName }) => {
     if (modelName === this._modelName) {
+      const { layoutMode, cameraPositionX, cameraPositionY } = store.getState()
+      const cameraRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : 0
+      const cameraRepositionY = layoutMode === LAYOUT_MODE_GRID ?  this._originalGridPosition.y : this._originalOverviewPosition.y
+
+      const offsetX = cameraRepositionX - cameraPositionX
+      const offsetY = cameraRepositionY - cameraPositionY
+
+      eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, { x: cameraRepositionX, y: cameraRepositionY })
       this._targetPosition.set(this.position.x, this.position.y, 1)
       this._targetScale = this.scale.x
       window.removeEventListener('keydown', this._onKeyDown)

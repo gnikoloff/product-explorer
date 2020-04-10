@@ -22,10 +22,11 @@ import {
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
+  EVT_CAMERA_FORCE_REPOSITION,
 } from './constants'
 
 export default class CameraSystem {
-  static friction = 0.6
+  static friction = 0.875
 
   static resizeCamera ({ camera, appWidth, appHeight }) {
     camera.left = -appWidth / 2
@@ -86,6 +87,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
+    eventEmitter.on(EVT_CAMERA_FORCE_REPOSITION, this._onForceRelayout)
   }
   get photoCamera () {
     return this._photoCamera
@@ -115,6 +117,15 @@ export default class CameraSystem {
     this._shouldMove = false
     this._targetPosition.copy(this._photoCamera.position)
   }
+  _onForceRelayout = ({ x, y }) => {
+    this._targetPosition.x = x
+    this._targetPosition.y = y
+    this._photoCamera.position.x = x
+    this._photoCamera.position.y = y
+    this._openedProjectCamera.position.x = x
+    this._openedProjectCamera.position.y = y
+    setCameraPosition({ x, y })
+  }
   _onRequestCloseProject = () => {
     this._shouldMove = true
   }
@@ -123,37 +134,47 @@ export default class CameraSystem {
       return
     }
 
-    const { overviewLayoutHeight, layoutMode } = store.getState()
+    const {
+      cameraPositionX,
+      cameraPositionY,
+      overviewLayoutHeight,
+      layoutMode
+    } = store.getState()
+
+    console.log(
+      'camera velocity', this._velocity.x, this._velocity.y
+    )
+
+    let newCameraPositionX = this._photoCamera.position.x
+    let newCameraPositionY = this._photoCamera.position.y
 
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
 
-    let oldCameraVelocityX = this._velocity.x
-    let oldCameraVelocityY = this._velocity.y
-
     if (!lockHorizontalMovement) {
-      this._velocity.x += (this._targetPosition.x - this._photoCamera.position.x) * dt
+      newCameraPositionX += (this._targetPosition.x - cameraPositionX) * dt
     }
-    this._velocity.y += (this._targetPosition.y - this._photoCamera.position.y) * dt
+    newCameraPositionY += (this._targetPosition.y - cameraPositionY) * dt
 
     const dist = calc.distance({
-      x: this._velocity.x,
-      y: this._velocity.y
+      x: newCameraPositionX,
+      y: newCameraPositionX
     }, {
-      x: oldCameraVelocityX,
-      y: oldCameraVelocityY,
+      x: cameraPositionX,
+      y: cameraPositionY,
     })
     
-    this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
-    
-    if (!lockHorizontalMovement) {
-      this._photoCamera.position.x += this._velocity.x
-    }
-    this._photoCamera.position.y += this._velocity.y
+    // this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
+    this._isDragCameraMoving = false
 
-    if (!lockHorizontalMovement) {
-      this._photoCamera.position.x *= CameraSystem.friction
-    }
-    this._photoCamera.position.y *= CameraSystem.friction
+    // if (!lockHorizontalMovement) {
+    //   this._velocity.x *= CameraSystem.friction
+    // }
+    // this._velocity.y *= CameraSystem.friction
+    
+    // if (!lockHorizontalMovement) {
+    //   newCameraPositionX += this._velocity.x
+    // }
+    // newCameraPositionY += this._velocity.y
 
     let rightBound
     let leftBound
@@ -178,27 +199,27 @@ export default class CameraSystem {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = rightBound
       }
-      console.log('hit right bound')
     }
     if (this._targetPosition.x < leftBound) {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = leftBound
       }
-      console.log('hit left bound')
     }
     if (this._targetPosition.y > topBound) {
       this._targetPosition.y = topBound
-      console.log('hit top bound')
     }
     if (this._targetPosition.y < bottomBound) {
       this._targetPosition.y = bottomBound
-      console.log('hit bottom bound')
     }
-    // console.log(this._photoCamera.position.x, this._photoCamera.position.y)
-    this._openedProjectCamera.position.copy(this._photoCamera.position)
+
+    this._photoCamera.position.x = newCameraPositionX
+    this._photoCamera.position.y = newCameraPositionY
+    this._openedProjectCamera.position.x = this._photoCamera.position.x
+    this._openedProjectCamera.position.y = this._photoCamera.position.y
     store.dispatch(setCameraPosition({
-      x: this._photoCamera.position.x,
-      y: this._photoCamera.position.y,
+      x: newCameraPositionX,
+      y: newCameraPositionY,
+      origin: 'raf'
     }))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
