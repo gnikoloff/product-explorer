@@ -29,6 +29,8 @@ import {
   isMobileBrowser,
 } from '../helpers'
 
+import store from '../store'
+
 import vertexShader from './vertexShader.glsl'
 import fragmentShaderPostFX from './postfx-fragmentShader.glsl'
 import fragmentShaderBlur from './postfx-fragmentBlurShader.glsl'
@@ -38,7 +40,7 @@ const mobileBrowser = isMobileBrowser()
 export default class PostProcessing {
   static HIDDEN_CURSOR_SIZE = 0
   static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio || 1)
-  static HOVER_CURSOR_SIZE = 80 * (devicePixelRatio || 1)
+  static HOVER_CURSOR_SIZE = 50 * (devicePixelRatio || 1)
   static DRAG_CURSOR_SIZE = 33 * (devicePixelRatio || 1)
 
   constructor ({
@@ -152,10 +154,14 @@ export default class PostProcessing {
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
   }
-  _onMouseMove = ({ mouseX, mouseY }) => {
+  _onMouseMove = () => {
+    const {
+      mousePositionX,
+      mousePositionY,
+    } = store.getState()
     const dpr = devicePixelRatio || 1
-    const x = mouseX * dpr
-    const y = (innerHeight - mouseY) * dpr
+    const x = mousePositionX * dpr
+    const y = (innerHeight - mousePositionY) * dpr
     if (mobileBrowser) {
       this._mainEffect.uniforms.u_mouse.value.x = x
       this._mainEffect.uniforms.u_mouse.value.y = y
@@ -190,8 +196,8 @@ export default class PostProcessing {
     this._mainEffect.uniforms.u_time.value = ts
     this._mainEffect.uniforms.u_cursorSize.value += (this._cursorSizeTarget - this._mainEffect.uniforms.u_cursorSize.value) * (dt * 10)
     this._mainEffect.uniforms.u_hoverMixFactor.value += (this._cursorScanlineTarget - this._mainEffect.uniforms.u_hoverMixFactor.value) * (dt * 10)
-    this._mainEffect.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 15)
-    this._mainEffect.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 15)
+    this._mainEffect.uniforms.u_mouse.value.x += (this._cursorTargetPosition.x - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 25)
+    this._mainEffect.uniforms.u_mouse.value.y += (this._cursorTargetPosition.y - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 25)
   }
   _onResize = () => {
     this._mainEffect.onResize()

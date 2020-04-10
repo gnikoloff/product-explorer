@@ -1,3 +1,10 @@
+export const SET_MOUSE_POSITION = 'SET_MOUSE_POSITION'
+export const setMousePosition = ({ x, y }) => ({
+  type: SET_MOUSE_POSITION,
+  x,
+  y,
+})
+
 export const SET_CAMERA_POSITION = 'SET_CAMERA_POSITION'
 export const setCameraPosition = ({ x, y }) => ({
   type: SET_CAMERA_POSITION,

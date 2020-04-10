@@ -7,6 +7,8 @@ import {
 } from '../constants'
 
 const initialState = {
+  mousePositionX: 0,
+  mousePositionY: 0,
   cameraPositionX: 0,
   cameraPositionY: 0,
   overviewLayoutWidth: 0,
@@ -18,6 +20,12 @@ const initialState = {
 
 const appState = (state = initialState, action) => {
   switch (action.type) {
+    case actions.SET_MOUSE_POSITION: {
+      return Object.assign(state, {
+        mousePositionX: action.x,
+        mousePositionY: action.y,
+      })
+    }
     case actions.SET_CAMERA_POSITION: {
       return Object.assign(state, {
         cameraPositionX: action.x,
