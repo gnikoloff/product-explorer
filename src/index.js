@@ -56,7 +56,9 @@ import {
   EVT_CLICK_NEXT_PROJECT,
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_OPEN_REQUEST_INFO_SECTION,
+  EVT_OPENING_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
+  EVT_CLOSING_INFO_SECTION,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
@@ -215,6 +217,8 @@ function init () {
   eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
   eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION, onInfoSectionOpenRequest)
+  eventEmitter.on(EVT_OPENING_INFO_SECTION, onInfoSectionOpening)
+  eventEmitter.on(EVT_CLOSING_INFO_SECTION, onInfoSectionClosing)
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
   
   requestAnimationFrame(updateFrame)
@@ -264,9 +268,25 @@ function onInfoSectionOpenRequest () {
   isInfoSectionOpen = true
 }
 
+function onInfoSectionOpening ({ tweenFactor }) {
+  const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
+  layoutModeBtnStyler.set({
+    opacity,
+    pointerEvents: 'none',
+  })
+}
+
 function onInfoSectionCloseRequest () {
   document.body.style.setProperty('cursor', 'none')
   isInfoSectionOpen = false
+}
+
+function onInfoSectionClosing ({ tweenFactor }) {
+  const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
+  layoutModeBtnStyler.set({
+    opacity,
+    pointerEvents: 'auto',
+  })
 }
 
 function onPrevProjectClick ({ modelName }) {

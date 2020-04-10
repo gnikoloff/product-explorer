@@ -16,6 +16,7 @@ import {
   EVT_OPENING_INFO_SECTION,
   EVT_OPEN_REQUEST_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
+  EVT_CLOSING_INFO_SECTION,
 } from './constants'
 
 export default class InfoPanel {
@@ -76,11 +77,11 @@ export default class InfoPanel {
     eventEmitter.emit(EVT_CLOSE_REQUEST_INFO_SECTION)
     tween().start({
       update: tweenFactor => {
-        eventEmitter.emit(EVT_OPENING_INFO_SECTION, { tweenFactor: 1 - tweenFactor })
+        eventEmitter.emit(EVT_CLOSING_INFO_SECTION, { tweenFactor })
         this.stylers.toggleButton.set('opacity', tweenFactor)
-        this.stylers.logo.set('opacity', tweenFactor)
+        this.stylers.logo.set('opacity', 1 - tweenFactor)
         this.stylers.closeButton.set({
-          opacity: 1 - tweenFactor,
+          opacity: tweenFactor,
           y: mapNumber(tweenFactor, 0, 1, 0, -100),
         })
       },

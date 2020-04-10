@@ -18,6 +18,7 @@ import {
   EVT_RENDER_PHOTO_SCENE_FRAME,
   EVT_RENDER_PHOTO_POSTFX_FRAME,
   EVT_OPENING_INFO_SECTION,
+  EVT_CLOSING_INFO_SECTION,
   EVT_APP_RESIZE,
   EVT_HIDE_CURSOR,
   EVT_SHOW_CURSOR,
@@ -104,6 +105,7 @@ export default class PostProcessing {
     eventEmitter.on(EVT_RENDER_PHOTO_POSTFX_FRAME, ({ texture }) => this._updateFrameTexture('u_tDiffuse', '_blurEffect', texture))
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_OPENING_INFO_SECTION, this._onBlur)
+    eventEmitter.on(EVT_CLOSING_INFO_SECTION, this.onUnblur)
   }
   get mainEffectPlane () {
     return this._mainEffect
@@ -117,6 +119,10 @@ export default class PostProcessing {
   _onBlur = ({ tweenFactor }) => {
     this._mainEffect.uniforms.u_blurMixFactor.value = tweenFactor
     this._blurEffect.uniforms.u_blurMixFactor.value = tweenFactor
+  }
+  onUnblur = ({ tweenFactor }) => {
+    this._mainEffect.uniforms.u_blurMixFactor.value = 1 - tweenFactor
+    this._blurEffect.uniforms.u_blurMixFactor.value = 1 - tweenFactor
   }
   _updateFrameTexture = (uniformName, effectName, texture) => {
     this[effectName].uniforms[uniformName].value = texture
