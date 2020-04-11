@@ -17,6 +17,7 @@ import LoadManager from './LoadManager'
 import {
   getArrowTexture,
   mapNumber,
+  isMobileBrowser,
 } from './helpers'
 
 import store from './store'
@@ -76,6 +77,8 @@ import {
 
 import './style'
 
+const mobileBrowser = isMobileBrowser()
+
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
 
@@ -86,7 +89,11 @@ const cameraSystem = new CameraSystem({
   appHeight,
   position: new THREE.Vector3(0, 0, 50)
 })
-const cursor = new Cursor()
+
+let cursor
+if (!mobileBrowser) {
+  cursor = new Cursor()
+}
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
@@ -130,6 +137,7 @@ cursorScene.add(cameraSystem.cursorCamera)
 postFXScene.add(cameraSystem.postFXCamera)
 postFXBlurScene.add(cameraSystem.postFXBlurCamera)
 openedProjectScene.add(cameraSystem.openedProjectCamera)
+
 openedProjectScene.add(cursor)
 
 const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
@@ -361,7 +369,6 @@ function onCloseSingleView ({ modelName, reposition = false }) {
       // label.visible = true
       closeModelTween = null
       clickedElement = null
-      cursor.visible = true
       layoutModeBtnStyler.set('pointer-events', 'auto')
 
       const mesh = photoMeshContainer.children
@@ -446,7 +453,7 @@ function onMouseDown (e) {
 
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
       eventEmitter.emit(EVT_HIDE_CURSOR)
-      cursor.visible = false
+      
       openModelTween = chain(
         delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
         tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })

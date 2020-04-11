@@ -10,6 +10,8 @@ import {
   EVT_RAF_UPDATE_APP,
   LAYOUT_MODE_OVERVIEW,
   LAYOUT_MODE_GRID,
+  EVT_CLOSE_SINGLE_PROJECT,
+  EVT_OPEN_REQUEST_SINGLE_PROJECT,
 } from './constants'
 
 import {
@@ -47,6 +49,14 @@ export default class Cursor extends THREE.Mesh {
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onProjectHover)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onProjectLeave)
+    eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._show)
+    eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._hide)
+  }
+  _hide = () => {
+    this.visible = false
+  }
+  _show = () => {
+    this.visible = true
   }
   _onProjectHover = () => {
     this._isHover = true
