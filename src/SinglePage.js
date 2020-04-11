@@ -42,6 +42,9 @@ export default class SinglePage {
     this._prevModelName = null
     this._currModelName = null
     this._nextModelName = null
+    this._alreadyReplacedTextures = false
+    this._sizerMouseDown = false
+    this._startMouseDownX = 0
 
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
@@ -86,7 +89,7 @@ export default class SinglePage {
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpen)
     eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpening)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
-    eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
+    // eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_NEXT_PROJECT_TRANSITIONED_IN, this._removeBackgroundColor)
     eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, () => {
       this._fadeProjectDescription({ duration: 200, direction: 1 }).then(() => {
@@ -132,74 +135,72 @@ export default class SinglePage {
       })
     }, false)
 
-    let x = 0
-    let mouseDown
-    let alreadyReplacedTextures
-
-    this.$els.sizer.addEventListener('mousedown', e => {
-      this.$els.sizer.classList.add('grabbing')
-      x = e.pageX
-      mouseDown = true
-    }, false)
-
-    this.$els.sizer.addEventListener('mousemove', e => {
-      if (!mouseDown) {
-        return
-      }
-      const modelName = this._currModelName
-      const diffx = e.pageX - x
-      if (Math.abs(diffx) < 50) {
-        return
-      }
-      let tweenFactor = 0
-      if (diffx < 0) {
-        if (!alreadyReplacedTextures) {
-          eventEmitter.emit(EVT_SLIDER_REPLACE_TEXTURES, { modelName, direction: -1 })
-          alreadyReplacedTextures = true
-        }
-        tweenFactor = clampNumber(mapNumber(diffx, 0, -250, 1, 0), 0, 1)
-        eventEmitter.emit(EVT_SLIDER_DRAG, {
-          tweenFactor,
-          modelName,
-          direction: -1,
-        })
-      } else if (diffx > 0) {
-        tweenFactor = clampNumber(mapNumber(diffx, 0, 250, 0, 1), 0, 1)
-        eventEmitter.emit(EVT_SLIDER_DRAG, {
-          tweenFactor,
-          modelName,
-          direction: 1,
-        })
-        if (!alreadyReplacedTextures) {
-          eventEmitter.emit(EVT_SLIDER_REPLACE_TEXTURES, { modelName, direction: 1 })
-          alreadyReplacedTextures = true
-        }
-      }
-      
-      
-      
-      
-    })
-
-    this.$els.sizer.addEventListener('mouseup', e => {
-      this.$els.sizer.classList.remove('grabbing')
-      mouseDown = false
-      alreadyReplacedTextures = false
-      eventEmitter.emit(EVT_SLIDER_DRAG_CANCEL, { modelName: this._currModelName })
-    }, false)
-
-    this.$els.sizer.addEventListener('mouseleave', e => {
-      this.$els.sizer.classList.remove('grabbing')
-      mouseDown = false
-      alreadyReplacedTextures = false
-      eventEmitter.emit(EVT_SLIDER_DRAG_CANCEL, { modelName: this._currModelName })
-    }, false)
+    this.$els.sizer.addEventListener('mousedown', this._onSliderMouseDown, false)
+    this.$els.sizer.addEventListener('mousemove', this._onSliderMouseMove)
+    this.$els.sizer.addEventListener('mouseup', this._onSliderMouseUp, false)
+    this.$els.sizer.addEventListener('mouseleave', this._onSliderMouseLeave, false)
 
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
     const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
     this.$els.sizer.style.setProperty('width', `${sizerWidth}px`)
     this.$els.sizer.style.setProperty('height', `${Math.min(sizerHeight, innerHeight)}px`)
     this.$els.sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
+  }
+
+  _onSliderMouseLeave = e => {
+    this.$els.sizer.classList.remove('grabbing')
+    this._sizerMouseDown = false
+    this._alreadyReplacedTextures = false
+    eventEmitter.emit(EVT_SLIDER_DRAG_CANCEL, { modelName: this._currModelName })
+  }
+
+  _onSliderMouseDown = e => {
+    this.$els.sizer.classList.add('grabbing')
+    this._startMouseDownX = e.pageX
+    this._sizerMouseDown = true
+  }
+
+  _onSliderMouseMove = e => {
+    if (!this._sizerMouseDown) {
+      return
+    }
+    const modelName = this._currModelName
+    const diffx = e.pageX - this._startMouseDownX
+    if (Math.abs(diffx) < 50) {
+      return
+    }
+    let tweenFactor = 0
+    if (diffx < 0) {
+      if (!this._alreadyReplacedTextures) {
+        eventEmitter.emit(EVT_SLIDER_REPLACE_TEXTURES, { modelName, direction: -1 })
+        this._alreadyReplacedTextures = true
+      }
+      tweenFactor = clampNumber(mapNumber(diffx, 0, -250, 1, 0), 0, 1)
+      eventEmitter.emit(EVT_SLIDER_DRAG, {
+        tweenFactor,
+        modelName,
+        direction: -1,
+      })
+    } else if (diffx > 0) {
+      tweenFactor = clampNumber(mapNumber(diffx, 0, 250, 0, 1), 0, 1)
+      eventEmitter.emit(EVT_SLIDER_DRAG, {
+        tweenFactor,
+        modelName,
+        direction: 1,
+      })
+      if (!this._alreadyReplacedTextures) {
+        eventEmitter.emit(EVT_SLIDER_REPLACE_TEXTURES, { modelName, direction: 1 })
+        this._alreadyReplacedTextures = true
+      }
+    }
+    
+  }
+
+  _onSliderMouseUp = e => {
+    this.$els.sizer.classList.remove('grabbing')
+    this._sizerMouseDown = false
+    this._alreadyReplacedTextures = false
+    eventEmitter.emit(EVT_SLIDER_DRAG_CANCEL, { modelName: this._currModelName })
   }
 
   _removeBackgroundColor = () => {
@@ -211,21 +212,12 @@ export default class SinglePage {
   }
 
   _checkSliderClick = e => {
-    console.log(e.target)
     if (e.target.classList.contains('slider-btn-prev')) {
       eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK, { modelName: this._currModelName })
     }
     if (e.target.classList.contains('slider-btn-next')) {
       eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK, { modelName: this._currModelName })
     }
-  }
-
-  _onUpdate = (ts, dt) => {
-    // ...
-  }
-  
-  _onMouseMove = ({ mouseX, mouseY }) => {
-    // ...
   }
 
   _setContentTexts = ({ modelName }) => {
@@ -272,13 +264,6 @@ export default class SinglePage {
   }
 
   _fadeProjectDescription = ({ direction = 1, duration = 300, parralel = false } = {}) => new Promise(resolve => {
-    console.log(direction)
-    // if (direction === 1) {
-    //   this.$els.singlePageNav.classList.add('faded')
-    // } else if (direction === -1) {
-    //   this.$els.singlePageNav.classList.remove('faded')
-    // }
-    
     const animatedEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
     const fadeInEls = animatedEls
       .map(item => {
@@ -336,8 +321,6 @@ export default class SinglePage {
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
 
     const project = this._projectsData.find(project => project.modelName === modelName)
-
-    
 
     this._setContentTexts({ modelName })
 
