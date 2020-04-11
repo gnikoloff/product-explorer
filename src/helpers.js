@@ -19,7 +19,7 @@ export const getSiglePagePhotoScale = () => {
   } else if (width >= 1300 && width < 1500) {
     scaleFactor = 1.6
   } else if (width >= 1500) {
-    scaleFactor = 1.75
+    scaleFactor = 1.5
   }
   return scaleFactor
 }

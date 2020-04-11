@@ -17,6 +17,7 @@ import {
   mapNumber,
   getSiglePagePhotoScale,
   getItemsCountPerGridRow,
+  isMobileBrowser,
 } from '../helpers'
 
 import {
@@ -56,6 +57,8 @@ import photoFragmentShader from './fragmentShader.glsl'
 
 let overviewCurrOffsetX = 0
 let overviewCurrOffsetY = 0
+
+const mobileBrowser = isMobileBrowser()
 
 export default class PhotoPreview extends THREE.Mesh {
 
@@ -183,7 +186,7 @@ export default class PhotoPreview extends THREE.Mesh {
     return this._isInteractable
   }
   _onHover = ({ modelName }) => {
-    if (modelName === this._modelName) {
+    if (modelName === this._modelName && !mobileBrowser) {
       if (!this._flipInterval) {
         const previewImageCount = 1
         const flipPreviewMaxCount = previewImageCount + PhotoPreview.HOVER_IMAGES_FLIP_COUNT
@@ -201,7 +204,7 @@ export default class PhotoPreview extends THREE.Mesh {
     }
   }
   _onUnhover = ({ modelName }) => {
-    if (modelName === this._modelName) {
+    if (modelName === this._modelName && !mobileBrowser) {
       if (this._flipInterval) {
         clearInterval(this._flipInterval)
         this._flipInterval = null
@@ -437,17 +440,15 @@ export default class PhotoPreview extends THREE.Mesh {
       texture.flipY = true
       this.material.uniforms.u_textures.value[this._loadedPhotosCounter] = texture
       this.material.needsUpdate = true
-      console.log(this._modelName, this._loadedPhotosCounter)
       this._loadedPhotosCounter++
       // console.log(`loaded texture with idx: ${this._loadedPhotosCounter} for ${this._modelName}`)
     }
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
     LoadManager.loadTexture(this._photos[this._loadedPhotosCounter]).then(texture => {
       onTextureLoaded(texture, true)
-      const hoverFlipPhotosToLoad = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= this._loadedPhotosCounter + PhotoPreview.HOVER_IMAGES_FLIP_COUNT)
-      Promise.all(hoverFlipPhotosToLoad.map(LoadManager.loadTexture)).then(textures => {
-        textures.forEach(texture => onTextureLoaded(texture))
-      })
+      if (!mobileBrowser) {
+        cos
+      }
     })
   }
   _onOpenRequest = ({ modelName }) => {
