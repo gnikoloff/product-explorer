@@ -221,8 +221,8 @@ export default class PhotoPreview extends THREE.Mesh {
       targetX = this._originalGridPosition.x
       targetY = this._originalGridPosition.y
     } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-      targetX = this._originalOverviewPosition.x + cameraPositionX
-      targetY = this._originalOverviewPosition.y + cameraPositionY
+      targetX = this._originalOverviewPosition.x + cameraPositionX + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+      targetY = this._originalOverviewPosition.y + cameraPositionY + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
     }
     const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
     const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
@@ -626,7 +626,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._originalOverviewPosition = this._calcOverviewPosition()
     if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       this.position.copy(this._originalOverviewPosition)
-      this.position.x += cameraPositionX
+      this.position.x += cameraPositionX + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
       eventEmitter.emit(EVT_PHOTO_PREVIEW_RELAYOUTED, {
         modelName: this._modelName,
         x: this.position.x,
