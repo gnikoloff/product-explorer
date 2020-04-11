@@ -551,8 +551,8 @@ function updateFrame(ts) {
         eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
       }
     } else {
+      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE, { modelName: hoveredElement && hoveredElement.modelName })
       hoveredElement = null
-      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
     }
   }
 

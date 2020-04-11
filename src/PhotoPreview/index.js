@@ -47,6 +47,8 @@ import {
   EVT_PHOTO_PREVIEW_RELAYOUTED,
   EVT_CAMERA_FORCE_REPOSITION,
   EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT,
+  EVT_HOVER_SINGLE_PROJECT_ENTER,
+  EVT_HOVER_SINGLE_PROJECT_LEAVE,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -64,6 +66,8 @@ export default class PhotoPreview extends THREE.Mesh {
   static SLIDER_DIRECTION_LEFT = -1
   static SLIDER_DIRECTION_RIGHT = 1
   static OVERVIEW_LAYOUT_COLUMN_GUTTER = 60
+  static HOVER_IMAGES_FLIP_COUNT = 2
+  static HOVER_FLIP_TIMER = 450
 
   constructor ({
     idx,
@@ -74,7 +78,7 @@ export default class PhotoPreview extends THREE.Mesh {
     photos,
     gridPosition,
   }) {
-    const textureCount = Math.min(store.getState().webglMaxTexturesSupported - 1, photos.length)
+    const textureCount = Math.min(store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
     const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneBufferGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
@@ -117,6 +121,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._isSingleViewCurrentlyTransitioning = false
     this._isOpenInSingleView = false
     this._openedPageTargetScale = getSiglePagePhotoScale()
+    this._loadedPhotosCounter = 0
 
     this._diffVector = diffVector
     this._diffVectorTarget = new THREE.Vector2(0, 0)
@@ -142,6 +147,8 @@ export default class PhotoPreview extends THREE.Mesh {
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeTransitionRequest)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION, this._onLayoutModeTransition)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_COMPLETE, this._onLayoutModeTransitionComplete)
+    eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onHover)
+    eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onUnhover)
     eventEmitter.on(EVT_SLIDER_BUTTON_LEFT_CLICK, ({ modelName }) => {
       if (modelName === this._modelName) {
         this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_LEFT)
@@ -174,6 +181,33 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   get isInteractable () {
     return this._isInteractable
+  }
+  _onHover = ({ modelName }) => {
+    if (modelName === this._modelName) {
+      if (!this._flipInterval) {
+        const previewImageCount = 1
+        const flipPreviewMaxCount = previewImageCount + PhotoPreview.HOVER_IMAGES_FLIP_COUNT
+        let currentFlipIdx = 0
+        this._flipInterval = setInterval(() => {
+          this.material.uniforms.u_texIdx0.value = currentFlipIdx
+          currentFlipIdx++
+          if (currentFlipIdx > flipPreviewMaxCount) {
+            currentFlipIdx = 0
+          }
+        }, PhotoPreview.HOVER_FLIP_TIMER)
+        this.material.uniforms.u_texIdx0.value = currentFlipIdx
+        currentFlipIdx++
+      }
+    }
+  }
+  _onUnhover = ({ modelName }) => {
+    if (modelName === this._modelName) {
+      if (this._flipInterval) {
+        clearInterval(this._flipInterval)
+        this._flipInterval = null
+      }
+      this.material.uniforms.u_texIdx0.value = 0
+    }
   }
   _calcOverviewPosition () {
     const { overviewLayoutWidth } = store.getState()
@@ -390,19 +424,30 @@ export default class PhotoPreview extends THREE.Mesh {
     }
   }
   _loadPreview () {
-    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
-    LoadManager.loadTexture(this._photos[0]).then(texture => {
-      const {
-        image: {
-          naturalWidth: imgWidth,
-          naturalHeight: imgHeight,
-        }
-      } = texture
-      this.material.uniforms.u_imageSize.value.set(imgWidth, imgHeight)
-
+    const onTextureLoaded = (texture, setImageSize = false) => {
+      if (setImageSize) {
+        const {
+          image: {
+            naturalWidth: imgWidth,
+            naturalHeight: imgHeight,
+          }
+        } = texture
+        this.material.uniforms.u_imageSize.value.set(imgWidth, imgHeight)
+      }
       texture.flipY = true
-      this.material.uniforms.u_textures.value[0] = texture
+      this.material.uniforms.u_textures.value[this._loadedPhotosCounter] = texture
       this.material.needsUpdate = true
+      console.log(this._modelName, this._loadedPhotosCounter)
+      this._loadedPhotosCounter++
+      // console.log(`loaded texture with idx: ${this._loadedPhotosCounter} for ${this._modelName}`)
+    }
+    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
+    LoadManager.loadTexture(this._photos[this._loadedPhotosCounter]).then(texture => {
+      onTextureLoaded(texture, true)
+      const hoverFlipPhotosToLoad = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= this._loadedPhotosCounter + PhotoPreview.HOVER_IMAGES_FLIP_COUNT)
+      Promise.all(hoverFlipPhotosToLoad.map(LoadManager.loadTexture)).then(textures => {
+        textures.forEach(texture => onTextureLoaded(texture))
+      })
     })
   }
   _onOpenRequest = ({ modelName }) => {
@@ -413,6 +458,7 @@ export default class PhotoPreview extends THREE.Mesh {
       const targetY = cameraPositionY
       this._targetPosition.set(targetX, targetY, 0)
       this._targetScale = this.scale.x
+      this._onUnhover({ modelName })
     }
   }
   _onOpen = ({ modelName, tweenFactor }) => {
@@ -462,15 +508,14 @@ export default class PhotoPreview extends THREE.Mesh {
     const textureCount = Math.min(webglMaxTexturesSupported, this._photos.length)
 
     if (!this._allTexturesLoaded) {
-      const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0 && i < textureCount)
+      const sliderExtraPhotos = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= textureCount)
       Promise
         .all(sliderExtraPhotos.map(LoadManager.loadTexture))
         .then(textures => {
-          for (let i = 1; i < textures.length; i++) {
+          for (let i = 0; i < textures.length; i++) {
             const texture = textures[i]
-            texture.needsUpdate = true
-            this.material.uniforms.u_textures.value[i] = texture
-            document.body.appendChild(texture.image)
+            this.material.uniforms.u_textures.value[this._loadedPhotosCounter] = texture
+            this._loadedPhotosCounter++
           }
           this.material.needsUpdate = true
           this._allTexturesLoaded = true
