@@ -3,6 +3,11 @@
   top: 50%;
   left: 50%;
   z-index: 1;
+  cursor: grab;
+}
+
+.single-page-slider-sizer.grabbing {
+  cursor: grabbing;
 }
 
 .slider-btn {

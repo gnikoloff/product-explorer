@@ -28,6 +28,9 @@ import {
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
+  EVT_SLIDER_DRAG,
+  EVT_SLIDER_DRAG_CANCEL,
+  EVT_SLIDER_REPLACE_TEXTURES,
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG,
   EVT_ON_SCENE_DRAG_END,
@@ -147,6 +150,22 @@ export default class PhotoPreview extends THREE.Mesh {
     eventEmitter.on(EVT_SLIDER_BUTTON_NEXT_CLICK, ({ modelName }) => {
       if (modelName === this._modelName) {
         this._onSlideChange(PhotoPreview.SLIDER_DIRECTION_RIGHT)
+      }
+    })
+    eventEmitter.on(EVT_SLIDER_DRAG, ({ modelName, tweenFactor, direction }) => {
+      if (modelName === this._modelName) {
+        this.material.uniforms.u_photoMixFactor.value = tweenFactor
+        this.material.uniforms.u_horizontalDirection.value = direction
+      }
+    })
+    eventEmitter.on(EVT_SLIDER_REPLACE_TEXTURES, ({ modelName, direction }) => {
+      if (modelName === this._modelName) {
+        this._replaceTextures(direction)
+      }
+    })
+    eventEmitter.on(EVT_SLIDER_DRAG_CANCEL, ({ modelName }) => {
+      if (modelName === this._modelName) {
+        this.material.uniforms.u_photoMixFactor.value = Math.round(this.material.uniforms.u_photoMixFactor.value)
       }
     })
   }
@@ -474,15 +493,12 @@ export default class PhotoPreview extends THREE.Mesh {
         setTimeout(() => {
           const {
             worldBoundsRight,
-            worldBoundsLeft,
           } = store.getState()
           let x = cameraRepositionX + innerWidth * 0.25
           let y = cameraRepositionY
-
           if (x > worldBoundsRight) {
             x += worldBoundsRight - x
           }
-
           eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, {
             x: layoutMode === LAYOUT_MODE_GRID ? x : 0,
             y
@@ -494,7 +510,6 @@ export default class PhotoPreview extends THREE.Mesh {
       } else {
         this._targetPosition.set(this.position.x, this.position.y)
       }
-      
       this._targetScale = this.scale.x
       window.removeEventListener('keydown', this._onKeyDown)
     }
@@ -527,32 +542,18 @@ export default class PhotoPreview extends THREE.Mesh {
   _onCloseComplete () {
     this._isInteractable = true
   }
-  _onSlideChange = direction => {
-    if (this._isSliderCurrentlyTransitioning) {
-      return
-    }
-    
-    let tweenFrom
-    let tweenTo
-
-    const oldSliderIdx = this._sliderIdx
-    this._sliderIdx += direction
-
-
+  _replaceTextures = (direction) => {
     const { webglMaxTexturesSupported } = store.getState()
     const textureCount = Math.min(this._photos.length, webglMaxTexturesSupported)
-
+    const oldSliderIdx = this._sliderIdx
+    this._sliderIdx += direction
     if (direction === 1) {
-      tweenFrom = 0
-      tweenTo = 1
       if (this._sliderIdx >= textureCount - 1) {
         this._sliderIdx = 0
       }
       this.material.uniforms.u_texIdx0.value = oldSliderIdx
       this.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
-      tweenFrom = 1
-      tweenTo = 0
       if (this._sliderIdx < 0) {
         this._sliderIdx = textureCount - 2
       }
@@ -560,6 +561,16 @@ export default class PhotoPreview extends THREE.Mesh {
       this.material.uniforms.u_texIdx1.value = oldSliderIdx
     }
     this.material.uniforms.u_photoMixFactor.value = 0
+  }
+  _onSlideChange = direction => {
+    if (this._isSliderCurrentlyTransitioning) {
+      return
+    }
+    
+    const tweenFrom = direction === 1 ? 0 : 1
+    const tweenTo = direction === 1 ? 1 : 0
+    
+    this._replaceTextures(direction)
     this.material.uniforms.u_horizontalDirection.value = direction
 
     this._isSliderCurrentlyTransitioning = true

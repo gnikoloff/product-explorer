@@ -4,7 +4,7 @@ import { tween, chain, delay, calc } from 'popmotion'
 import eventEmitter from './event-emitter'
 
 import {
-  getSiglePagePhotoScale,
+  getSiglePagePhotoScale, clampNumber, mapNumber,
 } from './helpers'
 
 import {
@@ -18,6 +18,9 @@ import {
   EVT_FADE_OUT_SINGLE_VIEW,
   EVT_SLIDER_BUTTON_LEFT_CLICK,
   EVT_SLIDER_BUTTON_NEXT_CLICK,
+  EVT_SLIDER_DRAG,
+  EVT_SLIDER_DRAG_CANCEL,
+  EVT_SLIDER_REPLACE_TEXTURES,
   EVT_LOADED_PROJECTS,
   EVT_CLICK_PREV_PROJECT,
   EVT_CLICK_NEXT_PROJECT,
@@ -94,7 +97,6 @@ export default class SinglePage {
         this.$els.nextProductButton.classList.remove('clicked')
       })
     })
-    // _setContentTexts
 
     this.$els.prevProductButton.addEventListener('click', () => {
       this._nextModelName = this._currModelName
@@ -130,52 +132,78 @@ export default class SinglePage {
       })
     }, false)
 
+    let x = 0
+    let mouseDown
+    let alreadyReplacedTextures
+
+    this.$els.sizer.addEventListener('mousedown', e => {
+      this.$els.sizer.classList.add('grabbing')
+      x = e.pageX
+      mouseDown = true
+    }, false)
+
+    this.$els.sizer.addEventListener('mousemove', e => {
+      if (!mouseDown) {
+        return
+      }
+      const modelName = this._currModelName
+      const diffx = e.pageX - x
+      if (Math.abs(diffx) < 50) {
+        return
+      }
+      let tweenFactor = 0
+      if (diffx < 0) {
+        if (!alreadyReplacedTextures) {
+          eventEmitter.emit(EVT_SLIDER_REPLACE_TEXTURES, { modelName, direction: -1 })
+          alreadyReplacedTextures = true
+        }
+        tweenFactor = clampNumber(mapNumber(diffx, 0, -250, 1, 0), 0, 1)
+        eventEmitter.emit(EVT_SLIDER_DRAG, {
+          tweenFactor,
+          modelName,
+          direction: -1,
+        })
+      } else if (diffx > 0) {
+        tweenFactor = clampNumber(mapNumber(diffx, 0, 250, 0, 1), 0, 1)
+        eventEmitter.emit(EVT_SLIDER_DRAG, {
+          tweenFactor,
+          modelName,
+          direction: 1,
+        })
+        if (!alreadyReplacedTextures) {
+          eventEmitter.emit(EVT_SLIDER_REPLACE_TEXTURES, { modelName, direction: 1 })
+          alreadyReplacedTextures = true
+        }
+      }
+      
+      
+      
+      
+    })
+
+    this.$els.sizer.addEventListener('mouseup', e => {
+      this.$els.sizer.classList.remove('grabbing')
+      mouseDown = false
+      alreadyReplacedTextures = false
+      eventEmitter.emit(EVT_SLIDER_DRAG_CANCEL, { modelName: this._currModelName })
+    }, false)
+
+    this.$els.sizer.addEventListener('mouseleave', e => {
+      this.$els.sizer.classList.remove('grabbing')
+      mouseDown = false
+      alreadyReplacedTextures = false
+      eventEmitter.emit(EVT_SLIDER_DRAG_CANCEL, { modelName: this._currModelName })
+    }, false)
+
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
     const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
     this.$els.sizer.style.setProperty('width', `${sizerWidth}px`)
     this.$els.sizer.style.setProperty('height', `${Math.min(sizerHeight, innerHeight)}px`)
     this.$els.sizer.style.setProperty('margin', `-${sizerHeight / 2}px 0 0 calc(-${sizerWidth / 2}px - 25vw)`)
-
-    // this._positionButtons()
   }
 
   _removeBackgroundColor = () => {
     this.stylers.singlePageContainer.set('background-color', 'transparent')
-  }
-
-  _positionButtons = () => {
-    const { sizer } = this.$els
-    
-
-    requestAnimationFrame(() => {
-      const sizerDimensions = sizer.getBoundingClientRect()
-
-      this.$els.sliderButtonPrev.pos = {
-        radius: SinglePage.SIDE_ARROW_RADIUS,
-        x: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
-        y: sizerDimensions.top + sizerDimensions.height / 2,
-        origX: sizerDimensions.left - SinglePage.SIDE_ARROW_PADDING,
-        origY: sizerDimensions.top + sizerDimensions.height / 2,
-        vx: 0, vy: 0,
-      }
-      this.$els.sliderButtonNext.pos = {
-        radius: SinglePage.SIDE_ARROW_RADIUS,
-        x: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
-        y: sizerDimensions.top + sizerDimensions.height / 2,
-        origX: sizerDimensions.left + sizerDimensions.width + SinglePage.SIDE_ARROW_PADDING,
-        origY: sizerDimensions.top + sizerDimensions.height / 2,
-        vx: 0, vy: 0,
-      }
-
-      this.stylers.sliderButtonPrev.set({
-        x: this.$els.sliderButtonPrev.pos.origX - this.$els.sliderButtonPrev.pos.radius / 2,
-        y: this.$els.sliderButtonPrev.pos.origY - this.$els.sliderButtonPrev.pos.radius / 2,
-      })
-      this.stylers.sliderButtonNext.set({
-        x: this.$els.sliderButtonNext.pos.origX - this.$els.sliderButtonNext.pos.radius / 2,
-        y: this.$els.sliderButtonNext.pos.origY - this.$els.sliderButtonNext.pos.radius / 2,
-      })
-    })
   }
 
   _onProjectsLoaded = ({ projectsData }) => {
@@ -185,10 +213,10 @@ export default class SinglePage {
   _checkSliderClick = e => {
     console.log(e.target)
     if (e.target.classList.contains('slider-btn-prev')) {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK, { modelName: this._currModelName })
+      eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK, { modelName: this._currModelName })
     }
     if (e.target.classList.contains('slider-btn-next')) {
-      eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK, { modelName: this._currModelName })
+      eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK, { modelName: this._currModelName })
     }
   }
 
