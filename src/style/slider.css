@@ -2,6 +2,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 1;
 }
 
 .slider-btn {
@@ -16,7 +17,6 @@
   opacity: 0;
   background-size: 50%;
   background-repeat: no-repeat;
-  /* pointer-events: none; */
 }
 .slider-btn-prev {
   left: 0;

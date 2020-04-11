@@ -39,8 +39,6 @@ export default class SinglePage {
     this._prevModelName = null
     this._currModelName = null
     this._nextModelName = null
-    this._sliderPrevBtnHovered = false
-    this._sliderNextBtnHovered = false
 
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
@@ -185,60 +183,17 @@ export default class SinglePage {
   }
 
   _checkSliderClick = e => {
-    if (this._sliderPrevBtnHovered) {
+    console.log(e.target)
+    if (e.target.classList.contains('slider-btn-prev')) {
       eventEmitter.emit(EVT_SLIDER_BUTTON_LEFT_CLICK, { modelName: this._currModelName })
     }
-    if (this._sliderNextBtnHovered) {
+    if (e.target.classList.contains('slider-btn-next')) {
       eventEmitter.emit(EVT_SLIDER_BUTTON_NEXT_CLICK, { modelName: this._currModelName })
     }
   }
 
   _onUpdate = (ts, dt) => {
-    // const { sliderButtonPrev, sliderButtonNext } = this.$els
-    
-    // const sliderBtns = [sliderButtonPrev, sliderButtonNext]
-    // sliderBtns.forEach((buttonEl, i) => {
-    //   const dist = calc.distance({
-    //     x: buttonEl.pos.origX,
-    //     y: buttonEl.pos.origY,
-    //   }, {
-    //     x: this._mousePos.x,
-    //     y: this._mousePos.y,
-    //   })
-
-    //   if (dist < SinglePage.ARROW_INTERACTION_DIST_THRESHOLD) {
-    //     buttonEl.pos.vx += (this._mousePos.x - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
-    //     buttonEl.pos.vy += (this._mousePos.y - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
-    //     if (i === 0) {
-    //       this._sliderPrevBtnHovered = true
-    //       this._sliderNextBtnHovered = false
-    //     } else {
-    //       this._sliderPrevBtnHovered = false
-    //       this._sliderNextBtnHovered = true
-    //     }
-    //   } else {
-    //     buttonEl.pos.vx += (buttonEl.pos.origX - buttonEl.pos.radius / 2 - buttonEl.pos.x) * (dt * 5)
-    //     buttonEl.pos.vy += (buttonEl.pos.origY - buttonEl.pos.radius / 2 - buttonEl.pos.y) * (dt * 5)
-    //     if (i === 0) {
-    //       this._sliderPrevBtnHovered = false
-    //     } else {
-    //       this._sliderNextBtnHovered = false
-    //     }
-    //   }
-    //   buttonEl.pos.x += buttonEl.pos.vx
-    //   buttonEl.pos.y += buttonEl.pos.vy
-    //   buttonEl.pos.x *= 0.72
-    //   buttonEl.pos.y *= 0.72
-
-    // })
-    // this.stylers.sliderButtonPrev.set({
-    //   x: sliderButtonPrev.pos.x,
-    //   y: sliderButtonPrev.pos.y,
-    // })
-    // this.stylers.sliderButtonNext.set({
-    //   x: sliderButtonNext.pos.x,
-    //   y: sliderButtonNext.pos.y,
-    // })
+    // ...
   }
   
   _onMouseMove = ({ mouseX, mouseY }) => {
@@ -358,7 +313,8 @@ export default class SinglePage {
 
     this._setContentTexts({ modelName })
 
-    document.body.addEventListener('click', this._checkSliderClick, false)
+    this.$els.sliderButtonPrev.addEventListener('click', this._checkSliderClick, false)
+    this.$els.sliderButtonNext.addEventListener('click', this._checkSliderClick, false)
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
     this.$els.openExternalLink.setAttribute('href', project.websiteURL)
 
