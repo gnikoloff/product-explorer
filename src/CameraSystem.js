@@ -92,6 +92,8 @@ export default class CameraSystem {
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_CAMERA_FORCE_REPOSITION, this._onForceRelayout)
+
+    CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: 0.4 })
   }
   get photoCamera () {
     return this._photoCamera

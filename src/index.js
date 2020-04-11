@@ -144,28 +144,32 @@ const postFXMesh = new PostProcessing({ width: appWidth, height: appHeight })
 postFXScene.add(postFXMesh.mainEffectPlane)
 postFXBlurScene.add(postFXMesh.blurEffect)
 
-const cursorArrowLeft = new THREE.Mesh(
-  new THREE.PlaneBufferGeometry(10, 10),
-  new THREE.MeshBasicMaterial({
-    opacity: 1,
-    map: getArrowTexture(),
-    transparent: true,
-  })
-)
-cursorArrowLeft.rotation.z = Math.PI
-cursorScene.add(cursorArrowLeft)
+let cursorArrowLeft
+let cursorArrowRight
+let cursorArrowTop
+let cursorArrowBottom
 
-const cursorArrowRight = cursorArrowLeft.clone()
-cursorArrowRight.rotation.z = 0
-cursorScene.add(cursorArrowRight)
-
-const cursorArrowTop = cursorArrowLeft.clone()
-cursorArrowTop.rotation.z = Math.PI / 2
-cursorScene.add(cursorArrowTop)
-
-const cursorArrowBottom = cursorArrowLeft.clone()
-cursorArrowBottom.rotation.z = -Math.PI / 2
-cursorScene.add(cursorArrowBottom)
+if (!mobileBrowser) {
+  cursorArrowLeft = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(10, 10),
+    new THREE.MeshBasicMaterial({
+      opacity: 1,
+      map: getArrowTexture(),
+      transparent: true,
+    })
+  )
+  cursorArrowLeft.rotation.z = Math.PI
+  cursorScene.add(cursorArrowLeft)
+  cursorArrowRight = cursorArrowLeft.clone()
+  cursorArrowRight.rotation.z = 0
+  cursorScene.add(cursorArrowRight)
+  cursorArrowTop = cursorArrowLeft.clone()
+  cursorArrowTop.rotation.z = Math.PI / 2
+  cursorScene.add(cursorArrowTop)
+  cursorArrowBottom = cursorArrowLeft.clone()
+  cursorArrowBottom.rotation.z = -Math.PI / 2
+  cursorScene.add(cursorArrowBottom)
+}
 
 init()
 
@@ -260,15 +264,19 @@ function onLayoutModeSelect (e) {
   if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_GRID) {
     document.body.classList.add(`layout-mode-grid`)
     document.body.classList.remove(`layout-mode-overview`)
-    cursorArrowLeft.visible = true
-    cursorArrowRight.visible = true
+    if (!mobileBrowser) {
+      cursorArrowLeft.visible = true
+      cursorArrowRight.visible = true
+    }
     store.dispatch(setLayoutMode(LAYOUT_MODE_GRID))
     webglContainer.removeEventListener('mousewheel', onOverviewLayoutMousewheel)
   } else if (e.target.getAttribute('data-layout-mode') === LAYOUT_MODE_OVERVIEW) {
     document.body.classList.remove(`layout-mode-grid`)
     document.body.classList.add(`layout-mode-overview`)
-    cursorArrowLeft.visible = false
-    cursorArrowRight.visible = false
+    if (!mobileBrowser) {
+      cursorArrowLeft.visible = false
+      cursorArrowRight.visible = false
+    }
     store.dispatch(setLayoutMode(LAYOUT_MODE_OVERVIEW))
     webglContainer.addEventListener('mousewheel', onOverviewLayoutMousewheel, false)
   }
@@ -555,22 +563,23 @@ function updateFrame(ts) {
   const cursorBasePosX = (raycastMouse.x * appWidth) / 2
   const cursorBasePosY = (raycastMouse.y * appHeight) / 2
 
-  const arrowIndicatorFactor = dt * 25
+  if (!mobileBrowser) {
+    const arrowIndicatorFactor = dt * 25
+    cursorArrowOffset += (cursorArrowOffsetTarget * 12 - cursorArrowOffset) * arrowIndicatorFactor
+    cursorArrowLeft.material.opacity += (cursorArrowOffsetTarget * 0.5 - cursorArrowLeft.material.opacity) * arrowIndicatorFactor
 
-  cursorArrowOffset += (cursorArrowOffsetTarget * 12 - cursorArrowOffset) * arrowIndicatorFactor
-  cursorArrowLeft.material.opacity += (cursorArrowOffsetTarget * 0.5 - cursorArrowLeft.material.opacity) * arrowIndicatorFactor
+    cursorArrowLeft.position.x += (cursorBasePosX + 33 + cursorArrowOffset - cursorArrowLeft.position.x) * arrowIndicatorFactor
+    cursorArrowLeft.position.y += (cursorBasePosY - cursorArrowLeft.position.y) * arrowIndicatorFactor
 
-  cursorArrowLeft.position.x += (cursorBasePosX + 33 + cursorArrowOffset - cursorArrowLeft.position.x) * arrowIndicatorFactor
-  cursorArrowLeft.position.y += (cursorBasePosY - cursorArrowLeft.position.y) * arrowIndicatorFactor
+    cursorArrowRight.position.x += (cursorBasePosX - 33 - cursorArrowOffset - cursorArrowRight.position.x) * arrowIndicatorFactor
+    cursorArrowRight.position.y += (cursorBasePosY - cursorArrowRight.position.y) * arrowIndicatorFactor
 
-  cursorArrowRight.position.x += (cursorBasePosX - 33 - cursorArrowOffset - cursorArrowRight.position.x) * arrowIndicatorFactor
-  cursorArrowRight.position.y += (cursorBasePosY - cursorArrowRight.position.y) * arrowIndicatorFactor
+    cursorArrowTop.position.x += (cursorBasePosX - cursorArrowTop.position.x) * arrowIndicatorFactor
+    cursorArrowTop.position.y += (cursorBasePosY - 33 - cursorArrowOffset - cursorArrowTop.position.y) * arrowIndicatorFactor
 
-  cursorArrowTop.position.x += (cursorBasePosX - cursorArrowTop.position.x) * arrowIndicatorFactor
-  cursorArrowTop.position.y += (cursorBasePosY - 33 - cursorArrowOffset - cursorArrowTop.position.y) * arrowIndicatorFactor
-
-  cursorArrowBottom.position.x += (cursorBasePosX - cursorArrowBottom.position.x) * arrowIndicatorFactor
-  cursorArrowBottom.position.y += (cursorBasePosY + 33 + cursorArrowOffset - cursorArrowBottom.position.y) * arrowIndicatorFactor
+    cursorArrowBottom.position.x += (cursorBasePosX - cursorArrowBottom.position.x) * arrowIndicatorFactor
+    cursorArrowBottom.position.y += (cursorBasePosY + 33 + cursorArrowOffset - cursorArrowBottom.position.y) * arrowIndicatorFactor
+  }
   
   renderer.autoClear = true
   renderer.setRenderTarget(photoRenderTarget)

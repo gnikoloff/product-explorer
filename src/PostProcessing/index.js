@@ -35,7 +35,7 @@ import vertexShader from './vertexShader.glsl'
 import fragmentShaderPostFX from './postfx-fragmentShader.glsl'
 import fragmentShaderBlur from './postfx-fragmentBlurShader.glsl'
 
-const mobileBrowser = isMobileBrowser()
+const mobileDetect = isMobileBrowser()
 
 export default class PostProcessing {
   static HIDDEN_CURSOR_SIZE = 0
@@ -48,6 +48,7 @@ export default class PostProcessing {
     height,
   }) {
     const dpr = devicePixelRatio || 1
+    const cursorSizeTarget = mobileDetect ? PostProcessing.HIDDEN_CURSOR_SIZE : PostProcessing.DEFAULT_CURSOR_SIZE
     this._mainEffect = new Effect({
       width,
       height,
@@ -57,7 +58,7 @@ export default class PostProcessing {
         u_tDiffuseMask: { value: null },
         u_resolution: { value: new THREE.Vector2(width * dpr, height * dpr) },
         u_mouse: { value: new THREE.Vector2(0, 0) },
-        u_cursorSize: { value: PostProcessing.DEFAULT_CURSOR_SIZE },
+        u_cursorSize: { value: cursorSizeTarget },
         u_hoverMixFactor: { value: 1.0 },
         u_blurMixFactor: { value: 0.0 },
         u_cutOffFactor: { value: 0.0 },
@@ -83,7 +84,7 @@ export default class PostProcessing {
       this._mainEffect.needsUpdate = true
     })
 
-    this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
+    this._cursorSizeTarget = cursorSizeTarget
     this._cursorScanlineTarget = 0
     this._isHidden = false
     this._preventClick = false
@@ -142,37 +143,43 @@ export default class PostProcessing {
     this._mainEffect.uniforms.u_cutOffFactor.value = tweenFactor
   }
   _onDragStart = () => {
-    if (this._isHidden || this._preventClick) {
+    if (this._isHidden || this._preventClick || mobileDetect) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DRAG_CURSOR_SIZE
   }
   _onDragEnd = () => {
-    if (this._isHidden || this._preventClick) {
+    if (this._isHidden || this._preventClick || mobileDetect) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
   }
   _onProjectHoverEnter = () => {
-    if (this._isHidden) {
+    if (this._isHidden || mobileDetect) {
       return
     }
     this._cursorSizeTarget = PostProcessing.HOVER_CURSOR_SIZE
     this._cursorScanlineTarget = 1
   }
   _onProjectHoverLeave = () => {
-    if (this._isHidden) {
+    if (this._isHidden || mobileDetect) {
       return
     }
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
     this._cursorScanlineTarget = 0
   }
   _hideCursor = () => {
+    if (mobileDetect) {
+      return
+    }
     this._cachedHiddenSize = this._cursorSizeTarget
     this._cursorSizeTarget = PostProcessing.HIDDEN_CURSOR_SIZE
     this._isHidden = true
   }
   _showCursor = () => {
+    if (mobileDetect) {
+      return
+    }
     this._cursorSizeTarget = this._cachedHiddenSize
     this._isHidden = false
   }
@@ -186,9 +193,10 @@ export default class PostProcessing {
     const x = mousePositionX * dpr
     const y = (innerHeight - mousePositionY) * dpr
 
-    if (mobileBrowser) {
-      this._mainEffect.uniforms.u_mouse.value.x = x
-      this._mainEffect.uniforms.u_mouse.value.y = y
+    if (mobileDetect) {
+      // ...
+      // this._mainEffect.uniforms.u_mouse.value.x = x
+      // this._mainEffect.uniforms.u_mouse.value.y = y
     } else {
       this._mainEffect.uniforms.u_mouse.value.x += (mousePositionX - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 25)
       this._mainEffect.uniforms.u_mouse.value.y += (mousePositionY - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 25)
