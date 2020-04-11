@@ -13,7 +13,7 @@
 }
 
 .app-header {
-  z-index: 1;
+  z-index: 10;
   position: fixed;
   top: 0;
   right: 0;
@@ -31,6 +31,13 @@
 .app-logo {
   max-width: 200px;
   width: 100%;
+}
+
+.app-logo.interactable {
+  pointer-events: auto;
+}
+.app-logo.interactable:hover {
+  cursor: pointer;
 }
 
 .button {

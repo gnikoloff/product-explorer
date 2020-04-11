@@ -73,6 +73,7 @@ export default class SinglePage {
       closeButton: wrapper.getElementsByClassName('close-single-page')[0],
       openExternalLink: wrapper.getElementsByClassName('open-product-page')[0],
       sizer: wrapper.getElementsByClassName('single-page-slider-sizer')[0],
+      appLogo: document.body.getElementsByClassName('app-logo')[0],
     }
 
     this.stylers = {
@@ -327,6 +328,9 @@ export default class SinglePage {
     this.$els.sliderButtonPrev.addEventListener('click', this._checkSliderClick, false)
     this.$els.sliderButtonNext.addEventListener('click', this._checkSliderClick, false)
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
+    this.$els.appLogo.classList.add('interactable')
+    this.$els.appLogo.addEventListener('click', this._closeButtonClick, false)
+
     this.$els.openExternalLink.setAttribute('href', project.websiteURL)
 
     const { sliderButtonPrev, sliderButtonNext } = this.$els
@@ -401,6 +405,8 @@ export default class SinglePage {
     
     document.body.removeEventListener('click', this._checkSliderClick)
     this.$els.closeButton.removeEventListener('click', this._closeButtonClick, false)
+    this.$els.appLogo.classList.remove('interactable')
+    this.$els.appLogo.removeEventListener('click', this._closeButtonClick)
   }
   
 
