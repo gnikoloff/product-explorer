@@ -360,6 +360,8 @@ function onProjectsLoad (res) {
 function onCloseSingleView ({ modelName, reposition = false }) {
   eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName, reposition }))
 
+  eventEmitter.emit(EVT_SHOW_CURSOR)
+
   closeModelTween = chain(
     delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
     tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
