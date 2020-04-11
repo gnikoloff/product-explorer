@@ -6,11 +6,10 @@ export const setMousePosition = ({ x, y }) => ({
 })
 
 export const SET_CAMERA_POSITION = 'SET_CAMERA_POSITION'
-export const setCameraPosition = ({ x, y, origin }) => ({
+export const setCameraPosition = ({ x, y }) => ({
   type: SET_CAMERA_POSITION,
   x,
   y,
-  origin,
 })
 
 export const SET_OVERVIEW_LAYOUT_WIDTH = 'SET_OVERVIEW_LAYOUT_WIDTH'

@@ -141,10 +141,6 @@ export default class CameraSystem {
       layoutMode
     } = store.getState()
 
-    console.log(
-      'camera velocity', this._velocity.x, this._velocity.y
-    )
-
     let newCameraPositionX = this._photoCamera.position.x
     let newCameraPositionY = this._photoCamera.position.y
 
@@ -219,7 +215,6 @@ export default class CameraSystem {
     store.dispatch(setCameraPosition({
       x: newCameraPositionX,
       y: newCameraPositionY,
-      origin: 'raf'
     }))
   }
   _onSceneDrag = ({ diffx, diffy }) => {

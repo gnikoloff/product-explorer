@@ -21,6 +21,7 @@
     "popmotion": "^8.7.1",
     "redux": "^4.0.5",
     "three": "^0.114.0",
-    "tween": "^0.9.0"
+    "tween": "^0.9.0",
+    "webfontloader": "^1.6.28"
   }
 }

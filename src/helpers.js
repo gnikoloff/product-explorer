@@ -4,6 +4,9 @@ import {
   PREVIEW_PHOTO_REF_WIDTH,
 } from './helpers'
 
+import patternSrc from './assets/pattern.jpg'
+import { resolve } from 'path'
+
 export const clampNumber = (num, min, max) => Math.min(Math.max(num, min), max)
 
 export const mapNumber = (num, inMin, inMax, outMin, outMax) => (num - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
@@ -52,38 +55,52 @@ export const getArrowTexture = () => {
   return new THREE.CanvasTexture(canvas)
 }
 
-export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => {
+export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => new Promise(resolve => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   canvas.width = sizeX
   canvas.height = sizeY
-  ctx.fillStyle = '#111'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-  ctx.fillStyle = '#fff'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.font = 'normal 58px Helvetica'
-  ctx.fillText(label, canvas.width / 2, canvas.height / 2)
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.isFlipped = true
-  return texture
-}
+  const patternImg = document.createElement('img')
+  const onLoad = () => {
+    const pattern = ctx.createPattern(patternImg, 'repeat')
+    ctx.fillStyle = pattern
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = '#fff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = 'normal 58px Helvetica'
+    ctx.fillText(label, canvas.width / 2, canvas.height / 2)
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.isFlipped = true
+    resolve(texture)
+    patternImg.removeEventListener('load', onLoad)  
+  }
+  patternImg.addEventListener('load', onLoad)
+  patternImg.src = patternSrc
+})
 
-export const getHoverLabel = () => {
+export const getHoverLabel = () => new Promise(resolve => {
   const canvas = document.createElement('canvas')
   canvas.width = 114 * 5
   canvas.height = 24 * 5
   const ctx = canvas.getContext('2d')
-  ctx.fillStyle = '#111'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-  ctx.fillStyle = '#fff'
-  ctx.textBaseline = 'middle'
-  ctx.font = 'normal 64px Helvetica'
-  ctx.fillText('Hold to see more', 30, canvas.height / 2)
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.isFlipped = true
-  return texture
-}
+  const patternImg = document.createElement('img')
+  const onLoad = () => {
+    const pattern = ctx.createPattern(patternImg, 'repeat')
+    ctx.fillStyle = pattern
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = '#fff'
+    ctx.textBaseline = 'middle'
+    ctx.font = 'normal 64px Helvetica'
+    ctx.fillText('Hold to see more', 30, canvas.height / 2)
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.isFlipped = true
+    resolve(texture)
+    patternImg.removeEventListener('load', onLoad)  
+  }
+  patternImg.addEventListener('load', onLoad)
+  patternImg.src = patternSrc
+})
 
 export const isIPadOS = () => {
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !window.MSStream

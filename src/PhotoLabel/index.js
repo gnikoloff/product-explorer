@@ -36,13 +36,18 @@ export default class PhotoLabel extends THREE.Mesh {
     const geometry = new THREE.PlaneBufferGeometry(256 / 2.5, 64 / 2.5)
     const material = new THREE.ShaderMaterial({
       uniforms: {
-        u_tDiffuse: { value: getProductLabelTexture(modelName) },
+        u_tDiffuse: { value: null },
         u_mask: { value: null },
         u_maskBlendFactor: { value: mobileBrowserDetected ? 1 : 0 },
       },
       vertexShader,
       fragmentShader,
       transparent: true,
+    })
+
+    getProductLabelTexture(modelName).then(texture => {
+      material.uniforms.u_tDiffuse.value = texture
+      material.needsUpdate = true
     })
 
     super(geometry, material)

@@ -27,7 +27,6 @@ const appState = (state = initialState, action) => {
       })
     }
     case actions.SET_CAMERA_POSITION: {
-      console.log(action.origin)
       return Object.assign(state, {
         cameraPositionX: action.x,
         cameraPositionY: action.y,

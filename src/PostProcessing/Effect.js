@@ -24,6 +24,9 @@ export default class Effect extends THREE.Mesh {
   get uniforms () {
     return this.material.uniforms
   }
+  set needsUpdate (needsUpdate) {
+    this.material.needsUpdate = needsUpdate
+  }
   onResize () {
     const scaleDeltaX = innerWidth / this._width
     const scaleDeltaY = innerHeight / this._height

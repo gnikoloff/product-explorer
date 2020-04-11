@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tween, chain, delay } from 'popmotion'
 import styler from 'stylefire'
+import WebFont from 'webfontloader'
 
 import eventEmitter from './event-emitter'
 
@@ -11,6 +12,7 @@ import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
 import Cursor from './Cursor'
+import LoadManager from './LoadManager'
 
 import {
   getArrowTexture,
@@ -27,6 +29,7 @@ import {
 
 import {
   SERVER_API_ENDPOINT,
+  PROJECTS_COUNT,
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
   TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION,
   BLUR_ITERATIONS,
@@ -67,6 +70,8 @@ import {
   EVT_TEXTURE_LABEL_MASK_ONLOAD,
   EVT_HIDE_CURSOR,
   EVT_SHOW_CURSOR,
+  EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT,
+  EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT,
 } from './constants'
 
 import './style'
@@ -82,6 +87,7 @@ const cameraSystem = new CameraSystem({
   position: new THREE.Vector3(0, 0, 50)
 })
 const cursor = new Cursor()
+const loadManger = new LoadManager()
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
@@ -157,7 +163,24 @@ cursorScene.add(cursorArrowBottom)
 init()
 
 function init () {
-  fetch(`${SERVER_API_ENDPOINT}/get_data`).then(res => res.json()).then(onProjectsLoad)
+  const fontsToLoadCount = 1
+  const fetchJSONToLoadCount = 1
+  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fontsToLoadCount)
+  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fetchJSONToLoadCount)
+  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT)
+  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
+  LoadManager.loadTexture(`${SERVER_API_ENDPOINT}/mask.png`).then(texture => {
+    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT, 1)
+    eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
+  }) 
+  fetch(`${SERVER_API_ENDPOINT}/get_data`).then(res => res.json()).then(projects => {
+    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
+    onProjectsLoad(projects)
+  })
+  WebFont.load({
+    google: { families: ['Inter:wght@400;500&display=swap&subset'] },
+    active: () => eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
+  })
 
   renderer.setSize(appWidth, appHeight)
   renderer.setPixelRatio(dpr)
@@ -302,6 +325,7 @@ function onNextProjectClick ({ modelName }) {
 
 function onProjectsLoad (res) {
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
+
   res.projects.forEach((info, i) => {
     const photoPreview = new PhotoPreview({
       idx: i,
@@ -319,9 +343,6 @@ function onProjectsLoad (res) {
     previewLabel.position.z = 40
     photoMeshContainer.add(photoPreview)
     photoMeshContainer.add(previewLabel)
-  })
-  new THREE.TextureLoader().load(`${SERVER_API_ENDPOINT}/mask.png`, texture => {
-    eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
   })
 }
 

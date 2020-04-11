@@ -5,6 +5,7 @@ import {
 } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
+import LoadManager from '../LoadManager'
 import store from '../store'
 import {
   setOverviewLayoutWidth,
@@ -42,6 +43,7 @@ import {
   EVT_LAYOUT_MODE_TRANSITION_COMPLETE,
   EVT_PHOTO_PREVIEW_RELAYOUTED,
   EVT_CAMERA_FORCE_REPOSITION,
+  EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -59,10 +61,6 @@ export default class PhotoPreview extends THREE.Mesh {
   static SLIDER_DIRECTION_LEFT = -1
   static SLIDER_DIRECTION_RIGHT = 1
   static OVERVIEW_LAYOUT_COLUMN_GUTTER = 60
-
-  static loadTexture = texName => new Promise(resolve =>
-    new THREE.TextureLoader().load(texName, texture => resolve(texture)
-  ))
 
   constructor ({
     idx,
@@ -371,7 +369,8 @@ export default class PhotoPreview extends THREE.Mesh {
     }
   }
   _loadPreview () {
-    PhotoPreview.loadTexture(this._photos[0]).then(texture => {
+    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
+    LoadManager.loadTexture(this._photos[0]).then(texture => {
       const {
         image: {
           naturalWidth: imgWidth,
@@ -441,7 +440,7 @@ export default class PhotoPreview extends THREE.Mesh {
     if (!this._allTexturesLoaded) {
       const sliderExtraPhotos = this._photos.filter((a, i) => i !== 0 && i < textureCount)
       Promise
-        .all(sliderExtraPhotos.map(PhotoPreview.loadTexture))
+        .all(sliderExtraPhotos.map(LoadManager.loadTexture))
         .then(textures => {
           for (let i = 1; i < textures.length; i++) {
             const texture = textures[i]

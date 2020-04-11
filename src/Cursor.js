@@ -26,11 +26,16 @@ export default class Cursor extends THREE.Mesh {
   } = {}) {
     const geometry = new THREE.PlaneBufferGeometry(width, height)
     const material = new THREE.MeshBasicMaterial({
-      map: getHoverLabel(),
       opacity: 1,
       transparent: true,
     })
     geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(width / 2, 0, 0))
+
+    getHoverLabel().then(texture => {
+      material.map = texture
+      material.needsUpdate = true
+    })
+
     super(geometry, material)
 
     this.rotation.set(0, 0, 0)

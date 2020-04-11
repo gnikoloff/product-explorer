@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 
+import LoadManager from '../LoadManager'
 import eventEmitter from '../event-emitter'
 import Effect from './Effect'
 
@@ -77,8 +78,9 @@ export default class PostProcessing {
       fragmentShader: fragmentShaderBlur,
     })
 
-    new THREE.TextureLoader().load(`${SERVER_API_ENDPOINT}/mask7.png`, texture => {
+    LoadManager.loadTexture(`${SERVER_API_ENDPOINT}/mask7.png`).then(texture => {
       this._mainEffect.uniforms.u_tDiffuseMask.value = texture
+      this._mainEffect.needsUpdate = true
     })
 
     this._cursorSizeTarget = PostProcessing.DEFAULT_CURSOR_SIZE
