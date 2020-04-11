@@ -41,3 +41,27 @@ export const setWebglMaxTexturesSupported = webglMaxTexturesSupported => ({
   type: SET_WEBGL_MAX_TEXUTRES_SUPPORTED,
   webglMaxTexturesSupported,
 })
+
+export const SET_WORLD_BOUNDS_TOP = 'SET_WORLD_BOUNDS_TOP'
+export const setWorldBoundsTop = value => ({
+  type: SET_WORLD_BOUNDS_TOP,
+  value,
+})
+
+export const SET_WORLD_BOUNDS_RIGHT = 'SET_WORLD_BOUNDS_RIGHT'
+export const setWorldBoundsRight = value => ({
+  type: SET_WORLD_BOUNDS_RIGHT,
+  value,
+})
+
+export const SET_WORLD_BOUNDS_BOTTOM = 'SET_WORLD_BOUNDS_BOTTOM'
+export const setWorldBoundsBottom = value => ({
+  type: SET_WORLD_BOUNDS_BOTTOM,
+  value,
+})
+
+export const SET_WORLD_BOUNDS_LEFT = 'SET_WORLD_BOUNDS_LEFT'
+export const setWorldBoundsLeft = value => ({
+  type: SET_WORLD_BOUNDS_LEFT,
+  value,
+})

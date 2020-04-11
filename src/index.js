@@ -87,7 +87,6 @@ const cameraSystem = new CameraSystem({
   position: new THREE.Vector3(0, 0, 50)
 })
 const cursor = new Cursor()
-const loadManger = new LoadManager()
 
 const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
@@ -163,6 +162,12 @@ cursorScene.add(cursorArrowBottom)
 init()
 
 function init () {
+  new LoadManager({
+    onLoadComplete: () => {
+      console.log('load has been completed')
+    }
+  })
+
   const fontsToLoadCount = 1
   const fetchJSONToLoadCount = 1
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fontsToLoadCount)
@@ -229,7 +234,7 @@ function init () {
 
   layoutModeBtnContainer.addEventListener('click', onLayoutModeSelect, false)
   
-  eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, onCloseSingleView)
+  eventEmitter.on(EVT_FADE_OUT_SINGLE_VIEW, modelName => onCloseSingleView({ modelName, reposition: true }))
   eventEmitter.on(EVT_CLICK_PREV_PROJECT, onPrevProjectClick)
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
   eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION, onInfoSectionOpenRequest)
@@ -306,21 +311,11 @@ function onInfoSectionClosing ({ tweenFactor }) {
 }
 
 function onPrevProjectClick ({ modelName }) {
-  eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, {
-    modelName,
-    direction: -1,
-    targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
-    targetY: cameraSystem.photoCamera.position.y,
-  })
+  eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, { modelName, direction: -1 })
 }
 
 function onNextProjectClick ({ modelName }) {
-  eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, {
-    modelName,
-    direction: 1,
-    targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
-    targetY: cameraSystem.photoCamera.position.y,
-  })
+  eventEmitter.emit(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, { modelName, direction: 1 })
 }
 
 function onProjectsLoad (res) {
@@ -346,8 +341,8 @@ function onProjectsLoad (res) {
   })
 }
 
-function onCloseSingleView (modelName) {
-  eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName }))
+function onCloseSingleView ({ modelName, reposition = false }) {
+  eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName, reposition }))
 
   closeModelTween = chain(
     delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
@@ -449,11 +444,7 @@ function onMouseDown (e) {
           mesh.visible = false
         })
 
-      eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({
-        modelName,
-        targetX: cameraSystem.photoCamera.position.x - appWidth * 0.25,
-        targetY: cameraSystem.photoCamera.position.y,
-      }))
+      eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
       eventEmitter.emit(EVT_HIDE_CURSOR)
       cursor.visible = false
       openModelTween = chain(

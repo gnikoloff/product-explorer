@@ -13,6 +13,10 @@ const initialState = {
   cameraPositionY: 0,
   overviewLayoutWidth: 0,
   overviewLayoutHeight: 0,
+  worldBoundsTop: 0,
+  worldBoundsRight: 0,
+  worldBoundsBottom: 0,
+  worldBoundsLeft: 0,
   layoutMode: LAYOUT_MODE_GRID,
   isLayoutTransitioning: false,
   webglMaxTexturesSupported: null,
@@ -40,6 +44,26 @@ const appState = (state = initialState, action) => {
     case actions.SET_OVERVIEW_LAYOUT_HEIGHT: {
       return Object.assign(state, {
         overviewLayoutHeight: action.height,
+      })
+    }
+    case actions.SET_WORLD_BOUNDS_TOP: {
+      return Object.assign(state, {
+        worldBoundsTop: action.value,
+      })
+    }
+    case actions.SET_WORLD_BOUNDS_RIGHT: {
+      return Object.assign(state, {
+        worldBoundsRight: action.value,
+      })
+    }
+    case actions.SET_WORLD_BOUNDS_BOTTOM: {
+      return Object.assign(state, {
+        worldBoundsBottom: action.value,
+      })
+    }
+    case actions.SET_WORLD_BOUNDS_LEFT: {
+      return Object.assign(state, {
+        worldBoundsLeft: action.value,
       })
     }
     case actions.SET_LAYOUT_MODE: {

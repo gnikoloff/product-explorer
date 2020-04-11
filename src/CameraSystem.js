@@ -4,6 +4,10 @@ import { calc, tween } from 'popmotion'
 import store from './store'
 import {
   setCameraPosition,
+  setWorldBoundsTop,
+  setWorldBoundsRight,
+  setWorldBoundsBottom,
+  setWorldBoundsLeft,
 } from './store/actions'
 
 import eventEmitter from './event-emitter'
@@ -88,6 +92,8 @@ export default class CameraSystem {
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_CAMERA_FORCE_REPOSITION, this._onForceRelayout)
+
+    this._getWolrdBounds()
   }
   get photoCamera () {
     return this._photoCamera
@@ -118,6 +124,14 @@ export default class CameraSystem {
     this._targetPosition.copy(this._photoCamera.position)
   }
   _onForceRelayout = ({ x, y }) => {
+    // } else if (x < worldBoundsLeft) {
+    //   x = worldBoundsLeft
+    // }
+    // if (y > worldBoundsTop) {
+    //   y = worldBoundsTop
+    // } else if (y < worldBoundsBottom) {
+    //   y = worldBoundsBottom
+    // }
     this._targetPosition.x = x
     this._targetPosition.y = y
     this._photoCamera.position.x = x
@@ -125,6 +139,7 @@ export default class CameraSystem {
     this._openedProjectCamera.position.x = x
     this._openedProjectCamera.position.y = y
     setCameraPosition({ x, y })
+    
   }
   _onRequestCloseProject = () => {
     this._shouldMove = true
@@ -137,7 +152,10 @@ export default class CameraSystem {
     const {
       cameraPositionX,
       cameraPositionY,
-      overviewLayoutHeight,
+      worldBoundsTop,
+      worldBoundsRight,
+      worldBoundsBottom,
+      worldBoundsLeft,
       layoutMode
     } = store.getState()
 
@@ -146,66 +164,39 @@ export default class CameraSystem {
 
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
 
-    if (!lockHorizontalMovement) {
-      newCameraPositionX += (this._targetPosition.x - cameraPositionX) * dt
-    }
-    newCameraPositionY += (this._targetPosition.y - cameraPositionY) * dt
+    const vx = (this._targetPosition.x - newCameraPositionX) * dt
+    const vy = (this._targetPosition.y - newCameraPositionY) * dt
 
-    const dist = calc.distance({
-      x: newCameraPositionX,
-      y: newCameraPositionX
-    }, {
-      x: cameraPositionX,
-      y: cameraPositionY,
-    })
+    if (!lockHorizontalMovement) {
+      newCameraPositionX += vx
+    }
+    newCameraPositionY += vy
+
+    // const dist = calc.distance({
+    //   x: newCameraPositionX,
+    //   y: newCameraPositionX
+    // }, {
+    //   x: this._photoCamera.position.x,
+    //   y: this._photoCamera.position.y,
+    // })
     
     // this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
-    this._isDragCameraMoving = false
 
-    // if (!lockHorizontalMovement) {
-    //   this._velocity.x *= CameraSystem.friction
-    // }
-    // this._velocity.y *= CameraSystem.friction
-    
-    // if (!lockHorizontalMovement) {
-    //   newCameraPositionX += this._velocity.x
-    // }
-    // newCameraPositionY += this._velocity.y
-
-    let rightBound
-    let leftBound
-    let topBound
-    let bottomBound
-
-    if (layoutMode === LAYOUT_MODE_GRID) {
-      const screenPaddingX = 1300 - innerWidth
-      const screenPaddingY = 1100 - innerHeight
-      rightBound  =  WOLRD_WIDTH / 2 + screenPaddingX / 2
-      leftBound   = -WOLRD_WIDTH / 2 - screenPaddingX / 2
-      topBound    =  WORLD_HEIGHT / 2 + screenPaddingY / 2
-      bottomBound = -WORLD_HEIGHT / 2 - screenPaddingY / 2
-    } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-      rightBound = 0
-      leftBound  = 0
-      topBound   = 0
-      bottomBound = overviewLayoutHeight
-    }
-
-    if (this._targetPosition.x > rightBound) {
+    if (this._targetPosition.x > worldBoundsRight) {
       if (!lockHorizontalMovement) {
-        this._targetPosition.x = rightBound
+        this._targetPosition.x = worldBoundsRight
       }
     }
-    if (this._targetPosition.x < leftBound) {
+    if (this._targetPosition.x < worldBoundsLeft) {
       if (!lockHorizontalMovement) {
-        this._targetPosition.x = leftBound
+        this._targetPosition.x = worldBoundsLeft
       }
     }
-    if (this._targetPosition.y > topBound) {
-      this._targetPosition.y = topBound
+    if (this._targetPosition.y > worldBoundsTop) {
+      this._targetPosition.y = worldBoundsTop
     }
-    if (this._targetPosition.y < bottomBound) {
-      this._targetPosition.y = bottomBound
+    if (this._targetPosition.y < worldBoundsBottom) {
+      this._targetPosition.y = worldBoundsBottom
     }
 
     this._photoCamera.position.x = newCameraPositionX
@@ -216,6 +207,32 @@ export default class CameraSystem {
       x: newCameraPositionX,
       y: newCameraPositionY,
     }))
+  }
+  _getWolrdBounds = () => {
+    const { layoutMode } = store.getState()
+
+    let rightBound
+    let leftBound
+    let topBound
+    let bottomBound
+
+    if (layoutMode === LAYOUT_MODE_GRID) {
+      const dpr = devicePixelRatio || 1
+      rightBound  =  WOLRD_WIDTH / 2
+      leftBound   = -WOLRD_WIDTH / 2
+      topBound    =  WORLD_HEIGHT / 2
+      bottomBound = -WORLD_HEIGHT / 2
+    } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+      rightBound = 0
+      leftBound  = 0
+      topBound   = 0
+      bottomBound = overviewLayoutHeight
+    }
+
+    store.dispatch(setWorldBoundsTop(topBound))
+    store.dispatch(setWorldBoundsRight(rightBound))
+    store.dispatch(setWorldBoundsBottom(bottomBound))
+    store.dispatch(setWorldBoundsLeft(leftBound))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
     const { layoutMode } = store.getState()

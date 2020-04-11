@@ -253,11 +253,13 @@ export default class PhotoPreview extends THREE.Mesh {
       y: this.position.y,
     })
   }
-  _onNavChangeTransitionOut = ({ modelName, direction, targetX, targetY }) => {
+  _onNavChangeTransitionOut = ({ modelName, direction }) => {
     if (this._isSingleViewCurrentlyTransitioning) {
       return
     }
-    const { layoutMode } = store.getState()
+    const { layoutMode, cameraPositionX, cameraPositionY } = store.getState()
+    const targetX = cameraPositionX - innerWidth * 0.25
+    const targetY = cameraPositionY
     if (this._isOpenInSingleView) {
       const dpr = devicePixelRatio || 1
       let offsetX
@@ -298,12 +300,11 @@ export default class PhotoPreview extends THREE.Mesh {
     }
     const scale = getSiglePagePhotoScale()
     this.scale.set(scale, scale, 1)
-    const dpr = devicePixelRatio || 1
     let offsetX
     if (direction === 1) {
-      offsetX = innerWidth + dpr * 0.5
+      offsetX = innerWidth
     } else {
-      offsetX = -innerWidth + dpr * 0.5
+      offsetX = -innerWidth
     }
     this._transitionOnNavigationChange({
       startX: targetX + offsetX,
@@ -384,10 +385,13 @@ export default class PhotoPreview extends THREE.Mesh {
       this.material.needsUpdate = true
     })
   }
-  _onOpenRequest = ({ modelName, targetX, targetY }) => {
+  _onOpenRequest = ({ modelName }) => {
+    const { cameraPositionX, cameraPositionY } = store.getState()
     this._isInteractable = false
     if (modelName === this._modelName) {
-      this._targetPosition.set(targetX, targetY, 1)
+      const targetX = cameraPositionX - innerWidth * 0.25
+      const targetY = cameraPositionY
+      this._targetPosition.set(targetX, targetY, 0)
       this._targetScale = this.scale.x
     }
   }
@@ -456,17 +460,37 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVectorTarget.x = 0
     this._diffVectorTarget.y = 0
   }
-  _onCloseRequest = ({ modelName }) => {
+  _onCloseRequest = ({ modelName, reposition }) => {
     if (modelName === this._modelName) {
-      const { layoutMode } = store.getState()
-      const cameraRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : 0
-      const cameraRepositionY = layoutMode === LAYOUT_MODE_GRID ?  this._originalGridPosition.y : this._originalOverviewPosition.y
+      const { layoutMode, cameraPositionX, cameraPositionY } = store.getState()
 
-      const meshRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
-      const meshRepositionY = cameraRepositionY
+      if (reposition) {
+        const cameraRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
+        const cameraRepositionY = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.y : this._originalOverviewPosition.y
+        
+        const tempx = this.position.x
+        const tempy = this.position.y
+        setTimeout(() => {
+          const {
+            worldBoundsRight,
+            worldBoundsLeft,
+          } = store.getState()
+          let x = cameraRepositionX + innerWidth * 0.25
+          let y = cameraRepositionY
+
+          if (x > worldBoundsRight) {
+            x += worldBoundsRight - x
+          }
+
+          eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, { x, y })
+          this.position.set(cameraRepositionX, y, 0)
+        }, 0)
+        this.position.set(tempx, tempy, 0)
+        this._targetPosition.set(cameraRepositionX, cameraRepositionY)
+      } else {
+        this._targetPosition.set(this.position.x, this.position.y)
+      }
       
-      eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, { x: cameraRepositionX, y: cameraRepositionY })
-      this._targetPosition.set(meshRepositionX - innerWidth * 0.25, meshRepositionY)
       this._targetScale = this.scale.x
       window.removeEventListener('keydown', this._onKeyDown)
     }
@@ -474,10 +498,11 @@ export default class PhotoPreview extends THREE.Mesh {
   _onClose = ({ modelName, tweenFactor }) => {
     this._isInteractable = true
     if (modelName === this._modelName) {
+      const { layoutMode } = store.getState()
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y
-      const endX = startX + innerWidth * 0.25
-      const endY = startY
+      const endX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
+      const endY = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.y : this._originalOverviewPosition.y
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
