@@ -350,7 +350,7 @@ function onCloseSingleView ({ modelName, reposition = false }) {
   ).start({
     update: tweenFactor => {
       openModelTweenFactor = tweenFactor
-      eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor })
+      eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor, reposition })
       const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
       layoutModeBtnStyler.set('opacity', opacity)
     },
@@ -501,7 +501,7 @@ function onMouseUp () {
         openModelTween = null
 
         const { modelName } = hoveredElement
-        onCloseSingleView(modelName)
+        onCloseSingleView({ modelName, reposition: false })
       }
     }
   }
