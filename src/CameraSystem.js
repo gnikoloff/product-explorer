@@ -92,8 +92,6 @@ export default class CameraSystem {
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_CAMERA_FORCE_REPOSITION, this._onForceRelayout)
-
-    this._getWolrdBounds()
   }
   get photoCamera () {
     return this._photoCamera
@@ -207,9 +205,10 @@ export default class CameraSystem {
       x: newCameraPositionX,
       y: newCameraPositionY,
     }))
+    this._getWolrdBounds()
   }
   _getWolrdBounds = () => {
-    const { layoutMode } = store.getState()
+    const { layoutMode, overviewLayoutHeight } = store.getState()
 
     let rightBound
     let leftBound
@@ -217,7 +216,6 @@ export default class CameraSystem {
     let bottomBound
 
     if (layoutMode === LAYOUT_MODE_GRID) {
-      const dpr = devicePixelRatio || 1
       rightBound  =  WOLRD_WIDTH / 2
       leftBound   = -WOLRD_WIDTH / 2
       topBound    =  WORLD_HEIGHT / 2

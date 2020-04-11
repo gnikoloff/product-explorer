@@ -195,6 +195,7 @@ export default class PhotoPreview extends THREE.Mesh {
     }
 
     if (this._isLast) {
+      console.log(overviewCurrOffsetY + this._height)
       store.dispatch(setOverviewLayoutHeight(overviewCurrOffsetY + this._height))
       overviewCurrOffsetX = 0
       overviewCurrOffsetY = 0
@@ -482,7 +483,10 @@ export default class PhotoPreview extends THREE.Mesh {
             x += worldBoundsRight - x
           }
 
-          eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, { x, y })
+          eventEmitter.emit(EVT_CAMERA_FORCE_REPOSITION, {
+            x: layoutMode === LAYOUT_MODE_GRID ? x : 0,
+            y
+          })
           this.position.set(cameraRepositionX, y, 0)
         }, 0)
         this.position.set(tempx, tempy, 0)
