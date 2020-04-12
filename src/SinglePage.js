@@ -143,6 +143,11 @@ export default class SinglePage {
     this.$els.sizer.addEventListener('mousemove', this._onSliderMouseMove)
     this.$els.sizer.addEventListener('mouseup', this._onSliderMouseUp, false)
     this.$els.sizer.addEventListener('mouseleave', this._onSliderMouseLeave, false)
+
+    this.$els.sizer.addEventListener('touchstart', this._onSliderMouseDown, false)
+    this.$els.sizer.addEventListener('touchmove', this._onSliderMouseMove)
+    this.$els.sizer.addEventListener('touchend', this._onSliderMouseUp, false)
+    // this.$els.sizer.addEventListener('touchcancel', this._onSliderMouseLeave, false)
   }
 
   _onResize = () => {
@@ -162,7 +167,7 @@ export default class SinglePage {
 
   _onSliderMouseDown = e => {
     this.$els.sizer.classList.add('grabbing')
-    this._startMouseDownX = e.pageX
+    this._startMouseDownX = e.changedTouches ? e.changedTouches[0].pageX : e.pageX
     this._sizerMouseDown = true
   }
 
@@ -170,8 +175,9 @@ export default class SinglePage {
     if (!this._sizerMouseDown) {
       return
     }
+    const pointerX = e.changedTouches ? e.changedTouches[0].pageX : e.pageX
     const modelName = this._currModelName
-    const diffx = e.pageX - this._startMouseDownX
+    const diffx = pointerX - this._startMouseDownX
     if (Math.abs(diffx) < 50) {
       return
     }

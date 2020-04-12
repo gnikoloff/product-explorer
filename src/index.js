@@ -13,6 +13,7 @@ import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
 import Cursor from './Cursor'
 import LoadManager from './LoadManager'
+import Loader from './Loader'
 
 import {
   getArrowTexture,
@@ -174,11 +175,11 @@ if (!mobileBrowser) {
 init()
 
 function init () {
-  new LoadManager({
-    onLoadComplete: () => {
-      console.log('load has been completed')
-    }
+
+  new Loader({
+    parentEl: document.getElementById('app-loader'),
   })
+  new LoadManager()
 
   const fontsToLoadCount = 1
   const fetchJSONToLoadCount = 1
@@ -213,29 +214,78 @@ function init () {
   document.body.addEventListener('mouseleave', onPageMouseLeave, false)
   window.addEventListener('resize', onResize)
 
-  document.body.addEventListener('touchstart', e => {
+  webglContainer.addEventListener('touchstart', e => {
+    e.preventDefault()
+    if (isInfoSectionOpen) {
+      return
+    }
     const touch = e.changedTouches[0]
-    store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
-    eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
-    eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
-    cursorArrowOffsetTarget = 1
+    raycastMouse.x = (touch.clientX / renderer.domElement.clientWidth) * 2 - 1
+    raycastMouse.y = -(touch.clientY / renderer.domElement.clientHeight) * 2 + 1
+
+    raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
+    const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
+    const intersects = raycaster.intersectObjects(intersectsTests)
+    
+    if (intersects.length > 0) {
+      if (cameraSystem.isDragCameraMoving) {
+        // TODO: is this still relevant? not really sure
+        // eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+      } else {
+        const intersect = intersects[0]
+        const { object, object: { modelName } } = intersect
+        
+        openedProjectScene.add(object)
+        photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
+          mesh.visible = false
+        })
+
+        eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
+        openModelTween = chain(
+          delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+          tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+        ).start({
+          update: tweenFactor => {
+            openModelTweenFactor = tweenFactor
+            eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
+            const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
+            layoutModeBtnStyler.set('opacity', opacity)
+          },
+          complete: () => {
+            clickedElement = object
+            openModelTween = null
+  
+            eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
+            layoutModeBtnStyler.set('pointer-events', 'none')
+          },
+        })
+
+      }
+    } else {
+      if (!clickedElement) {
+        store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
+        eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
+      }
+    }
   }, { passive: true })
 
-  document.body.addEventListener('touchmove', e => {
+  webglContainer.addEventListener('touchmove', e => {
+    e.preventDefault()
     const { layoutMode, mousePositionX, mousePositionY } = store.getState()
     const touch = e.changedTouches[0]
     
-    const diffx = layoutMode === LAYOUT_MODE_GRID ? touch.pageX - mousePositionX : 0
-    const diffy = touch.pageY - mousePositionY
-    eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
-
-    raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
-    raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
+    if (!openModelTween && !closeModelTween && !clickedElement && !isInfoSectionOpen) {
+      const diffx = layoutMode === LAYOUT_MODE_GRID ? touch.pageX - mousePositionX : 0
+      const diffy = touch.pageY - mousePositionY
+      eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
+      console.log('dragging')
+    }
 
     store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
   }, { passive: true })
 
-  document.body.addEventListener('touchend', e => {
+  webglContainer.addEventListener('touchend', e => {
+    e.preventDefault()
     isDragging = false
     cursorArrowOffsetTarget = 0
     if (!isInfoSectionOpen) {
@@ -439,13 +489,14 @@ function onWebGLSceneMouseEnter () {
 }
 
 function onMouseDown (e) {
-  isDragging = true
-
-  store.dispatch(setMousePosition({ x: e.pageX, y: e.pageY }))
-
+  debugger
   if (isInfoSectionOpen) {
     return
   }
+
+  isDragging = true
+
+  store.dispatch(setMousePosition({ x: e.pageX, y: e.pageY }))
 
   eventEmitter.emit(EVT_ON_SCENE_DRAG_START)
 
@@ -458,11 +509,9 @@ function onMouseDown (e) {
       const { modelName } = hoveredElement
 
       openedProjectScene.add(hoveredElement)
-      const mesh = photoMeshContainer.children
-        .filter(mesh => mesh.isLabel)
-        .forEach(mesh => {
-          mesh.visible = false
-        })
+      photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
+        mesh.visible = false
+      })
 
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
       eventEmitter.emit(EVT_HIDE_CURSOR)

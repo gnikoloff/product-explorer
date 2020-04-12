@@ -41,6 +41,16 @@ li {
   color: white;
 }
 
+#app-loader {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9999999;
+  background: #171717;
+}
+
 .open-product-page {
   position: fixed;
   top: 28px;
