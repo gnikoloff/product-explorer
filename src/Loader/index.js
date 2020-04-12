@@ -18,6 +18,8 @@ let appWidth = innerWidth
 let appHeight = innerHeight
 
 export default class Loader {
+  static PROGRESS_TIMER_VALUE = 2000
+
   constructor ({
     parentEl,
   }) {
@@ -99,7 +101,7 @@ export default class Loader {
     const timer = setTimeout(() => {
       this._loadProgressTarget = progress * 100
       clearTimeout(timer)
-    }, 250)
+    }, Loader.PROGRESS_TIMER_VALUE)
   }
   _onLoadProgressComplete = () => {
     const onTransitionEnd = () => {
@@ -124,13 +126,15 @@ export default class Loader {
     const timer = setTimeout(() => {
       this._loadProgressTarget = 100
       clearTimeout(timer)
-    }, 250)
+    }, Loader.PROGRESS_TIMER_VALUE)
   }
   _onUpdate = (ts, dt) => {
-    this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * 5)
+    this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * 10)
     this._parentEl.style.transform = `translateX(${this._loadProgress}%)`
     this._renderer.render(this._scene, this._camera)
     this._renderProgressTexture()
     this._labelMesh.material.uniforms.u_time.value = ts
+
+    console.log(this._loadProgress)
   }
 }
