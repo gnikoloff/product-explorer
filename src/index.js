@@ -78,6 +78,8 @@ import {
 
 import './style'
 
+import labelMaskSource from './assets/mask.png'
+
 const mobileBrowser = isMobileBrowser()
 
 let appWidth = window.innerWidth
@@ -187,7 +189,7 @@ function init () {
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fetchJSONToLoadCount)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
-  LoadManager.loadTexture(`${SERVER_API_ENDPOINT}/mask.png`).then(texture => {
+  LoadManager.loadTexture(labelMaskSource).then(texture => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT, 1)
     eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
   }) 
@@ -208,8 +210,8 @@ function init () {
   webglContainer.addEventListener('mousedown', onMouseDown, false)
   webglContainer.addEventListener('mousemove', onMouseMove, false)
   webglContainer.addEventListener('mouseup', onMouseUp, false)
-  webglContainer.addEventListener('mouseleave', onWebGLSceneMouseLeave)
-  webglContainer.addEventListener('mouseenter', onWebGLSceneMouseEnter)
+  webglContainer.addEventListener('mouseleave', onWebGLSceneMouseLeave, false)
+  webglContainer.addEventListener('mouseenter', onWebGLSceneMouseEnter, false)
 
   document.body.addEventListener('mouseleave', onPageMouseLeave, false)
   window.addEventListener('resize', onResize)

@@ -29,6 +29,8 @@ import {
   isMobileBrowser,
 } from '../helpers'
 
+import transitionMaskSource from '../assets/mask7.png'
+
 import store from '../store'
 
 import vertexShader from './vertexShader.glsl'
@@ -79,7 +81,7 @@ export default class PostProcessing {
       fragmentShader: fragmentShaderBlur,
     })
 
-    LoadManager.loadTexture(`${SERVER_API_ENDPOINT}/mask7.png`).then(texture => {
+    LoadManager.loadTexture(transitionMaskSource).then(texture => {
       this._mainEffect.uniforms.u_tDiffuseMask.value = texture
       this._mainEffect.needsUpdate = true
     })
