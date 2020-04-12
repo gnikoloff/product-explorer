@@ -2,7 +2,7 @@ export const SERVER_API_ENDPOINT = 'http://192.168.0.12:1102'
 
 export const PROJECTS_COUNT = 12
 export const WOLRD_WIDTH = 2600
-export const WORLD_HEIGHT = 800
+export const WORLD_HEIGHT = 1150
 export const TOGGLE_SINGLE_PAGE_TRANSITION_DELAY = 75
 export const TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION = 1200
 export const BLUR_ITERATIONS = 8

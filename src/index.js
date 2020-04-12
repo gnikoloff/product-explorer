@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tween, chain, delay } from 'popmotion'
+import { tween, chain, delay, easing } from 'popmotion'
 import styler from 'stylefire'
 import WebFont from 'webfontloader'
 
@@ -282,7 +282,10 @@ function onLayoutModeSelect (e) {
   }
   eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION_REQUEST)
   store.dispatch(setLayoutModeTransitioning(true))
-  tween().start({
+  tween({
+    duration: 1200,
+    ease: easing.anticipate,
+  }).start({
     update: tweenFactor => {
       eventEmitter.emit(EVT_LAYOUT_MODE_TRANSITION, { tweenFactor })
     },

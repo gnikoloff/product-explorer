@@ -277,8 +277,8 @@ export default class PhotoPreview extends THREE.Mesh {
       targetX = this._originalGridPosition.x
       targetY = this._originalGridPosition.y
     } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-      targetX = this._originalOverviewPosition.x + cameraPositionX + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
-      targetY = this._originalOverviewPosition.y + cameraPositionY + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+      targetX = this._originalOverviewPosition.x + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+      targetY = this._originalOverviewPosition.y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
     }
     const newX = calc.getValueFromProgress(startX, targetX, tweenFactor)
     const newY = calc.getValueFromProgress(startY, targetY, tweenFactor)
@@ -447,7 +447,10 @@ export default class PhotoPreview extends THREE.Mesh {
     LoadManager.loadTexture(this._photos[this._loadedPhotosCounter]).then(texture => {
       onTextureLoaded(texture, true)
       if (!mobileBrowser) {
-        cos
+        const hoverFlipPhotosToLoad = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= this._loadedPhotosCounter + PhotoPreview.HOVER_IMAGES_FLIP_COUNT)
+        Promise.all(hoverFlipPhotosToLoad.map(LoadManager.loadTexture)).then(textures => {
+          textures.forEach(texture => onTextureLoaded(texture))
+        })
       }
     })
   }

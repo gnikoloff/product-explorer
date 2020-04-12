@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { calc, tween } from 'popmotion'
+import { calc, tween, easing } from 'popmotion'
 
 import store from './store'
 import {
@@ -28,6 +28,7 @@ import {
   LAYOUT_MODE_OVERVIEW,
   EVT_CAMERA_FORCE_REPOSITION,
 } from './constants'
+import { progress } from '@popmotion/popcorn'
 
 export default class CameraSystem {
   static friction = 0.875
@@ -114,9 +115,22 @@ export default class CameraSystem {
     return this._isDragCameraMoving
   }
   _onLayoutModeChange = () => {
-    this._photoCamera.position.x = 0
-    this._photoCamera.position.y = 0
-    this._targetPosition.copy(this._photoCamera.position)
+    const startX = this._photoCamera.position.x
+    const startY = this._photoCamera.position.y
+    this._shouldMove = false
+    tween({
+      ease: easing.easeIn,
+    }).start({
+      update: tweenFactor => {
+        this._photoCamera.position.x = calc.getValueFromProgress(startX, 0, tweenFactor)
+        this._photoCamera.position.y = calc.getValueFromProgress(startY, 0, tweenFactor)
+        this._targetPosition.copy(this._photoCamera.position)
+      },
+      complete: () => {
+        // ...
+        this._shouldMove = true
+      }
+    })
     this._velocity.set(0, 0)
   }
   _onRequestOpenProject = () => {
