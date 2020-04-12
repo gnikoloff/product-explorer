@@ -207,9 +207,10 @@ function init () {
   renderer.setClearAlpha(0)
   webglContainer.appendChild(renderer.domElement)
 
-  webglContainer.addEventListener('mousedown', onMouseDown, false)
-  webglContainer.addEventListener('mousemove', onMouseMove, false)
-  webglContainer.addEventListener('mouseup', onMouseUp, false)
+  webglContainer.addEventListener('mousemove', onWebGLSceneMouseMove, false)
+  webglContainer.addEventListener('mousedown', onWebGLSceneMouseDown, false)
+  webglContainer.addEventListener('mouseup', onWebGLSceneMouseUp, false)
+  webglContainer.addEventListener('click', onWebGLSceneMouseClick, false)
   webglContainer.addEventListener('mouseleave', onWebGLSceneMouseLeave, false)
   webglContainer.addEventListener('mouseenter', onWebGLSceneMouseEnter, false)
 
@@ -217,62 +218,21 @@ function init () {
   window.addEventListener('resize', onResize)
 
   webglContainer.addEventListener('touchstart', e => {
-    e.preventDefault()
+    console.log('touchstart')
+    e.stopPropagation()
     if (isInfoSectionOpen) {
       return
     }
     const touch = e.changedTouches[0]
-    raycastMouse.x = (touch.clientX / renderer.domElement.clientWidth) * 2 - 1
-    raycastMouse.y = -(touch.clientY / renderer.domElement.clientHeight) * 2 + 1
-
-    raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
-    const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
-    const intersects = raycaster.intersectObjects(intersectsTests)
-    
-    if (intersects.length > 0) {
-      if (cameraSystem.isDragCameraMoving) {
-        // TODO: is this still relevant? not really sure
-        // eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
-      } else {
-        const intersect = intersects[0]
-        const { object, object: { modelName } } = intersect
-        
-        openedProjectScene.add(object)
-        photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
-          mesh.visible = false
-        })
-
-        eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
-        openModelTween = chain(
-          delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-          tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
-        ).start({
-          update: tweenFactor => {
-            openModelTweenFactor = tweenFactor
-            eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
-            const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
-            layoutModeBtnStyler.set('opacity', opacity)
-          },
-          complete: () => {
-            clickedElement = object
-            openModelTween = null
-  
-            eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
-            layoutModeBtnStyler.set('pointer-events', 'none')
-          },
-        })
-
-      }
-    } else {
-      if (!clickedElement) {
-        store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
-        eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
-      }
+    if (!clickedElement) {
+      store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
+      eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
     }
   }, { passive: true })
 
   webglContainer.addEventListener('touchmove', e => {
-    e.preventDefault()
+    console.log('touchmove')
+    e.stopPropagation()
     const { layoutMode, mousePositionX, mousePositionY } = store.getState()
     const touch = e.changedTouches[0]
     
@@ -280,14 +240,14 @@ function init () {
       const diffx = layoutMode === LAYOUT_MODE_GRID ? touch.pageX - mousePositionX : 0
       const diffy = touch.pageY - mousePositionY
       eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
-      console.log('dragging')
     }
 
     store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))
   }, { passive: true })
 
   webglContainer.addEventListener('touchend', e => {
-    e.preventDefault()
+    e.stopPropagation()
+    console.log('touchend')
     isDragging = false
     cursorArrowOffsetTarget = 0
     if (!isInfoSectionOpen) {
@@ -439,7 +399,7 @@ function onCloseSingleView ({ modelName, reposition = false }) {
     },
     complete: () => {
       eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT, ({ modelName }))
-      const photoPreviewMesh = openedProjectScene.children[2]
+      const photoPreviewMesh = mobileBrowser ? openedProjectScene.children[1] : openedProjectScene.children[2]
       photoMeshContainer.add(photoPreviewMesh)
       // label.visible = true
       closeModelTween = null
@@ -500,10 +460,15 @@ function onWebGLSceneMouseEnter () {
   eventEmitter.emit(EVT_SHOW_CURSOR)
 }
 
-function onMouseDown (e) {
+function onWebGLSceneMouseDown (e) {
   if (isInfoSectionOpen) {
     return
   }
+  if (mobileBrowser) {
+    e.preventDefault()
+    return
+  }
+  console.log('mousedown')
 
   isDragging = true
 
@@ -556,7 +521,12 @@ function onMouseDown (e) {
   }
 }
 
-function onMouseMove (e) {
+function onWebGLSceneMouseMove (e) {
+  if (mobileBrowser) {
+    e.preventDefault()
+    return
+  }
+  console.log('mousemove')
   const { layoutMode, mousePositionX, mousePositionY } = store.getState()
 
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
@@ -594,7 +564,58 @@ function onMouseMove (e) {
   store.dispatch(setMousePosition({ x: e.pageX, y: e.pageY }))
 }
 
-function onMouseUp () {
+function onWebGLSceneMouseClick (e) {
+  console.log('click')
+  raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
+  raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
+
+  raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
+  const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
+  const intersects = raycaster.intersectObjects(intersectsTests)
+  
+  if (intersects.length > 0) {
+    if (cameraSystem.isDragCameraMoving) {
+      // TODO: is this still relevant? not really sure
+      // eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+    } else {
+      const intersect = intersects[0]
+      const { object, object: { modelName } } = intersect
+      
+      openedProjectScene.add(object)
+      photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
+        mesh.visible = false
+      })
+
+      eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
+      openModelTween = chain(
+        delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
+        tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+      ).start({
+        update: tweenFactor => {
+          openModelTweenFactor = tweenFactor
+          eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
+          const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
+          layoutModeBtnStyler.set('opacity', opacity)
+        },
+        complete: () => {
+          clickedElement = object
+          openModelTween = null
+
+          eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
+          layoutModeBtnStyler.set('pointer-events', 'none')
+        },
+      })
+
+    }
+  }
+}
+
+function onWebGLSceneMouseUp (e) {
+  if (mobileBrowser) {
+    e.preventDefault()
+    return
+  }
+  console.log('mouseup')
   if (hoveredElement) {
     if (!clickedElement) {
       if (openModelTween) {

@@ -1,18 +1,19 @@
 import * as THREE from 'three'
 
 import {
-  PREVIEW_PHOTO_REF_WIDTH,
-} from './helpers'
+  PREVIEW_PHOTO_REF_WIDTH, PREVIEW_PHOTO_REF_HEIGHT,
+} from './constants'
 
 import patternSrc from './assets/pattern.jpg'
-import { resolve } from 'path'
 
 export const clampNumber = (num, min, max) => Math.min(Math.max(num, min), max)
 
 export const mapNumber = (num, inMin, inMax, outMin, outMax) => (num - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
 
 export const getSiglePagePhotoScale = () => {
-  const width = innerWidth * devicePixelRatio
+  const dpr = devicePixelRatio || 1
+  const width = innerWidth * dpr
+  const height = innerHeight * dpr
   let scaleFactor = 1
   if (width > 1100 && width < 1300) {
     scaleFactor = 1.25
@@ -20,6 +21,18 @@ export const getSiglePagePhotoScale = () => {
     scaleFactor = 1.6
   } else if (width >= 1500) {
     scaleFactor = 1.5
+  }
+  if (PREVIEW_PHOTO_REF_WIDTH * scaleFactor * dpr > width / 2) {
+    const newWidth = PREVIEW_PHOTO_REF_WIDTH * scaleFactor * dpr
+    const maxWidth = width / 2 - 220
+    const widthDelta = newWidth - maxWidth
+    scaleFactor -= widthDelta / maxWidth
+  }
+  if (PREVIEW_PHOTO_REF_HEIGHT * scaleFactor * dpr > height) {
+    const newHeight = PREVIEW_PHOTO_REF_HEIGHT * scaleFactor * dpr
+    const maxHeight = height - 160
+    const heightDelta = newHeight - maxHeight
+    scaleFactor -= heightDelta / maxHeight
   }
   return scaleFactor
 }

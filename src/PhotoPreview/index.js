@@ -87,6 +87,7 @@ export default class PhotoPreview extends THREE.Mesh {
     initialOpacity,
   }) {
     const textureCount = Math.min(store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
+    console.log(`texture count`, textureCount, store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
     const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneBufferGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
