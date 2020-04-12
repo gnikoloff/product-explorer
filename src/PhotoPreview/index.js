@@ -84,6 +84,7 @@ export default class PhotoPreview extends THREE.Mesh {
     height,
     photos,
     gridPosition,
+    initialOpacity,
   }) {
     const textureCount = Math.min(store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
     const diffVector = new THREE.Vector2(0, 0)
@@ -97,7 +98,7 @@ export default class PhotoPreview extends THREE.Mesh {
         u_planeSize: { value: new THREE.Vector2(width, height) },
         u_imageSize: { value: new THREE.Vector2(0, 0) },
         u_textures: { value: [ new THREE.Texture(), ...new Array(textureCount).fill(null) ] },
-        u_opacity: { value: 0.0 },
+        u_opacity: { value: initialOpacity, },
         u_photoMixFactor: { value: 0.0 },
         u_texIdx0: { value: 0 },
         u_texIdx1: { value: 1 },
@@ -191,6 +192,9 @@ export default class PhotoPreview extends THREE.Mesh {
     return this._isInteractable
   }
   _fadeIn = () => {
+    if (this.material.uniforms.u_opacity.value === 1) {
+      return
+    }
     chain(
       delay(this._idx * 100),
       tween({

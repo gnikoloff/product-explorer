@@ -104,7 +104,7 @@ const layoutModeBtnStyler = styler(layoutModeBtnContainer)
 
 const dpr = window.devicePixelRatio || 1
 
-const mousePos = new THREE.Vector2(0, 0)
+const mousePos = new THREE.Vector2(appWidth / 2, appHeight / 2)
 const raycastMouse = new THREE.Vector2(0, 0)
 const renderer = new THREE.WebGLRenderer({ alpha: true })
 const photoScene = new THREE.Scene()
@@ -393,6 +393,15 @@ function onProjectsLoad (res) {
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
 
   res.projects.forEach((info, i) => {
+    const bboxLeft = info.posX - PREVIEW_PHOTO_REF_WIDTH / 2 + appWidth / 2
+    const bboxRight = info.posX + PREVIEW_PHOTO_REF_WIDTH / 2 + appWidth / 2
+    const bboxTop = info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2 + appHeight / 2
+    const bboxBottom = info.posY + PREVIEW_PHOTO_REF_HEIGHT / 2 + appHeight / 2
+    const isVisible =
+      (bboxRight> 0) &&
+      (bboxLeft < appWidth) &&
+      (bboxBottom > 0) &&
+      (bboxTop < appHeight)
     const photoPreview = new PhotoPreview({
       idx: i,
       isLast: i === res.projects.length - 1,
@@ -401,6 +410,7 @@ function onProjectsLoad (res) {
       height: PREVIEW_PHOTO_REF_HEIGHT,
       photos: info.sliderPhotos || [],
       gridPosition: new THREE.Vector3(info.posX, info.posY, 0),
+      initialOpacity: isVisible ? 0 : 1,
     })
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,

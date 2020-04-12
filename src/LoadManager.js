@@ -26,7 +26,6 @@ export default class LoadManager {
   }
   _incrementLoadedInitialResourcesCount = () => {
     const progress = this._currentLoadedThingIdx / (this._initialThingsToLoadCount - 1)
-    console.log(progress)
     if (progress === 1) {
       eventEmitter.emit(EVT_LOAD_COMPLETE)
     } else {

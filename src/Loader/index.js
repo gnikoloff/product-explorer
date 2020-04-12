@@ -25,6 +25,16 @@ export default class Loader {
     parentEl,
   }) {
     this._parentEl = parentEl
+
+    const wrapper = document.getElementById('intro-modal')
+    this.$els = {
+      wrapper,
+      cursor: wrapper.getElementsByClassName('cursor-example')[0],
+      cursorIconDefault: wrapper.getElementsByClassName('cursor-icon-default')[0],
+      cursorIconGrab: wrapper.getElementsByClassName('cursor-icon-grab')[0],
+      closeBtn: wrapper.getElementsByClassName('modal-btn-close')[0],
+    }
+
     this._scene = new THREE.Scene()
     this._renderer = new THREE.WebGLRenderer()
     this._camera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
@@ -76,12 +86,48 @@ export default class Loader {
     eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_LOAD_PROGRESS, this._onLoadProgress)
     eventEmitter.on(EVT_LOAD_COMPLETE, this._onLoadProgressComplete)
+    eventEmitter.on(EVT_FADE_IN_SCENE, this._showDialog)
+
+    this.$els.closeBtn.addEventListener('click', this._onDialogClose)
 
     this._noiseInterval = setInterval(() => {
       this._backgroundMesh.material.uniforms.u_time.value++
     }, 1000 / 12)
 
     this._renderProgressTexture()
+  }
+  _onDialogClose = () => {
+    const onDialogFadeOut = e => {
+      e.stopPropagation()
+      e.preventDefault()
+      this.$els.wrapper.parentNode.removeChild(this.$els.wrapper)
+      this.$els.wrapper.removeEventListener('transitionend', onDialogFadeOut)
+    }
+    this.$els.wrapper.style.setProperty('opacity', '0')
+    this.$els.wrapper.style.setProperty('transition', 'opacity 0.5s cubic-bezier(0.65, 0, 0.35, 1)')
+    this.$els.wrapper.addEventListener('transitionend', onDialogFadeOut)
+    this.$closeBtn.removeEventListener('click', this._onDialogClose)
+  }
+  _showDialog = () => {
+    const onGrabIconFadeIn = e => {
+      e.stopPropagation()
+      e.preventDefault()
+      this.$els.cursor.classList.add('animated')
+      this.$els.cursorIconGrab.removeEventListener('transitionend', onGrabIconFadeIn)
+    }
+    const onWrapperFaded = e => {
+      e.stopPropagation()
+      e.preventDefault()
+      this.$els.cursorIconDefault.style.setProperty('opacity', '0')
+      this.$els.cursorIconDefault.style.setProperty('transition', 'opacity 0.125s ease')
+      this.$els.cursorIconGrab.style.setProperty('opacity', '1')
+      this.$els.cursorIconGrab.style.setProperty('transition', 'opacity 0.125s ease')
+      this.$els.cursorIconGrab.addEventListener('transitionend', onGrabIconFadeIn)
+      this.$els.wrapper.removeEventListener('transitionend', onWrapperFaded)
+    }
+    this.$els.wrapper.style.setProperty('opacity', '1')
+    this.$els.wrapper.style.setProperty('transition', 'opacity 0.5s cubic-bezier(0.65, 0, 0.35, 1) 1.25s')
+    this.$els.wrapper.addEventListener('transitionend', onWrapperFaded)
   }
   _renderProgressTexture = () => {
     this._textureCanvas.width = 512
@@ -115,7 +161,6 @@ export default class Loader {
     this._renderProgressTexture()
     this._labelMesh.material.uniforms.u_time.value = ts
     if (this._loadProgress > 85 && !this._sceneFaded) {
-      console.log('fade in')
       eventEmitter.emit(EVT_FADE_IN_SCENE)
       this._sceneFaded = true
     }
