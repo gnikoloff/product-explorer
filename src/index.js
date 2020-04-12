@@ -206,11 +206,11 @@ function init () {
   webglContainer.appendChild(renderer.domElement)
 
   webglContainer.addEventListener('mousedown', onMouseDown, false)
+  webglContainer.addEventListener('mousemove', onMouseMove, false)
   webglContainer.addEventListener('mouseup', onMouseUp, false)
   webglContainer.addEventListener('mouseleave', onWebGLSceneMouseLeave)
   webglContainer.addEventListener('mouseenter', onWebGLSceneMouseEnter)
 
-  document.body.addEventListener('mousemove', onMouseMove, false)
   document.body.addEventListener('mouseleave', onPageMouseLeave, false)
   window.addEventListener('resize', onResize)
 
@@ -555,7 +555,28 @@ function onMouseMove (e) {
     const diffy = e.pageY - mousePositionY
     eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
   } else {
-    // ...
+    // intersects mouse login begin
+    if (!isDragging && !isInfoSectionOpen && !store.getState().isLayoutTransitioning) {
+      raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
+      const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
+      const intersects = raycaster.intersectObjects(intersectsTests)
+      if (intersects.length > 0) {
+        if (cameraSystem.isDragCameraMoving) {
+          eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
+        } else {
+          const intersect = intersects[0]
+          const { object, object: { modelName } } = intersect
+          if (!hoveredElement) {
+            hoveredElement = object
+          }
+          eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
+        }
+      } else {
+        eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE, { modelName: hoveredElement && hoveredElement.modelName })
+        hoveredElement = null
+      }
+    }
+    // intersects mouse login end
   }
 
   store.dispatch(setMousePosition({ x: e.pageX, y: e.pageY }))
@@ -587,27 +608,6 @@ function updateFrame(ts) {
   oldTime = ts
 
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
-
-  if (!isDragging && !isInfoSectionOpen && !store.getState().isLayoutTransitioning) {
-    raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
-    const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
-    const intersects = raycaster.intersectObjects(intersectsTests)
-    if (intersects.length > 0) {
-      if (cameraSystem.isDragCameraMoving) {
-        eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE)
-      } else {
-        const intersect = intersects[0]
-        const { object, object: { modelName } } = intersect
-        if (!hoveredElement) {
-          hoveredElement = object
-        }
-        eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
-      }
-    } else {
-      eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE, { modelName: hoveredElement && hoveredElement.modelName })
-      hoveredElement = null
-    }
-  }
 
   if (!clickedElement) {
     eventEmitter.emit(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, ts, dt)

@@ -87,12 +87,12 @@ export default class Loader {
     this._textureCanvas.width = 512
     this._textureCanvas.height = 512
     const ctx = this._textureCanvas.getContext('2d')
-    ctx.fillStyle = '#fff'
+    ctx.fillStyle = '#eee'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = 'bold 200px sans-serif'
+    ctx.font = 'bold 175px monospace'
     const label = Math.round(this._loadProgress)
-    ctx.fillText(`${label}%`, this._textureCanvas.width / 2, this._textureCanvas.height / 2)
+    ctx.fillText(`${label}`, this._textureCanvas.width / 2, this._textureCanvas.height / 2)
     this._progressTexture.needsUpdate = true
   }
   _onLoadProgress = ({ progress }) => {
