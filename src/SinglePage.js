@@ -10,7 +10,7 @@ import {
 import {
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
-  EVT_RAF_UPDATE_APP,
+  EVT_APP_RESIZE,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,  
   EVT_CLOSING_SINGLE_PROJECT,
@@ -136,11 +136,16 @@ export default class SinglePage {
       })
     }, false)
 
+    eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+    this._onResize()
+
     this.$els.sizer.addEventListener('mousedown', this._onSliderMouseDown, false)
     this.$els.sizer.addEventListener('mousemove', this._onSliderMouseMove)
     this.$els.sizer.addEventListener('mouseup', this._onSliderMouseUp, false)
     this.$els.sizer.addEventListener('mouseleave', this._onSliderMouseLeave, false)
+  }
 
+  _onResize = () => {
     const sizerWidth = PREVIEW_PHOTO_REF_WIDTH * getSiglePagePhotoScale()
     const sizerHeight = PREVIEW_PHOTO_REF_HEIGHT * getSiglePagePhotoScale()
     this.$els.sizer.style.setProperty('width', `${sizerWidth}px`)
