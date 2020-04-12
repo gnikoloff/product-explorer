@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import {
   tween,
   calc,
+  easing,
+  delay,
+  chain,
 } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
@@ -50,6 +53,7 @@ import {
   EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT,
   EVT_HOVER_SINGLE_PROJECT_ENTER,
   EVT_HOVER_SINGLE_PROJECT_LEAVE,
+  EVT_FADE_IN_SCENE,
 } from '../constants'
 
 import photoVertexShader from './vertexShader.glsl'
@@ -178,12 +182,26 @@ export default class PhotoPreview extends THREE.Mesh {
         this.material.uniforms.u_photoMixFactor.value = Math.round(this.material.uniforms.u_photoMixFactor.value)
       }
     })
+    eventEmitter.on(EVT_FADE_IN_SCENE, this._fadeIn)
   }
   get modelName () {
     return this._modelName
   }
   get isInteractable () {
     return this._isInteractable
+  }
+  _fadeIn = () => {
+    chain(
+      delay(this._idx * 100),
+      tween({
+        ease: easing.easeOut,
+        duration: 1000,
+      })
+    ).start({
+      update: tweenFactor => {
+        this.material.uniforms.u_opacity.value = tweenFactor
+      },
+    })
   }
   _onHover = ({ modelName }) => {
     if (modelName === this._modelName && !mobileBrowser) {

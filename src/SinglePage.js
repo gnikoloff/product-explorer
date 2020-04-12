@@ -68,6 +68,7 @@ export default class SinglePage {
       sliderButtonPrev: wrapper.getElementsByClassName('slider-btn-prev')[0],
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
       singlePageNav: wrapper.getElementsByClassName('single-page-nav')[0],
+      sliderHint: wrapper.getElementsByClassName('slider-hint')[0],
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
       nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
       closeButton: wrapper.getElementsByClassName('close-single-page')[0],
@@ -351,6 +352,7 @@ export default class SinglePage {
 
     
     this.$els.singlePageNav.classList.add('faded')
+    this.$els.sliderHint.classList.add('faded')
     this._fadeProjectDescription().then(() => {
       this.stylers.closeButton.set({
         opacity: 1,
@@ -395,6 +397,7 @@ export default class SinglePage {
       pointerEvents: 'none',
     })
     this.$els.singlePageNav.classList.remove('faded')
+    this.$els.sliderHint.classList.remove('faded')
 
     this._fadeProjectDescription({ duration: 300, parralel: true, direction: -1 })
 

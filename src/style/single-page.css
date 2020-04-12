@@ -78,10 +78,38 @@
   padding-bottom: 24px;
 }
 
-.single-page-nav {
+.single-page-footer {
   position: absolute;
   bottom: 0;
+  left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slider-hint {
+  width: 50%;
+  text-align: center;
+  font-size: 10px;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slider-hint.faded {
+  opacity: 1;
+}
+
+.slider-hint strong {
+  color: rgba(0, 0, 0, 0.84);
+}
+
+.single-page-nav {
+  position: relative;
   width: 50%;
   display: flex;
   opacity: 0;

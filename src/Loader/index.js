@@ -6,6 +6,7 @@ import {
   EVT_RAF_UPDATE_APP,
   EVT_LOAD_PROGRESS,
   EVT_LOAD_COMPLETE,
+  EVT_FADE_IN_SCENE,
 } from '../constants'
 
 import vertexShader from './vertex-shader.glsl'
@@ -31,6 +32,7 @@ export default class Loader {
     this._progressTexture = new THREE.CanvasTexture(this._textureCanvas)
     this._dtScale = 1
     this._hasBeenDestroyed = false
+    this._sceneFaded = false
 
     this._loadProgress = 0
     this._loadProgressTarget = this._loadProgress
@@ -112,6 +114,12 @@ export default class Loader {
     this._renderer.render(this._scene, this._camera)
     this._renderProgressTexture()
     this._labelMesh.material.uniforms.u_time.value = ts
+    if (this._loadProgress > 85 && !this._sceneFaded) {
+      console.log('fade in')
+      eventEmitter.emit(EVT_FADE_IN_SCENE)
+      this._sceneFaded = true
+    }
+
     if (this._loadProgress > 99.5 && !this._hasBeenDestroyed) {
       this._scene.dispose()
       this._renderer.dispose()

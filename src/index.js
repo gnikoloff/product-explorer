@@ -489,7 +489,6 @@ function onWebGLSceneMouseEnter () {
 }
 
 function onMouseDown (e) {
-  debugger
   if (isInfoSectionOpen) {
     return
   }
