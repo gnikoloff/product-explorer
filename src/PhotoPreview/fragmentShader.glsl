@@ -9,6 +9,9 @@ uniform float u_horizontalDirection;
 
 varying vec2 v_uv;
 
+const vec2 size = vec2(25.0, 25.0);
+const float smoothness = 0.5;
+
 vec4 getTexture (int index, vec2 uv) {
   for (int i = 0; i < INPUT_TEXTURES_COUNT; i++) {
     if (i == index){
@@ -16,16 +19,15 @@ vec4 getTexture (int index, vec2 uv) {
     }
   }
 }
+ 
+float rand (vec2 co) {
+  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
-vec4 transition (int texIdx0, int texIdx1, vec2 uv, float progress) {
-  vec2 direction = vec2(u_horizontalDirection, 1.0);
-  vec2 center = vec2(0.5);
-  float smoothness = 0.5;
-  vec2 v = normalize(direction);
-  v /= abs(v.x) + abs(v.y);
-  float d = v.x * center.x + v.y * center.y;
-  float m = 1.0 - smoothstep(-smoothness, 0.0, v.x * uv.x + v.y * uv.y - (d - 0.5 + progress * (1.0 + smoothness)));
-  return mix(getTexture(texIdx0, (uv - 0.5) * (1.0 - m) + 0.5), getTexture(texIdx1, (uv - 0.5) * m + 0.5), m);
+vec4 transition(int texIdx0, int texIdx1, vec2 uv, float progress) {
+  float r = rand(floor(vec2(size) * uv));
+  float m = smoothstep(0.0, -smoothness, r * (gl_FragCoord.x / u_imageSize.x) - (progress * (1.0 + smoothness)));
+  return mix(getTexture(texIdx0, uv), getTexture(texIdx1, uv), m);
 }
 
 void main () {
