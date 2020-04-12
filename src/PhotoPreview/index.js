@@ -93,7 +93,7 @@ export default class PhotoPreview extends THREE.Mesh {
         u_planeSize: { value: new THREE.Vector2(width, height) },
         u_imageSize: { value: new THREE.Vector2(0, 0) },
         u_textures: { value: [ new THREE.Texture(), ...new Array(textureCount).fill(null) ] },
-        u_opacity: { value: 1.0 },
+        u_opacity: { value: 0.0 },
         u_photoMixFactor: { value: 0.0 },
         u_texIdx0: { value: 0 },
         u_texIdx1: { value: 1 },

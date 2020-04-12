@@ -29,12 +29,8 @@ export default class Loader {
     this._camera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
     this._textureCanvas = document.createElement('canvas')
     this._progressTexture = new THREE.CanvasTexture(this._textureCanvas)
-
-    // parentEl.appendChild(this._textureCanvas)
-    // this._textureCanvas.style.position = 'absolute'
-    // this._textureCanvas.style.bottom = '24px'
-    // this._textureCanvas.style.right = '24px'
-    // this._textureCanvas.style.zIndex = '99999999999'
+    this._dtScale = 1
+    this._hasBeenDestroyed = false
 
     this._loadProgress = 0
     this._loadProgressTarget = this._loadProgress
@@ -104,7 +100,19 @@ export default class Loader {
     }, Loader.PROGRESS_TIMER_VALUE)
   }
   _onLoadProgressComplete = () => {
-    const onTransitionEnd = () => {
+    this._dtScale = 3
+    const timer = setTimeout(() => {
+      this._loadProgressTarget = 100
+      clearTimeout(timer)
+    }, Loader.PROGRESS_TIMER_VALUE)
+  }
+  _onUpdate = (ts, dt) => {
+    this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * this._dtScale)
+    this._parentEl.style.transform = `translateX(${this._loadProgress}%)`
+    this._renderer.render(this._scene, this._camera)
+    this._renderProgressTexture()
+    this._labelMesh.material.uniforms.u_time.value = ts
+    if (this._loadProgress > 99.5 && !this._hasBeenDestroyed) {
       this._scene.dispose()
       this._renderer.dispose()
       this._progressTexture.dispose()
@@ -119,22 +127,7 @@ export default class Loader {
       clearInterval(this._noiseInterval)
       
       this._parentEl.parentNode.removeChild(this._parentEl)
-      this._parentEl.removeEventListener('transitionend', onTransitionEnd)  
+      this._hasBeenDestroyed = true
     }
-    this._parentEl.addEventListener('transitionend', onTransitionEnd, false)
-    
-    const timer = setTimeout(() => {
-      this._loadProgressTarget = 100
-      clearTimeout(timer)
-    }, Loader.PROGRESS_TIMER_VALUE)
-  }
-  _onUpdate = (ts, dt) => {
-    this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * 10)
-    this._parentEl.style.transform = `translateX(${this._loadProgress}%)`
-    this._renderer.render(this._scene, this._camera)
-    this._renderProgressTexture()
-    this._labelMesh.material.uniforms.u_time.value = ts
-
-    console.log(this._loadProgress)
   }
 }
