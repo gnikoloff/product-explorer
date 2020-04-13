@@ -73,8 +73,8 @@
 
 .info-btn {
   position: absolute;
-  left: -100px;
-  top: 20px;
+  left: -80px;
+  top: 14px;
   transition: opacity 0.175s ease;
 }
 

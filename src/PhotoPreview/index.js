@@ -186,11 +186,26 @@ export default class PhotoPreview extends THREE.Mesh {
     })
     eventEmitter.on(EVT_FADE_IN_SCENE, this._fadeIn)
   }
+  get x () {
+    return this.position.x
+  }
+  get y () {
+    return this.position.y
+  }
+  get width () {
+    return this._width
+  }
+  get height () {
+    return this._height
+  }
   get modelName () {
     return this._modelName
   }
   get isInteractable () {
     return this._isInteractable
+  }
+  set opacity (opacity) {
+    this.material.uniforms.u_opacity.value = opacity
   }
   _fadeIn = () => {
     if (this.material.uniforms.u_opacity.value === 1) {

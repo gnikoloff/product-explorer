@@ -4,7 +4,9 @@ import { tween, chain, delay, calc } from 'popmotion'
 import eventEmitter from './event-emitter'
 
 import {
-  getSiglePagePhotoScale, clampNumber, mapNumber,
+  getSiglePagePhotoScale,
+  clampNumber,
+  mapNumber,
 } from './helpers'
 
 import {

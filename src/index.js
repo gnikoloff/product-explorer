@@ -8,6 +8,7 @@ import eventEmitter from './event-emitter'
 import PhotoPreview from './PhotoPreview'
 import PhotoLabel from './PhotoLabel'
 import SinglePage from './SinglePage'
+import SinglePageMobile from './SinglePageMobile'
 import InfoPanel from './InfoPanel'
 import PostProcessing from './PostProcessing'
 import CameraSystem from './CameraSystem'
@@ -40,6 +41,8 @@ import {
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
+  EVT_SINGLE_PROJECT_MASK_OPENING,
+  EVT_SINGLE_PROJECT_MASK_CLOSING,
   EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
@@ -87,7 +90,7 @@ const isSmartphone = isMobileBrowser() && innerWidth < 800
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
 
-const singlePage = new SinglePage()
+const singlePage = isSmartphone ? new SinglePageMobile() : new SinglePage()
 const infoPanel = new InfoPanel()
 const cameraSystem = new CameraSystem({
   appWidth,
@@ -121,6 +124,7 @@ let photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * 
 let postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 let postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 let postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+let rAf
 let oldTime = 0
 let lastScrollY = 0
 let isDragging = false
@@ -268,7 +272,7 @@ function init () {
   eventEmitter.on(EVT_CLOSING_INFO_SECTION, onInfoSectionClosing)
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
   
-  requestAnimationFrame(updateFrame)
+  rAf = requestAnimationFrame(updateFrame)
 }
 
 function onLayoutModeSelect (e) {
@@ -355,15 +359,7 @@ function onProjectsLoad (res) {
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
 
   res.projects.forEach((info, i) => {
-    const bboxLeft = info.posX - PREVIEW_PHOTO_REF_WIDTH / 2 + appWidth / 2
-    const bboxRight = info.posX + PREVIEW_PHOTO_REF_WIDTH / 2 + appWidth / 2
-    const bboxTop = info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2 + appHeight / 2
-    const bboxBottom = info.posY + PREVIEW_PHOTO_REF_HEIGHT / 2 + appHeight / 2
-    const isVisible =
-      (bboxRight> 0) &&
-      (bboxLeft < appWidth) &&
-      (bboxBottom > 0) &&
-      (bboxTop < appHeight)
+    const isVisible = getIsPreviewMeshVisible(info.posX, info.posY, PREVIEW_PHOTO_REF_WIDTH, PREVIEW_PHOTO_REF_HEIGHT)
     const photoPreview = new PhotoPreview({
       idx: i,
       isLast: i === res.projects.length - 1,
@@ -406,6 +402,7 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
     update: tweenFactor => {
       openModelTweenFactor = tweenFactor
       eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor, reposition })
+      eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor })
       const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
       layoutModeBtnStyler.set('opacity', opacity)
     },
@@ -498,6 +495,7 @@ function onWebGLSceneMouseDown (e) {
         closeModelTween.stop()
         closeModelTween = null
       }
+      
       const { modelName } = hoveredElement
 
       openedProjectScene.add(hoveredElement)
@@ -520,6 +518,7 @@ function onWebGLSceneMouseDown (e) {
         update: tweenFactor => {
           openModelTweenFactor = tweenFactor
           eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
+          eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
           const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
           layoutModeBtnStyler.set('opacity', opacity)
         },
@@ -601,6 +600,36 @@ function onWebGLSceneMouseClick (e) {
     } else {
       const intersect = intersects[0]
       const { object, object: { modelName } } = intersect
+
+      if (isSmartphone) {
+        const visibleMeshes = photoMeshContainer.children.filter(mesh => {
+          return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
+        })
+        tween({
+          duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
+          ease: easing.easeIn,
+        }).start({
+          update: tweenFactor => {
+            visibleMeshes.forEach(mesh => {
+              mesh.opacity = 1 - tweenFactor
+            })
+            const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
+            layoutModeBtnStyler.set('opacity', opacity)
+            eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
+          },
+          complete: () => {
+            // if (rAf) {
+            //   cancelAnimationFrame(rAf)
+            //   rAf = null
+            // }
+
+            clickedElement = object
+            eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
+            layoutModeBtnStyler.set('pointer-events', 'none')
+          },
+        })
+        return
+      }
       
       openedProjectScene.add(object)
       photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
@@ -736,5 +765,18 @@ function updateFrame(ts) {
 
   renderer.render(openedProjectScene, cameraSystem.openedProjectCamera)
 
-  requestAnimationFrame(updateFrame)
+  rAf = requestAnimationFrame(updateFrame)
+}
+
+function getIsPreviewMeshVisible (x, y, width, height) {
+  const bboxLeft = x - width + appWidth / 2
+  const bboxRight = x + width + appWidth / 2
+  const bboxTop = y - height + appHeight / 2
+  const bboxBottom = y + height + appHeight / 2
+  return (
+    (bboxRight> 0) &&
+    (bboxLeft < appWidth) &&
+    (bboxBottom > 0) &&
+    (bboxTop < appHeight)
+  )
 }

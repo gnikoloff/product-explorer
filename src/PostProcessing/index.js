@@ -5,12 +5,11 @@ import eventEmitter from '../event-emitter'
 import Effect from './Effect'
 
 import {
-  SERVER_API_ENDPOINT,
   EVT_RAF_UPDATE_APP,
-  EVT_OPENING_SINGLE_PROJECT,
+  EVT_SINGLE_PROJECT_MASK_OPENING,
+  EVT_SINGLE_PROJECT_MASK_CLOSING,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
-  EVT_CLOSING_SINGLE_PROJECT,
   EVT_ON_SCENE_DRAG_START,
   EVT_ON_SCENE_DRAG_END,
   EVT_HOVER_SINGLE_PROJECT_ENTER,
@@ -94,9 +93,9 @@ export default class PostProcessing {
     this._currCutOffFactor = 0
 
     eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseSingleProject)
-    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosingSingleProject)
+    eventEmitter.on(EVT_SINGLE_PROJECT_MASK_CLOSING, this._onClosingSingleProject)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpeningSingleProject)
+    eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, this._onOpeningSingleProject)
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onDragEnd)
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_ENTER, this._onProjectHoverEnter)

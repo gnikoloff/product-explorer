@@ -9,10 +9,10 @@ import {
 } from './helpers'
 
 import {
-  EVT_OPENING_SINGLE_PROJECT,
+  EVT_SINGLE_PROJECT_MASK_OPENING,
+  EVT_SINGLE_PROJECT_MASK_CLOSING,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
-  EVT_CLOSING_SINGLE_PROJECT,
   EVT_OPENING_INFO_SECTION,
   EVT_OPEN_REQUEST_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
@@ -37,14 +37,14 @@ export default class InfoPanel {
       logo: styler(this.$els.logo),
     }
 
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, ({ tweenFactor }) => {
+    eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, ({ tweenFactor }) => {
       const tween = mapNumber(tweenFactor, 0, 0.4, 1, 0)
       this.stylers.toggleButton.set('opacity', tween)
     })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {
       this.stylers.toggleButton.set('pointerEvents', 'none')
     })
-    eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, ({ tweenFactor }) => {
+    eventEmitter.on(EVT_SINGLE_PROJECT_MASK_CLOSING, ({ tweenFactor }) => {
       const tween = mapNumber(tweenFactor, 0.4, 1, 0, 1)
       this.stylers.toggleButton.set('opacity', tween)
     })

@@ -4,6 +4,7 @@
   left: 50%;
   z-index: 1;
   cursor: grab;
+  display: none;
 }
 
 .single-page-slider-sizer.grabbing {
@@ -79,4 +80,10 @@
 .slider-btn-next .line:last-of-type {
   transform: rotate(45deg) translate(1px, 1px);
   transform-origin: 100% 0;
+}
+
+@media (min-width: 800px) {
+  .single-page-slider-sizer {
+    display: block;
+  }
 }

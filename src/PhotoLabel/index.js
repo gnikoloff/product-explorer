@@ -56,6 +56,9 @@ export default class PhotoLabel extends THREE.Mesh {
 
     super(geometry, material)
 
+    this._width = width
+    this._height = height
+
     this.position.copy(position)
 
     this._openTween = null
@@ -76,6 +79,21 @@ export default class PhotoLabel extends THREE.Mesh {
   }
   get isLabel () {
     return this._isLabel
+  }
+  get x () {
+    return this.position.x
+  }
+  get y () {
+    return this.position.y
+  }
+  get width () {
+    return this._width
+  }
+  get height () {
+    return this._height
+  }
+  set opacity (opacity) {
+    this.material.uniforms.u_maskBlendFactor.value = opacity
   }
   _fadeIn = () => {
     if (!mobileBrowserDetected) {
