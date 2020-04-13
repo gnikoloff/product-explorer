@@ -7,7 +7,7 @@
   overflow-y: hidden;
   padding: 16px;
   box-sizing: border-box;
-  background: linear-gradient(0deg, #f5f5f5, #fcfcfc);
+  background: linear-gradient(0deg, #f5f5f5, #fff);
 }
 
 .gallery-list {
@@ -78,6 +78,23 @@
   min-height: 100%;
   padding: 45px 0px 24px 0px;
   box-sizing: border-box;
+}
+
+.mobile-single-page-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  display: flex;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+}
+
+.open-link-btn-wrapper {
+  background: red;
+  width: 52px;
 }
 
 .single-page-title {
