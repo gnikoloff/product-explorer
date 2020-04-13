@@ -392,6 +392,35 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
 
   isToggleModelTweenRunning = true
 
+  if (isSmartphone) {
+    const visibleMeshes = photoMeshContainer.children.filter(mesh => {
+      return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
+    })
+    tween({
+      duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
+      ease: easing.easeIn,
+    }).start({
+      update: tweenFactor => {
+        visibleMeshes.forEach(mesh => {
+          mesh.opacity = tweenFactor
+        })
+        const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
+        layoutModeBtnStyler.set('opacity', opacity)
+        eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor: 1 - tweenFactor })
+      },
+      complete: () => {
+        // if (rAf) {
+        //   cancelAnimationFrame(rAf)
+        //   rAf = null
+        // }
+
+        clickedElement = null
+        layoutModeBtnStyler.set('pointer-events', 'auto')
+      },
+    })
+    return
+  }
+
   closeModelTween = chain(
     delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
     tween({
@@ -605,6 +634,7 @@ function onWebGLSceneMouseClick (e) {
         const visibleMeshes = photoMeshContainer.children.filter(mesh => {
           return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
         })
+        // eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
         tween({
           duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
           ease: easing.easeIn,
@@ -769,12 +799,13 @@ function updateFrame(ts) {
 }
 
 function getIsPreviewMeshVisible (x, y, width, height) {
-  const bboxLeft = x - width + appWidth / 2
-  const bboxRight = x + width + appWidth / 2
-  const bboxTop = y - height + appHeight / 2
-  const bboxBottom = y + height + appHeight / 2
+  const { cameraPositionX, cameraPositionY } = store.getState()
+  const bboxLeft = x - width + appWidth / 2 - cameraPositionX
+  const bboxRight = x + width + appWidth / 2 - cameraPositionX
+  const bboxTop = y - height + appHeight / 2 - cameraPositionY
+  const bboxBottom = y + height + appHeight / 2 - cameraPositionY
   return (
-    (bboxRight> 0) &&
+    (bboxRight > 0) &&
     (bboxLeft < appWidth) &&
     (bboxBottom > 0) &&
     (bboxTop < appHeight)

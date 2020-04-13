@@ -7,6 +7,7 @@
 html,
 body {
   overflow: hidden;
+  -webkit-user-select: none;
 }
 
 body {
@@ -32,8 +33,8 @@ li {
 }
 
 .fade-in {
-  /* opacity: 0;
-  pointer-events: none; */
+  opacity: 0;
+  pointer-events: none;
 }
 
 ::selection {
@@ -95,17 +96,28 @@ li {
 .close-single-page {
   position: fixed;
   z-index: 1;
-  top: 28px;
-  left: calc(50% + 38px);
-  width: 50px;
-  height: 50px;
+  top: -8px;
+  right: -7px;
+  left: auto;
+  width: 80px;
+  height: 80px;
   background: none;
-  border: 2px solid rgba(0, 0, 0, 0.12);
-  background: #fcfcfc;
-  border-radius: 50%;
+  border: none;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+.close-single-page:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 45px;
+  height: 45px;
+  margin: -25px 0 0 -25px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  background: #fcfcfc;
+  border-radius: 50%;
 }
 .close-single-page:focus { outline: 0; }
 .close-single-page:hover { cursor: pointer; }
@@ -222,36 +234,6 @@ li {
 
 .hint:hover h6 {
   color: #000;
-}
-
-@media (min-width: 800px) {
-  .hint {
-    width: auto;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  .hint:first-of-type {
-    margin-right: 72px;
-  }
-  .hint:first-of-type:after {
-    right: -36px;
-    top: 8px;
-    bottom: 8px;
-  }
-  .hint img {
-    display: block;
-  }
-  .hint h6 {
-    margin: 0;
-    letter-spacing: 1px;
-  }
-  .webgl-scene-hint {
-    background: none;
-    bottom: 24px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-  }
 }
 
 body.layout-mode-grid .hint[data-layout-mode="overview"] {
@@ -400,4 +382,42 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
   background-image: url('../assets/icon-hand-closed.png');
   background-position: 50% 60%;
   opacity: 0;
+}
+
+@media (min-width: 800px) {
+  .hint {
+    width: auto;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .hint:first-of-type {
+    margin-right: 72px;
+  }
+  .hint:first-of-type:after {
+    right: -36px;
+    top: 8px;
+    bottom: 8px;
+  }
+  .hint img {
+    display: block;
+  }
+  .hint h6 {
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  .webgl-scene-hint {
+    background: none;
+    bottom: 24px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+  .close-single-page {
+    top: 28px;
+    right: 12px;
+    width: 50px;
+    height: 50px;
+    left: calc(50% + 38px);
+    right: auto;
+  }
 }
