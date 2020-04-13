@@ -55,9 +55,9 @@ export const getArrowTexture = () => {
   canvas.width = 128
   canvas.height = 128
   ctx.translate(canvas.width / 2, canvas.height / 2)
-  ctx.lineWidth = 20
+  ctx.lineWidth = 12
   ctx.lineCap = 'round'
-  ctx.strokeStyle = '#111'
+  ctx.strokeStyle = '#555'
   ctx.beginPath()
   ctx.moveTo(0, 0)
   ctx.lineTo(40, 40)

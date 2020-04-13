@@ -144,7 +144,7 @@ export default class Loader {
     ctx.fillStyle = '#eee'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = `bold ${mobileBrowser ? 190 : 250}px monospace`
+    ctx.font = `bold ${mobileBrowser ? 190 : 250}px Helvetica`
     const label = Math.round(this._loadProgress)
     ctx.fillText(`${label}`, this._textureCanvas.width / 2, this._textureCanvas.height / 2)
     this._progressTexture.needsUpdate = true

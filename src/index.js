@@ -82,6 +82,7 @@ import './style'
 import labelMaskSource from './assets/mask.png'
 
 const mobileBrowser = isMobileBrowser()
+const isSmartphone = isMobileBrowser() && innerWidth < 800
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
@@ -180,9 +181,9 @@ init()
 
 function init () {
 
-  new Loader({
-    parentEl: document.getElementById('app-loader'),
-  })
+  // new Loader({
+  //   parentEl: document.getElementById('app-loader'),
+  // })
   new LoadManager()
 
   const fontsToLoadCount = 1
@@ -371,12 +372,16 @@ function onProjectsLoad (res) {
       height: PREVIEW_PHOTO_REF_HEIGHT,
       photos: info.sliderPhotos || [],
       gridPosition: new THREE.Vector3(info.posX, info.posY, 0),
-      initialOpacity: isVisible ? 0 : 1,
+      // initialOpacity: isVisible ? 0 : 1,
+      initialOpacity: 1,
     })
+    const labelPosX = info.posX - PREVIEW_PHOTO_REF_WIDTH * (isSmartphone ? 0 : 0.25)
+    const labelPosY = info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,
-      position: new THREE.Vector3(info.posX - PREVIEW_PHOTO_REF_WIDTH * 0.25, info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2, 25),
-      initialOpacity: isVisible ? 0 : 1,
+      position: new THREE.Vector3(labelPosX, labelPosY, 25),
+      // initialOpacity: isVisible ? 0 : 1,
+      initialOpacity: 1,
     })
     previewLabel.position.z = 40
     photoMeshContainer.add(photoPreview)
@@ -673,20 +678,22 @@ function updateFrame(ts) {
 
   if (!mobileBrowser) {
     const arrowIndicatorFactor = dt * 25
-    cursorArrowOffset += (cursorArrowOffsetTarget * 12 - cursorArrowOffset) * arrowIndicatorFactor
+    cursorArrowOffset += (cursorArrowOffsetTarget * 5 - cursorArrowOffset) * arrowIndicatorFactor
     cursorArrowLeft.material.opacity += (cursorArrowOffsetTarget * 0.5 - cursorArrowLeft.material.opacity) * arrowIndicatorFactor
 
-    cursorArrowLeft.position.x += (cursorBasePosX + 33 + cursorArrowOffset - cursorArrowLeft.position.x) * arrowIndicatorFactor
+    const initialOffset = 28
+
+    cursorArrowLeft.position.x += (cursorBasePosX + initialOffset + cursorArrowOffset - cursorArrowLeft.position.x) * arrowIndicatorFactor
     cursorArrowLeft.position.y += (cursorBasePosY - cursorArrowLeft.position.y) * arrowIndicatorFactor
 
-    cursorArrowRight.position.x += (cursorBasePosX - 33 - cursorArrowOffset - cursorArrowRight.position.x) * arrowIndicatorFactor
+    cursorArrowRight.position.x += (cursorBasePosX - initialOffset - cursorArrowOffset - cursorArrowRight.position.x) * arrowIndicatorFactor
     cursorArrowRight.position.y += (cursorBasePosY - cursorArrowRight.position.y) * arrowIndicatorFactor
 
     cursorArrowTop.position.x += (cursorBasePosX - cursorArrowTop.position.x) * arrowIndicatorFactor
-    cursorArrowTop.position.y += (cursorBasePosY - 33 - cursorArrowOffset - cursorArrowTop.position.y) * arrowIndicatorFactor
+    cursorArrowTop.position.y += (cursorBasePosY - initialOffset - cursorArrowOffset - cursorArrowTop.position.y) * arrowIndicatorFactor
 
     cursorArrowBottom.position.x += (cursorBasePosX - cursorArrowBottom.position.x) * arrowIndicatorFactor
-    cursorArrowBottom.position.y += (cursorBasePosY + 33 + cursorArrowOffset - cursorArrowBottom.position.y) * arrowIndicatorFactor
+    cursorArrowBottom.position.y += (cursorBasePosY + initialOffset + cursorArrowOffset - cursorArrowBottom.position.y) * arrowIndicatorFactor
   }
   
   renderer.autoClear = true

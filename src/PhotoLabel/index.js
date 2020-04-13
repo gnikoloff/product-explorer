@@ -27,6 +27,7 @@ import vertexShader from './vertexShader.glsl'
 import fragmentShader from './fragmentShader.glsl'
 
 const mobileBrowserDetected = isMobileBrowser()
+const isSmartPhone = isMobileBrowser() && window.innerWidth < 800
 
 export default class PhotoLabel extends THREE.Mesh {
   constructor ({
@@ -34,7 +35,9 @@ export default class PhotoLabel extends THREE.Mesh {
     position,
     initialOpacity,
   }) {
-    const geometry = new THREE.PlaneBufferGeometry(256 / 2.5, 64 / 2.5)
+    const width = isSmartPhone ? 384 / 2.5 : 256 / 2.5
+    const height = isSmartPhone ? 96 / 2.5 : 64 / 2.5
+    const geometry = new THREE.PlaneBufferGeometry(width, height)
     const material = new THREE.ShaderMaterial({
       uniforms: {
         u_tDiffuse: { value: null },
@@ -75,6 +78,9 @@ export default class PhotoLabel extends THREE.Mesh {
     return this._isLabel
   }
   _fadeIn = () => {
+    if (!mobileBrowserDetected) {
+      return
+    }
     chain(
       delay(200),
       tween({
@@ -182,7 +188,7 @@ export default class PhotoLabel extends THREE.Mesh {
         })
       }
     }
-    const newx = x - PREVIEW_PHOTO_REF_WIDTH * 0.25
+    const newx = x - PREVIEW_PHOTO_REF_WIDTH * (isSmartPhone ? 0 : 0.25)
     const newy = y - PREVIEW_PHOTO_REF_HEIGHT * 0.5
     this.position.set(newx, newy, 0)
   }

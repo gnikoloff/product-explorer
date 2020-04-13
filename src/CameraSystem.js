@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { calc, tween, easing } from 'popmotion'
+import { calc, tween, easing, chain, delay } from 'popmotion'
 
 import store from './store'
 import {
@@ -11,7 +11,7 @@ import {
 } from './store/actions'
 
 import {
-  isMobileBrowser,
+  isMobileBrowser, mapNumber,
 } from './helpers'
 
 import eventEmitter from './event-emitter'
@@ -33,10 +33,10 @@ import {
   EVT_CAMERA_FORCE_REPOSITION,
 } from './constants'
 
-const mobileBrowser = isMobileBrowser()
+const mobileBrowser = isMobileBrowser() && innerWidth < 800
 
 export default class CameraSystem {
-  static friction = 0.875
+  static MOBILE_CAMERA_ZOOM = 0.5
 
   static resizeCamera ({ camera, appWidth, appHeight }) {
     camera.left = -appWidth / 2
@@ -99,7 +99,9 @@ export default class CameraSystem {
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_CAMERA_FORCE_REPOSITION, this._onForceRelayout)
 
-    // CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: 0.5 })
+    if (mobileBrowser) {
+      CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: CameraSystem.MOBILE_CAMERA_ZOOM })
+    }
   }
   get photoCamera () {
     return this._photoCamera
@@ -120,6 +122,7 @@ export default class CameraSystem {
     return this._isDragCameraMoving
   }
   _onLayoutModeChange = () => {
+    const { layoutMode } = store.getState()
     const startX = this._photoCamera.position.x
     const startY = this._photoCamera.position.y
     this._shouldMove = false
@@ -136,6 +139,23 @@ export default class CameraSystem {
         this._shouldMove = true
       }
     })
+    if (mobileBrowser) {
+      chain(
+        delay(300),
+        tween({
+          ease: easing.anticipate,
+        }).start(tweenFactor => {
+          if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+            const start = CameraSystem.MOBILE_CAMERA_ZOOM
+            this._zoomFactor = start + tweenFactor * 0.25
+            CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
+          } else if (layoutMode === LAYOUT_MODE_GRID) {
+            const zoom = mapNumber(tweenFactor, 0, 1, this._zoomFactor, CameraSystem.MOBILE_CAMERA_ZOOM)
+            CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
+          }
+        })
+      )
+    }
     this._velocity.set(0, 0)
   }
   _onRequestOpenProject = () => {
@@ -143,22 +163,13 @@ export default class CameraSystem {
     this._targetPosition.copy(this._photoCamera.position)
   }
   _onForceRelayout = ({ x, y }) => {
-    // } else if (x < worldBoundsLeft) {
-    //   x = worldBoundsLeft
-    // }
-    // if (y > worldBoundsTop) {
-    //   y = worldBoundsTop
-    // } else if (y < worldBoundsBottom) {
-    //   y = worldBoundsBottom
-    // }
     this._targetPosition.x = x
     this._targetPosition.y = y
     this._photoCamera.position.x = x
     this._photoCamera.position.y = y
     this._openedProjectCamera.position.x = x
     this._openedProjectCamera.position.y = y
-    setCameraPosition({ x, y })
-    
+    setCameraPosition({ x, y }) 
   }
   _onRequestCloseProject = () => {
     this._shouldMove = true
@@ -271,10 +282,9 @@ export default class CameraSystem {
     }
     this._isZoomedOut = true
     tween().start(tweenFactor => {
-      this._zoomFactor = 1 - tweenFactor * 0.125
+      const start = mobileBrowser ? CameraSystem.MOBILE_CAMERA_ZOOM : 1
+      this._zoomFactor = start - tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
-      CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
-      // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom: this._zoomFactor })
     })
   }
   _onDragZoomIn = () => {
@@ -287,9 +297,10 @@ export default class CameraSystem {
     }
     this._isZoomedOut = false
     tween().start(tweenFactor => {
-      const zoom = this._zoomFactor + tweenFactor * 0.125
+      const zoom = mobileBrowser
+        ? this._zoomFactor + tweenFactor * (CameraSystem.MOBILE_CAMERA_ZOOM * this._zoomFactor)
+        : this._zoomFactor + tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
-      // CameraSystem.controlCameraZoom({ camera: this._cursorCamera, zoom })
     })
   }
   _onResize = ({ appWidth, appHeight }) => {

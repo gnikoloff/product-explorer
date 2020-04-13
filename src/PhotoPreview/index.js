@@ -74,7 +74,7 @@ export default class PhotoPreview extends THREE.Mesh {
   static SLIDER_DIRECTION_RIGHT = 1
   static OVERVIEW_LAYOUT_COLUMN_GUTTER = 60
   static HOVER_IMAGES_FLIP_COUNT = 2
-  static HOVER_FLIP_TIMER = 450
+  static HOVER_FLIP_TIMER = 750
 
   constructor ({
     idx,
@@ -466,9 +466,9 @@ export default class PhotoPreview extends THREE.Mesh {
       this._loadedPhotosCounter++
       // console.log(`loaded texture with idx: ${this._loadedPhotosCounter} for ${this._modelName}`)
     }
-    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
     LoadManager.loadTexture(this._photos[this._loadedPhotosCounter]).then(texture => {
       onTextureLoaded(texture, true)
+      eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
       if (!mobileBrowser) {
         const hoverFlipPhotosToLoad = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= this._loadedPhotosCounter + PhotoPreview.HOVER_IMAGES_FLIP_COUNT)
         Promise.all(hoverFlipPhotosToLoad.map(LoadManager.loadTexture)).then(textures => {
@@ -556,7 +556,7 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _onCloseRequest = ({ modelName, reposition }) => {
     if (modelName === this._modelName) {
-      const { layoutMode, cameraPositionX, cameraPositionY } = store.getState()
+      const { layoutMode } = store.getState()
 
       if (reposition) {
         const cameraRepositionX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
@@ -594,8 +594,8 @@ export default class PhotoPreview extends THREE.Mesh {
       const { layoutMode } = store.getState()
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y
-      const endX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : this._originalOverviewPosition.x
-      const endY = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.y : this._originalOverviewPosition.y
+      const endX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : (this._originalOverviewPosition.x + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2)
+      const endY = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.y : (this._originalOverviewPosition.y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2)
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
