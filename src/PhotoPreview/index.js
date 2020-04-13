@@ -493,8 +493,10 @@ export default class PhotoPreview extends THREE.Mesh {
       const { layoutMode } = store.getState()
       const targetPosX = this._targetPosition.x
       const targetPosY = this._targetPosition.y
-      const newX = calc.getValueFromProgress(this.position.x, targetPosX, tweenFactor * 0.1)
-      const newY = calc.getValueFromProgress(this.position.y, targetPosY, tweenFactor * 0.1)
+      // tweenFactor = clampNumber(mapNumber(tweenFactor, 0.1, 1, 0, 1), 0, 1)
+      // console.log(tweenFactor)
+      const newX = calc.getValueFromProgress(this.position.x, targetPosX, tweenFactor)
+      const newY = calc.getValueFromProgress(this.position.y, targetPosY, tweenFactor)
       const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor)
       
       this.position.x = newX
@@ -521,7 +523,7 @@ export default class PhotoPreview extends THREE.Mesh {
 
       this._isOpenInSingleView = true
     } else {
-      this.material.uniforms.u_opacity.value = mapNumber(tweenFactor, 0, 0.75, 1, 0)
+      this.material.uniforms.u_opacity.value = clampNumber(mapNumber(tweenFactor, 0, 0.4, 1, 0), 0, 1)
     }
   }
   _onOpenComplete = ({ modelName, diffDuration = 300 }) => {

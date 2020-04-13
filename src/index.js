@@ -33,7 +33,8 @@ import {
   SERVER_API_ENDPOINT,
   PROJECTS_COUNT,
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
-  TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION,
+  TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
+  TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_CLOSE,
   BLUR_ITERATIONS,
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
@@ -130,6 +131,7 @@ let clickedElement = null
 let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
+let isToggleModelTweenRunning = false
 
 const _gl = renderer.getContext()
 store.dispatch(setWebglMaxTexturesSupported(_gl.getParameter(_gl.MAX_TEXTURE_IMAGE_UNITS)))
@@ -382,14 +384,19 @@ function onProjectsLoad (res) {
   })
 }
 
-function onCloseSingleView ({ modelName, reposition = false }) {
+function onCloseSingleView ({ modelName, reposition = false, duration }) {
   eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, ({ modelName, reposition }))
 
   eventEmitter.emit(EVT_SHOW_CURSOR)
 
+  isToggleModelTweenRunning = true
+
   closeModelTween = chain(
     delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-    tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+    tween({
+      duration: (duration || TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_CLOSE) * openModelTweenFactor,
+      ease: easing.easeInOut,
+    })
   ).start({
     update: tweenFactor => {
       openModelTweenFactor = tweenFactor
@@ -406,11 +413,13 @@ function onCloseSingleView ({ modelName, reposition = false }) {
       clickedElement = null
       layoutModeBtnStyler.set('pointer-events', 'auto')
 
-      const mesh = photoMeshContainer.children
+      photoMeshContainer.children
         .filter(mesh => mesh.isLabel)
         .forEach(mesh => {
           mesh.visible = true
         })
+
+      isToggleModelTweenRunning = false
     }
   })
 }
@@ -477,6 +486,9 @@ function onWebGLSceneMouseDown (e) {
 
   if (hoveredElement && !clickedElement) {
     if (!cameraSystem.isDragCameraMoving) {
+      if (isToggleModelTweenRunning) {
+        return
+      }
       if (closeModelTween) {
         closeModelTween.stop()
         closeModelTween = null
@@ -487,13 +499,18 @@ function onWebGLSceneMouseDown (e) {
       photoMeshContainer.children.filter(mesh => mesh.isLabel).forEach(mesh => {
         mesh.visible = false
       })
-
+ 
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
       eventEmitter.emit(EVT_HIDE_CURSOR)
+
+      isToggleModelTweenRunning = true
       
       openModelTween = chain(
         delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-        tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+        tween({
+          duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN * openModelTweenFactor,
+          ease: easing.easeIn,
+        })
       ).start({
         update: tweenFactor => {
           openModelTweenFactor = tweenFactor
@@ -508,6 +525,7 @@ function onWebGLSceneMouseDown (e) {
 
           eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
           layoutModeBtnStyler.set('pointer-events', 'none')
+          isToggleModelTweenRunning = false
         },
       })
     } else {
@@ -548,9 +566,7 @@ function onWebGLSceneMouseMove (e) {
         } else {
           const intersect = intersects[0]
           const { object, object: { modelName } } = intersect
-          if (!hoveredElement) {
-            hoveredElement = object
-          }
+          hoveredElement = object
           eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_ENTER, { modelName })
         }
       } else {
@@ -589,7 +605,10 @@ function onWebGLSceneMouseClick (e) {
       eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
       openModelTween = chain(
         delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
-        tween({ duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION * openModelTweenFactor })
+        tween({
+          duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN * openModelTweenFactor,
+          ease: easing.easeIn,
+        })
       ).start({
         update: tweenFactor => {
           openModelTweenFactor = tweenFactor
@@ -622,7 +641,7 @@ function onWebGLSceneMouseUp (e) {
         openModelTween = null
 
         const { modelName } = hoveredElement
-        onCloseSingleView({ modelName, reposition: false })
+        onCloseSingleView({ modelName, reposition: false, duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN })
       }
     }
   }
