@@ -67,6 +67,17 @@ li {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
+.open-product-page.mobile {
+  z-index: 1;
+  position: relative;
+  top: 0;
+  right: 0;
+  opacity: 1;
+  display: block;
+}
+.open-product-page.mobile .open-product-icon {
+  width: 24px;
+}
 .open-product-page:hover .open-product-icon:last-of-type {
   width: 24px;
 }
@@ -95,9 +106,9 @@ li {
 
 .close-single-page {
   position: fixed;
-  z-index: 1;
+  z-index: 2;
   top: -8px;
-  right: -7px;
+  right: 1px;
   left: auto;
   width: 80px;
   height: 80px;
@@ -385,6 +396,9 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
 }
 
 @media (min-width: 800px) {
+  .open-product-page.mobile {
+    display: none;
+  }
   .hint {
     width: auto;
     padding-top: 0;

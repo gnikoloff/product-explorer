@@ -105,8 +105,15 @@
   border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.single-page-title {
+.single-page-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 28px;
+}
+
+.single-page-title {
+  /* margin-bottom: 28px; */
 }
 
 .single-page-subheading {

@@ -45,6 +45,7 @@ export default class SinglePageMobile {
       galleryWrapper: wrapper.getElementsByClassName('single-page-mobile-gallery')[0],
       galleryList: wrapper.getElementsByClassName('gallery-list')[0],
       closeBtn: wrapper.getElementsByClassName('close-single-page')[0],
+      openLinkBtn: wrapper.getElementsByClassName('open-product-page')[1],
       mobileNav: wrapper.getElementsByClassName('mobile-single-page-nav')[0],
       prevProductButton: wrapper.getElementsByClassName('mobile-nav-btn-left')[0],
       nextProductButton: wrapper.getElementsByClassName('mobile-nav-btn-right')[0],
@@ -55,6 +56,7 @@ export default class SinglePageMobile {
       appHeader: styler(this.$els.appHeader),
       closeBtn: styler(this.$els.closeBtn),
       mobileNav: styler(this.$els.mobileNav),
+      openLinkBtn: styler(this.$els.openLinkBtn),
     }
 
     this.$els.closeBtn.addEventListener('click', this._closeView)
@@ -82,6 +84,9 @@ export default class SinglePageMobile {
         'pointer-events': 'auto',
         'opacity': opacity,
       })
+      this.stylers.openLinkBtn.set({
+        'pointer-events': 'auto',
+      })
       this.stylers.mobileNav.set({
         'pointer-events': 'auto',
         'opacity': opacity,
@@ -93,12 +98,14 @@ export default class SinglePageMobile {
         'pointer-events': 'none',
         'opacity': opacity,
       })
+      this.stylers.openLinkBtn.set({
+        'pointer-events': 'none',
+      })
       this.stylers.mobileNav.set({
         'pointer-events': 'none',
         'opacity': opacity,
       })
     })
-
   }
   _closeView = () => {
     this._fadeProjectDescription({ direction: -1 }).then(() => {
@@ -115,15 +122,16 @@ export default class SinglePageMobile {
     this._projectsData = projectsData
   }
   _onOpenRequest = ({ modelName }) => {
+    const project = this._projectsData.find(project => project.modelName === modelName)
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
     this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
     this._currModelName = modelName
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
     this.$els.prevProductButton.textContent = this._prevModelName
     this.$els.nextProductButton.textContent = this._nextModelName
+    this.$els.openLinkBtn.setAttribute('href', project.websiteURL)
   }
   _onOpen = ({ modelName }) => {
-
     this._setContentTexts({ modelName })
     this.stylers.wrapper.set({
       'pointer-events': 'auto',
