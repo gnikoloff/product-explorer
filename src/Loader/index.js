@@ -9,11 +9,17 @@ import {
   EVT_FADE_IN_SCENE,
 } from '../constants'
 
+import {
+  isMobileBrowser,
+} from '../helpers'
+
 import vertexShader from './vertex-shader.glsl'
 import fragmentShaderBackground from './fragment-shader-background.glsl'
 import fragmentShaderLabel from './fragment-shader-label.glsl'
 
 const dpr = devicePixelRatio || 1
+
+const mobileBrowser = isMobileBrowser(false) && innerWidth < 800
 
 let appWidth = innerWidth
 let appHeight = innerHeight
@@ -66,8 +72,10 @@ export default class Loader {
     )
     this._scene.add(this._backgroundMesh)
 
+    const planeSize = mobileBrowser ? 125 : 250
+
     this._labelMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(250, 250),
+      new THREE.PlaneGeometry(planeSize, planeSize),
       new THREE.ShaderMaterial({
         uniforms: {
           u_tDiffuse: { value: this._progressTexture },
@@ -78,7 +86,7 @@ export default class Loader {
         transparent: true,
       })
     )
-    this._labelMesh.position.set(-innerWidth / 2 + 150, 0, 0)
+    this._labelMesh.position.set(mobileBrowser ? 0 : -innerWidth / 2 + 150, 0, 0)
     this._scene.add(this._labelMesh)
     
     parentEl.appendChild(this._renderer.domElement)
@@ -136,7 +144,7 @@ export default class Loader {
     ctx.fillStyle = '#eee'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = 'bold 175px monospace'
+    ctx.font = `bold ${mobileBrowser ? 190 : 250}px monospace`
     const label = Math.round(this._loadProgress)
     ctx.fillText(`${label}`, this._textureCanvas.width / 2, this._textureCanvas.height / 2)
     this._progressTexture.needsUpdate = true
@@ -156,11 +164,18 @@ export default class Loader {
   }
   _onUpdate = (ts, dt) => {
     this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * this._dtScale)
-    this._parentEl.style.transform = `translateX(${this._loadProgress}%)`
-    this._renderer.render(this._scene, this._camera)
-    this._renderProgressTexture()
+    if (mobileBrowser) {
+      
+    } else {
+      this._parentEl.style.transform = `translateX(${this._loadProgress}%)`
+    }
     this._labelMesh.material.uniforms.u_time.value = ts
-    if (this._loadProgress > 85 && !this._sceneFaded) {
+    this._renderProgressTexture()
+    this._renderer.render(this._scene, this._camera)
+
+    const sceneFadeTheshold = mobileBrowser ? 98 : 85
+
+    if (this._loadProgress > sceneFadeTheshold  && !this._sceneFaded) {
       eventEmitter.emit(EVT_FADE_IN_SCENE)
       this._sceneFaded = true
     }

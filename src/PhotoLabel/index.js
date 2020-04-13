@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tween, easing } from 'popmotion'
+import { tween, easing, chain, delay } from 'popmotion'
 
 import eventEmitter from '../event-emitter'
 
@@ -20,6 +20,7 @@ import {
   EVT_PHOTO_PREVIEW_RELAYOUTED,
   LAYOUT_MODE_OVERVIEW,
   LAYOUT_MODE_GRID,
+  EVT_FADE_IN_SCENE,
 } from '../constants'
 
 import vertexShader from './vertexShader.glsl'
@@ -30,15 +31,15 @@ const mobileBrowserDetected = isMobileBrowser()
 export default class PhotoLabel extends THREE.Mesh {
   constructor ({
     modelName,
-    position
+    position,
+    initialOpacity,
   }) {
-
     const geometry = new THREE.PlaneBufferGeometry(256 / 2.5, 64 / 2.5)
     const material = new THREE.ShaderMaterial({
       uniforms: {
         u_tDiffuse: { value: null },
         u_mask: { value: null },
-        u_maskBlendFactor: { value: mobileBrowserDetected ? 1 : 0 },
+        u_maskBlendFactor: { value: mobileBrowserDetected ? initialOpacity : 0 },
       },
       vertexShader,
       fragmentShader,
@@ -65,12 +66,29 @@ export default class PhotoLabel extends THREE.Mesh {
     eventEmitter.on(EVT_HOVER_SINGLE_PROJECT_LEAVE, this._onProjectUnhover)
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onRelayoutRequest)
     eventEmitter.on(EVT_PHOTO_PREVIEW_RELAYOUTED, this._onRelayout)
+    eventEmitter.on(EVT_FADE_IN_SCENE, this._fadeIn)
   }
   get modelName () {
     return this._modelName
   }
   get isLabel () {
     return this._isLabel
+  }
+  _fadeIn = () => {
+    chain(
+      delay(200),
+      tween({
+        duration: 250,
+        easing: easing.circIn,
+      })
+    ).start({
+      update: tweenFactor => {
+        this.material.uniforms.u_maskBlendFactor.value = tweenFactor
+      },
+      complete: () => {
+        // this._revealTween = null
+      },
+    })
   }
   _onMaskTextureLoad = ({ texture }) => {
     this.material.uniforms.u_mask.value = texture

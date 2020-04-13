@@ -218,7 +218,6 @@ function init () {
   window.addEventListener('resize', onResize)
 
   webglContainer.addEventListener('touchstart', e => {
-    console.log('touchstart')
     e.stopPropagation()
     if (isInfoSectionOpen) {
       return
@@ -231,14 +230,13 @@ function init () {
   }, { passive: true })
 
   webglContainer.addEventListener('touchmove', e => {
-    console.log('touchmove')
     e.stopPropagation()
     const { layoutMode, mousePositionX, mousePositionY } = store.getState()
     const touch = e.changedTouches[0]
     
     if (!openModelTween && !closeModelTween && !clickedElement && !isInfoSectionOpen) {
-      const diffx = layoutMode === LAYOUT_MODE_GRID ? touch.pageX - mousePositionX : 0
-      const diffy = touch.pageY - mousePositionY
+      const diffx = layoutMode === LAYOUT_MODE_GRID ? (touch.pageX - mousePositionX) : 0
+      const diffy = (touch.pageY - mousePositionY)
       eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
     }
 
@@ -247,7 +245,6 @@ function init () {
 
   webglContainer.addEventListener('touchend', e => {
     e.stopPropagation()
-    console.log('touchend')
     isDragging = false
     cursorArrowOffsetTarget = 0
     if (!isInfoSectionOpen) {
@@ -375,6 +372,7 @@ function onProjectsLoad (res) {
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,
       position: new THREE.Vector3(info.posX - PREVIEW_PHOTO_REF_WIDTH * 0.25, info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2, 25),
+      initialOpacity: isVisible ? 0 : 1,
     })
     previewLabel.position.z = 40
     photoMeshContainer.add(photoPreview)
@@ -468,7 +466,6 @@ function onWebGLSceneMouseDown (e) {
     e.preventDefault()
     return
   }
-  console.log('mousedown')
 
   isDragging = true
 
@@ -526,7 +523,6 @@ function onWebGLSceneMouseMove (e) {
     e.preventDefault()
     return
   }
-  console.log('mousemove')
   const { layoutMode, mousePositionX, mousePositionY } = store.getState()
 
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
@@ -565,7 +561,6 @@ function onWebGLSceneMouseMove (e) {
 }
 
 function onWebGLSceneMouseClick (e) {
-  console.log('click')
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
@@ -615,7 +610,6 @@ function onWebGLSceneMouseUp (e) {
     e.preventDefault()
     return
   }
-  console.log('mouseup')
   if (hoveredElement) {
     if (!clickedElement) {
       if (openModelTween) {

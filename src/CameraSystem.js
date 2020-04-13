@@ -10,6 +10,10 @@ import {
   setWorldBoundsLeft,
 } from './store/actions'
 
+import {
+  isMobileBrowser,
+} from './helpers'
+
 import eventEmitter from './event-emitter'
 
 import {
@@ -28,7 +32,8 @@ import {
   LAYOUT_MODE_OVERVIEW,
   EVT_CAMERA_FORCE_REPOSITION,
 } from './constants'
-import { progress } from '@popmotion/popcorn'
+
+const mobileBrowser = isMobileBrowser()
 
 export default class CameraSystem {
   static friction = 0.875
@@ -94,7 +99,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_LAYOUT_MODE_TRANSITION_REQUEST, this._onLayoutModeChange)
     eventEmitter.on(EVT_CAMERA_FORCE_REPOSITION, this._onForceRelayout)
 
-    // CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: 0.4 })
+    // CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: 0.5 })
   }
   get photoCamera () {
     return this._photoCamera
@@ -178,8 +183,11 @@ export default class CameraSystem {
 
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
 
-    const vx = (this._targetPosition.x - newCameraPositionX) * dt
-    const vy = (this._targetPosition.y - newCameraPositionY) * dt
+    // const vx = (this._targetPosition.x - newCameraPositionX) * dt
+    // const vy = (this._targetPosition.y - newCameraPositionY) * dt
+
+    const vx = (this._targetPosition.x - newCameraPositionX) * (dt * 4)
+    const vy = (this._targetPosition.y - newCameraPositionY) * (dt * 4)
 
     if (!lockHorizontalMovement) {
       newCameraPositionX += vx
