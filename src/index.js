@@ -401,6 +401,7 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
     visibleLabels.forEach(label => {
       label.visible = true
     })
+    eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, { modelName })
     tween({
       duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
       ease: easing.easeIn,
@@ -646,7 +647,7 @@ function onWebGLSceneMouseClick (e) {
         visibleLabels.forEach(mesh => {
           mesh.visible = false
         })
-        // eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
+        eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
         tween({
           duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
           ease: easing.easeIn,

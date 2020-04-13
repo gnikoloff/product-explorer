@@ -573,6 +573,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVectorTarget.y = 0
   }
   _onCloseRequest = ({ modelName, reposition }) => {
+    this._isInteractable = true
     if (modelName === this._modelName) {
       const { layoutMode } = store.getState()
 
@@ -607,7 +608,6 @@ export default class PhotoPreview extends THREE.Mesh {
     }
   }
   _onClose = ({ modelName, tweenFactor }) => {
-    this._isInteractable = true
     if (modelName === this._modelName) {
       const { layoutMode } = store.getState()
       const startX = this._targetPosition.x

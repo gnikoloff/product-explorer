@@ -18,6 +18,9 @@ import {
 
 export default class SinglePageMobile {
   constructor () {
+    this._prevModelName = null
+    this._currModelName = null
+    this._nextModelName = null
     this._projectsData = []
 
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
@@ -42,29 +45,57 @@ export default class SinglePageMobile {
       galleryWrapper: wrapper.getElementsByClassName('single-page-mobile-gallery')[0],
       galleryList: wrapper.getElementsByClassName('gallery-list')[0],
       closeBtn: wrapper.getElementsByClassName('close-single-page')[0],
+      mobileNav: wrapper.getElementsByClassName('mobile-single-page-nav')[0],
+      prevProductButton: wrapper.getElementsByClassName('mobile-nav-btn-left')[0],
+      nextProductButton: wrapper.getElementsByClassName('mobile-nav-btn-right')[0],
     }
 
     this.stylers = {
       wrapper: styler(wrapper),
       appHeader: styler(this.$els.appHeader),
       closeBtn: styler(this.$els.closeBtn),
+      mobileNav: styler(this.$els.mobileNav),
     }
 
     this.$els.closeBtn.addEventListener('click', this._closeView)
+    this.$els.prevProductButton.addEventListener('click', () => {
+      this._nextModelName = this._currModelName
+      this._currModelName = this._prevModelName
+      const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._prevModelName)
+      this._prevModelName = this._projectsData[currNextIdx - 1] ? this._projectsData[currNextIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
+      this._setContentTexts({ modelName: this._currModelName })
+    })
+    this.$els.nextProductButton.addEventListener('click', () => {
+      this._prevModelName = this._currModelName
+      this._currModelName = this._nextModelName
+      const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
+      this._nextModelName = this._projectsData[currNextIdx + 1] ? this._projectsData[currNextIdx + 1].modelName : this._projectsData[0].modelName
+      this._setContentTexts({ modelName: this._currModelName })
+    })
 
     eventEmitter.on(EVT_LOADED_PROJECTS, this._onProjectsLoaded)
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onOpenRequest)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpen)
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, ({ tweenFactor }) => {
+      const opacity = clampNumber(mapNumber(tweenFactor, 0.4, 1, 0, 1), 0, 1)
       this.stylers.closeBtn.set({
         'pointer-events': 'auto',
-        'opacity': clampNumber(mapNumber(tweenFactor, 0.4, 1, 0, 1), 0, 1)
+        'opacity': opacity,
+      })
+      this.stylers.mobileNav.set({
+        'pointer-events': 'auto',
+        'opacity': opacity,
       })
     })
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_CLOSING, ({ tweenFactor }) => {
+      const opacity = clampNumber(mapNumber(tweenFactor, 0, 0.6, 1, 0), 0, 1)
       this.stylers.closeBtn.set({
         'pointer-events': 'none',
-        'opacity': clampNumber(mapNumber(tweenFactor, 0, 0.6, 1, 0), 0, 1)
+        'opacity': opacity,
+      })
+      this.stylers.mobileNav.set({
+        'pointer-events': 'none',
+        'opacity': opacity,
       })
     })
 
@@ -83,7 +114,16 @@ export default class SinglePageMobile {
   _onProjectsLoaded = ({ projectsData }) => {
     this._projectsData = projectsData
   }
+  _onOpenRequest = ({ modelName }) => {
+    const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)
+    this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
+    this._currModelName = modelName
+    this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
+    this.$els.prevProductButton.textContent = this._prevModelName
+    this.$els.nextProductButton.textContent = this._nextModelName
+  }
   _onOpen = ({ modelName }) => {
+
     this._setContentTexts({ modelName })
     this.stylers.wrapper.set({
       'pointer-events': 'auto',
@@ -92,9 +132,6 @@ export default class SinglePageMobile {
     this.stylers.closeBtn.set('pointer-events', 'auto')
     this.stylers.appHeader.set('pointer-events', 'none')
     this._fadeProjectDescription()
-  }
-  _onOpenRequest = () => {
-    // ...
   }
   _fadeProjectDescription = ({ direction = 1, duration = 300, parralel = false } = {}) => new Promise(resolve => {
     const animatedEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
@@ -156,6 +193,9 @@ export default class SinglePageMobile {
     this._setProjectDescList(this.$els.subsystemsList, project.subsystems)
     this._setProjectDescList(this.$els.includesList, project.includes)
     this._setProjectDescList(this.$els.interfaceWithList, project.interfaceWith)
+
+    this.$els.prevProductButton.textContent = this._prevModelName
+    this.$els.nextProductButton.textContent = this._nextModelName
     
     this.$els.galleryList.innerHTML = ''
     project.sliderPhotos.forEach(photoSrc => {
