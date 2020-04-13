@@ -186,6 +186,9 @@ export default class PhotoPreview extends THREE.Mesh {
     })
     eventEmitter.on(EVT_FADE_IN_SCENE, this._fadeIn)
   }
+  get isPhoto () {
+    return true
+  }
   get x () {
     return this.position.x
   }

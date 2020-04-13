@@ -396,23 +396,30 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
     const visibleMeshes = photoMeshContainer.children.filter(mesh => {
       return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
     })
+    const visiblePhotos = visibleMeshes.filter(mesh => mesh.isPhoto)
+    const visibleLabels = photoMeshContainer.children.filter(mesh => mesh.isLabel)
+    visibleLabels.forEach(label => {
+      label.visible = true
+    })
     tween({
       duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
       ease: easing.easeIn,
     }).start({
       update: tweenFactor => {
-        visibleMeshes.forEach(mesh => {
+        visiblePhotos.forEach(mesh => {
           mesh.opacity = tweenFactor
         })
         const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
         layoutModeBtnStyler.set('opacity', opacity)
-        eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor: 1 - tweenFactor })
+        eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor })
       },
       complete: () => {
         // if (rAf) {
         //   cancelAnimationFrame(rAf)
         //   rAf = null
         // }
+
+        eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT)
 
         clickedElement = null
         layoutModeBtnStyler.set('pointer-events', 'auto')
@@ -634,13 +641,18 @@ function onWebGLSceneMouseClick (e) {
         const visibleMeshes = photoMeshContainer.children.filter(mesh => {
           return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
         })
+        const visiblePhotos = visibleMeshes.filter(mesh => mesh.isPhoto)
+        const visibleLabels = photoMeshContainer.children.filter(mesh => mesh.isLabel)
+        visibleLabels.forEach(mesh => {
+          mesh.visible = false
+        })
         // eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
         tween({
           duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
           ease: easing.easeIn,
         }).start({
           update: tweenFactor => {
-            visibleMeshes.forEach(mesh => {
+            visiblePhotos.forEach(mesh => {
               mesh.opacity = 1 - tweenFactor
             })
             const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)

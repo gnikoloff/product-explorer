@@ -94,7 +94,7 @@ export default class PostProcessing {
 
     eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseSingleProject)
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_CLOSING, this._onClosingSingleProject)
-    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
+  eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, this._onOpeningSingleProject)
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onDragEnd)

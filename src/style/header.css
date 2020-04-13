@@ -24,7 +24,6 @@
   justify-content: space-between;
   user-select: none;
   padding: 0 16px;
-  pointer-events: none;
   /* background: #fff; */
 }
 
@@ -105,4 +104,10 @@
 }
 .info-btn-close .close-line:after {
   background: #fff;
+}
+
+@media (min-width: 800px) {
+  .app-header {
+    pointer-events: none;
+  }
 }

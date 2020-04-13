@@ -8,7 +8,13 @@ import {
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,
   EVT_FADE_OUT_SINGLE_VIEW,
+  EVT_SINGLE_PROJECT_MASK_OPENING,
+  EVT_SINGLE_PROJECT_MASK_CLOSING,
 } from './constants'
+import {
+  clampNumber,
+  mapNumber,
+} from './helpers'
 
 export default class SinglePageMobile {
   constructor () {
@@ -17,6 +23,7 @@ export default class SinglePageMobile {
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
       wrapper,
+      appHeader: document.body.getElementsByClassName('app-header')[0],
       singlePageWrapper: wrapper.getElementsByClassName('single-page-info-wrapper')[0],
       container: wrapper.getElementsByClassName('single-page-container')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
@@ -39,6 +46,7 @@ export default class SinglePageMobile {
 
     this.stylers = {
       wrapper: styler(wrapper),
+      appHeader: styler(this.$els.appHeader),
       closeBtn: styler(this.$els.closeBtn),
     }
 
@@ -47,15 +55,28 @@ export default class SinglePageMobile {
     eventEmitter.on(EVT_LOADED_PROJECTS, this._onProjectsLoaded)
     eventEmitter.on(EVT_OPEN_REQUEST_SINGLE_PROJECT, this._onOpenRequest)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpen)
+    eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, ({ tweenFactor }) => {
+      this.stylers.closeBtn.set({
+        'pointer-events': 'auto',
+        'opacity': clampNumber(mapNumber(tweenFactor, 0.4, 1, 0, 1), 0, 1)
+      })
+    })
+    eventEmitter.on(EVT_SINGLE_PROJECT_MASK_CLOSING, ({ tweenFactor }) => {
+      this.stylers.closeBtn.set({
+        'pointer-events': 'none',
+        'opacity': clampNumber(mapNumber(tweenFactor, 0, 0.6, 1, 0), 0, 1)
+      })
+    })
 
   }
   _closeView = () => {
     this._fadeProjectDescription({ direction: -1 }).then(() => {
       this.stylers.wrapper.set({
-        ['pointer-events']: 'none',
-        ['background']: 'transparent'
+        'pointer-events': 'none',
+        'background': 'transparent'
       })
       this.stylers.closeBtn.set('pointer-events', null)
+      this.stylers.appHeader.set('pointer-events', null)
       eventEmitter.emit(EVT_FADE_OUT_SINGLE_VIEW, this._currModelName)
     })
   }
@@ -65,16 +86,15 @@ export default class SinglePageMobile {
   _onOpen = ({ modelName }) => {
     this._setContentTexts({ modelName })
     this.stylers.wrapper.set({
-      ['pointer-events']: 'auto',
-      ['background']: '#fff',
+      'pointer-events': 'auto',
+      'background': '#fff',
     })
     this.stylers.closeBtn.set('pointer-events', 'auto')
+    this.stylers.appHeader.set('pointer-events', 'none')
     this._fadeProjectDescription()
   }
   _onOpenRequest = () => {
-    // this.stylers.wrapper.set({
-      
-    // })
+    // ...
   }
   _fadeProjectDescription = ({ direction = 1, duration = 300, parralel = false } = {}) => new Promise(resolve => {
     const animatedEls = [...this.$els.wrapper.getElementsByClassName('fade-in')]
@@ -151,8 +171,6 @@ export default class SinglePageMobile {
       li.appendChild(img)
       this.$els.galleryList.appendChild(li)
     })
-
-    this.stylers.closeBtn.set('opacity', '1')
     
     // this.$els.prevProductButton.children[0].textContent = this._prevModelName
     // this.$els.nextProductButton.children[0].textContent = this._nextModelName
