@@ -210,7 +210,9 @@ function init () {
   webglContainer.addEventListener('mousemove', onWebGLSceneMouseMove, false)
   webglContainer.addEventListener('mousedown', onWebGLSceneMouseDown, false)
   webglContainer.addEventListener('mouseup', onWebGLSceneMouseUp, false)
-  webglContainer.addEventListener('click', onWebGLSceneMouseClick, false)
+  if (mobileBrowser) {
+    webglContainer.addEventListener('click', onWebGLSceneMouseClick, false)
+  }
   webglContainer.addEventListener('mouseleave', onWebGLSceneMouseLeave, false)
   webglContainer.addEventListener('mouseenter', onWebGLSceneMouseEnter, false)
 
@@ -516,6 +518,8 @@ function onWebGLSceneMouseDown (e) {
     eventEmitter.emit(EVT_CAMERA_ZOOM_OUT_DRAG_START)
     cursorArrowOffsetTarget = 1
   }
+
+  webglContainer.removeEventListener('click', onWebGLSceneMouseClick, false)
 }
 
 function onWebGLSceneMouseMove (e) {
@@ -561,6 +565,7 @@ function onWebGLSceneMouseMove (e) {
 }
 
 function onWebGLSceneMouseClick (e) {
+  e.preventDefault()
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
@@ -627,6 +632,10 @@ function onWebGLSceneMouseUp (e) {
     eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
     eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
   }
+
+  setTimeout(() => {
+    webglContainer.addEventListener('click', onWebGLSceneMouseClick, false)
+  }, 0)
 }
 
 function updateFrame(ts) {
