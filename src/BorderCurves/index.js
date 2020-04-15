@@ -15,12 +15,24 @@ import {
   EVT_DRAG_RIGHT_BORDER,
   EVT_DRAG_BOTTOM_BORDER,
   EVT_DRAG_LEFT_BORDER,
+  EVT_APP_RESIZE,
 } from '../constants'
 
 import vertexShader from './vertex-shader.glsl'
 import fragmentShader from './fragment-shader.glsl'
 
 export default class BorderCurves extends THREE.Group {
+  static getTriangleOffset () {
+    let offset
+    if (innerWidth > innerHeight) {
+      offset = innerWidth * 0.5 + 100
+    } else if (innerHeight > innerWidth) {
+      offset = innerHeight * 0.5 + 100
+    } else {
+      offset = innerWidth * 0.5 + 100
+    }
+    return offset
+  }
   constructor () {
     super()
 
@@ -29,6 +41,7 @@ export default class BorderCurves extends THREE.Group {
 
     const geometryBottom = new THREE.BufferGeometry()
     // interleave attributes here
+    // const offset = BorderCurves.getTriangleOffset()
     const positionsTopBottom = new Float32Array([
       -appWidth * 0.5 - 100, -appHeight * 0.5, 0,
       appWidth * 0.5 + 100, -appHeight * 0.5, 0,
@@ -86,7 +99,31 @@ export default class BorderCurves extends THREE.Group {
     eventEmitter.on(EVT_DRAG_TOP_BORDER, this._onDragBorderTop)
     eventEmitter.on(EVT_DRAG_RIGHT_BORDER, this._onDragBorderRight)
     eventEmitter.on(EVT_DRAG_BOTTOM_BORDER, this._onDragBorderBottom)
-    eventEmitter.on(EVT_DRAG_LEFT_BORDER, this._onDragBorderLeft)    
+    eventEmitter.on(EVT_DRAG_LEFT_BORDER, this._onDragBorderLeft)
+    // eventEmitter.on(EVT_APP_RESIZE, this._onResize)
+  }
+  _onResize = () => {
+    const triangleTopMesh = this.children[0]
+    const triangleBottomMesh = this.children[1]
+    const triangleRightMesh = this.children[2]
+    const triangleLeftMesh = this.children[3]
+    triangleTopMesh.geometry.attributes.position.array[0] = -innerWidth * 0.5 - 100
+    triangleTopMesh.geometry.attributes.position.array[3] = innerWidth * 0.5 + 100
+    triangleBottomMesh.geometry.attributes.position.array[0] = -innerWidth * 0.5 - 100
+    triangleBottomMesh.geometry.attributes.position.array[3] = innerWidth * 0.5 + 100
+    triangleRightMesh.geometry.attributes.position.array[1] = -innerHeight * 0.5
+    triangleRightMesh.geometry.attributes.position.array[4] = innerHeight * 0.5
+    triangleLeftMesh.geometry.attributes.position.array[1] = -innerHeight * 0.5
+    triangleLeftMesh.geometry.attributes.position.array[4] = innerHeight * 0.5
+    // const positionsTopBottom = new Float32Array([
+    //   -appWidth * 0.5 - 100, -appHeight * 0.5, 0,
+    //   appWidth * 0.5 + 100, -appHeight * 0.5, 0,
+    //   0, -appHeight * 0.5, 0
+    // ])
+    // const posiitonsLeftRight = new Float32Array([
+    //   appWidth * 0.5, -appHeight * 0.5, 0,
+    //   appWidth * 0.5, appHeight * 0.5, 0,
+    //   appW
   }
   _onDragBorderTop = ({ offsetY }) => {
     this._topCurveTargetY = innerHeight * 0.5 - clampNumber(mapNumber(offsetY, 0, 300, 0, 150), 0, 150)
@@ -96,13 +133,12 @@ export default class BorderCurves extends THREE.Group {
     this._rightCurveTargetX = innerWidth * 0.5 - clampNumber(mapNumber(offsetX, 0, 300, 0, 150), 0, 150)
     this._timeFactor = 3
   }
-  _onDragBorderLeft = ({ offsetX }) => {
-    console.log('offsetX', offsetX)
-    this._leftCurveTargetX = -innerWidth * 0.5 + clampNumber(mapNumber(offsetX, 0, 300, 0, 150), 0, 150)
-    this._timeFactor = 3
-  }
   _onDragBorderBottom = ({ offsetY }) => {
     this._bottomCurveTargetY = -innerHeight * 0.5 + clampNumber(mapNumber(offsetY, 0, 300, 0, 150), 0, 150)
+    this._timeFactor = 3
+  }
+  _onDragBorderLeft = ({ offsetX }) => {
+    this._leftCurveTargetX = -innerWidth * 0.5 + clampNumber(mapNumber(offsetX, 0, 300, 0, 150), 0, 150)
     this._timeFactor = 3
   }
   _onDragEnd = () => {

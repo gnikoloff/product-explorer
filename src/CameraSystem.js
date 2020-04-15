@@ -225,8 +225,9 @@ export default class CameraSystem {
 
     if (this._targetPosition.x > worldBoundsRight) {
       if (!lockHorizontalMovement) {
-        this._targetPosition.x = worldBoundsRight
-        if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        // this._targetPosition.x = worldBoundsRight
+        // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        if (!this._isPullingBorderRight) {
           this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
           this._isPullingBorderRight = true
         }
@@ -234,29 +235,29 @@ export default class CameraSystem {
     }
     if (this._targetPosition.x < worldBoundsLeft) {
       if (!lockHorizontalMovement) {
-        this._targetPosition.x = worldBoundsLeft
-        if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        // this._targetPosition.x = worldBoundsLeft
+        // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        if (!this._isPullingBorderLeft) {
           this._isPullingBorderLeft = true
           this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
         }
       }
     }
     if (this._targetPosition.y > worldBoundsTop) {
-      this._targetPosition.y = worldBoundsTop
-      if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+      // this._targetPosition.y = worldBoundsTop
+      // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+      if (!this._isPullingBorderTop) {
         this._isPullingBorderTop = true
         this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
       }
     }
     if (this._targetPosition.y < worldBoundsBottom) {
-      this._targetPosition.y = worldBoundsBottom
-      if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+      // this._targetPosition.y = worldBoundsBottom
+      // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+      if (!this._isPullingBorderBottom) {
         this._isPullingBorderBottom = true
         this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
       }
-    } else {
-      // this._isPullingBorderBottom = false
-      // this._lastMousePosBorderTouch.set(null, null)
     }
 
     this._photoCamera.position.x = newCameraPositionX
@@ -324,11 +325,29 @@ export default class CameraSystem {
     }
   }
   _onSceneDragEnd = () => {
-    this._lastMousePosBorderTouch.set(0, 0)
+    const {
+      worldBoundsTop,
+      worldBoundsRight,
+      worldBoundsBottom,
+      worldBoundsLeft,
+    } = store.getState()
+    if (this._isPullingBorderTop) {
+      this._targetPosition.y = worldBoundsTop
+    }
+    if (this._isPullingBorderRight) {
+      this._targetPosition.x = worldBoundsRight
+    }
+    if (this._isPullingBorderBottom) {
+      this._targetPosition.y = worldBoundsBottom
+    }
+    if (this._isPullingBorderLeft) {
+      this._targetPosition.x = worldBoundsLeft
+    }
     this._isPullingBorderTop = false
     this._isPullingBorderRight = false
     this._isPullingBorderBottom = false
     this._isPullingBorderLeft = false
+    this._lastMousePosBorderTouch.set(0, 0)
   }
   _onDragZoomOut = () => {
     const { layoutMode } = store.getState()
