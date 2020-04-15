@@ -359,7 +359,7 @@ export default class PhotoPreview extends THREE.Mesh {
     const targetX = cameraPositionX - innerWidth * 0.25
     const targetY = cameraPositionY
     if (this._isOpenInSingleView) {
-      const dpr = devicePixelRatio || 1
+      const dpr = devicePixelRatio
       let offsetX
       if (direction === 1) {
         offsetX = -innerWidth * dpr * 0.5

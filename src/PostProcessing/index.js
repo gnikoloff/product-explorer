@@ -40,15 +40,15 @@ const mobileDetect = isMobileBrowser()
 
 export default class PostProcessing {
   static HIDDEN_CURSOR_SIZE = 0
-  static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio || 1)
-  static HOVER_CURSOR_SIZE = 50 * (devicePixelRatio || 1)
-  static DRAG_CURSOR_SIZE = 22 * (devicePixelRatio || 1)
+  static DEFAULT_CURSOR_SIZE = 25 * (devicePixelRatio)
+  static HOVER_CURSOR_SIZE = 50 * (devicePixelRatio)
+  static DRAG_CURSOR_SIZE = 22 * (devicePixelRatio)
 
   constructor ({
     width,
     height,
   }) {
-    const dpr = devicePixelRatio || 1
+    const dpr = devicePixelRatio
     const cursorSizeTarget = mobileDetect ? PostProcessing.HIDDEN_CURSOR_SIZE : PostProcessing.DEFAULT_CURSOR_SIZE
     this._mainEffect = new Effect({
       width,
@@ -190,7 +190,7 @@ export default class PostProcessing {
       mousePositionY,
     } = store.getState()
 
-    const dpr = devicePixelRatio || 1
+    const dpr = devicePixelRatio
     const x = mousePositionX * dpr
     const y = (innerHeight - mousePositionY) * dpr
 

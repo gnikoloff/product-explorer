@@ -17,7 +17,7 @@ import vertexShader from './vertex-shader.glsl'
 import fragmentShaderBackground from './fragment-shader-background.glsl'
 import fragmentShaderLabel from './fragment-shader-label.glsl'
 
-const dpr = devicePixelRatio || 1
+const dpr = devicePixelRatio
 
 const mobileBrowser = isMobileBrowser(false) && innerWidth < 800
 

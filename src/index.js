@@ -15,6 +15,7 @@ import CameraSystem from './CameraSystem'
 import Cursor from './Cursor'
 import LoadManager from './LoadManager'
 import Loader from './Loader'
+import BorderCurves from './BorderCurves'
 
 import {
   getArrowTexture,
@@ -97,6 +98,7 @@ const cameraSystem = new CameraSystem({
   appHeight,
   position: new THREE.Vector3(0, 0, 50)
 })
+const borderCurves = new BorderCurves()
 
 let cursor
 if (!mobileBrowser) {
@@ -107,7 +109,7 @@ const webglContainer = document.getElementsByClassName('webgl-scene')[0]
 const layoutModeBtnContainer = document.getElementsByClassName('webgl-scene-hint')[0]
 const layoutModeBtnStyler = styler(layoutModeBtnContainer)
 
-const dpr = window.devicePixelRatio || 1
+const dpr = window.devicePixelRatio
 
 const mousePos = new THREE.Vector2(appWidth / 2, appHeight / 2)
 const raycastMouse = new THREE.Vector2(0, 0)
@@ -181,6 +183,8 @@ if (!mobileBrowser) {
   cursorScene.add(cursorArrowBottom)
 }
 
+cursorScene.add(borderCurves)
+
 init()
 
 function init () {
@@ -242,6 +246,13 @@ function init () {
     e.stopPropagation()
     const { layoutMode, mousePositionX, mousePositionY } = store.getState()
     const touch = e.changedTouches[0]
+
+    raycastMouse.x = (touch.clientX / renderer.domElement.clientWidth) * 2 - 1
+    raycastMouse.y = -(touch.clientY / renderer.domElement.clientHeight) * 2 + 1
+
+    // triangleGeo.attributes['position'].array[6] = raycastMouse.x
+    // triangleGeo.attributes['position'].array[7] = raycastMouse.y
+    // triangleGeo.attributes['position'].needsUpdate = true
     
     if (!openModelTween && !closeModelTween && !clickedElement && !isInfoSectionOpen) {
       const diffx = layoutMode === LAYOUT_MODE_GRID ? (touch.pageX - mousePositionX) : 0
@@ -499,6 +510,7 @@ function onPageMouseLeave () {
 function onWebGLSceneMouseLeave () {
   cursorArrowOffsetTarget = 0
   isDragging = false
+  console.log('mouseleave')
   eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
   eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
   eventEmitter.emit(EVT_HIDE_CURSOR)
@@ -734,6 +746,8 @@ function onWebGLSceneMouseUp (e) {
   }, 0)
 }
 
+// console.log(triangleGeo)
+
 function updateFrame(ts) {
   if (!ts) { ts = 0 }
   const dt = Math.min((ts - oldTime) / 1000, 1)
@@ -747,6 +761,12 @@ function updateFrame(ts) {
 
   const cursorBasePosX = (raycastMouse.x * appWidth) / 2
   const cursorBasePosY = (raycastMouse.y * appHeight) / 2
+
+
+  // triangleGeo.attributes['position'].array[6] = cursorBasePosX
+  // triangleGeo.attributes['position'].array[7] = -appHeight / 2 + 20
+  // triangleGeo.attributes['position'].needsUpdate = true
+
 
   if (!mobileBrowser) {
     const arrowIndicatorFactor = dt * 25

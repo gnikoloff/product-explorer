@@ -25,12 +25,17 @@ import {
   EVT_CAMERA_ZOOM_IN_DRAG_END,
   EVT_APP_RESIZE,
   EVT_ON_SCENE_DRAG,
+  EVT_ON_SCENE_DRAG_END,
   EVT_CLOSE_REQUEST_SINGLE_PROJECT,
   EVT_OPEN_REQUEST_SINGLE_PROJECT,
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
   EVT_CAMERA_FORCE_REPOSITION,
+  EVT_DRAG_TOP_BORDER,
+  EVT_DRAG_RIGHT_BORDER,
+  EVT_DRAG_BOTTOM_BORDER,
+  EVT_DRAG_LEFT_BORDER,
 } from './constants'
 
 const mobileBrowser = isMobileBrowser() && innerWidth < 800
@@ -66,6 +71,12 @@ export default class CameraSystem {
     this._isZoomedOut = false
     this._shouldMove = true
 
+    this._isPullingBorderTop = false
+    this._isPullingBorderRight = false
+    this._isPullingBorderBottom = false
+    this._isPullingBorderLeft = false
+    this._lastMousePosBorderTouch = new THREE.Vector2()
+
     const cameraLookAt = new THREE.Vector3(0, 0, 0)
 
     this._photoCamera = new THREE.OrthographicCamera(appWidth / - 2, appWidth / 2, appHeight / 2, appHeight / - 2, 1, 1000)
@@ -93,6 +104,7 @@ export default class CameraSystem {
     eventEmitter.on(EVT_CLOSE_REQUEST_SINGLE_PROJECT, this._onRequestCloseProject)
     eventEmitter.on(EVT_CAMERA_HANDLE_MOVEMENT_WORLD, this._handleMovement)
     eventEmitter.on(EVT_ON_SCENE_DRAG, this._onSceneDrag)
+    eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onSceneDragEnd)
     eventEmitter.on(EVT_CAMERA_ZOOM_OUT_DRAG_START, this._onDragZoomOut)
     eventEmitter.on(EVT_CAMERA_ZOOM_IN_DRAG_END, this._onDragZoomIn)
     eventEmitter.on(EVT_APP_RESIZE, this._onResize)
@@ -180,8 +192,8 @@ export default class CameraSystem {
     }
 
     const {
-      cameraPositionX,
-      cameraPositionY,
+      mousePositionX,
+      mousePositionY,
       worldBoundsTop,
       worldBoundsRight,
       worldBoundsBottom,
@@ -193,9 +205,6 @@ export default class CameraSystem {
     let newCameraPositionY = this._photoCamera.position.y
 
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
-
-    // const vx = (this._targetPosition.x - newCameraPositionX) * dt
-    // const vy = (this._targetPosition.y - newCameraPositionY) * dt
 
     const vx = (this._targetPosition.x - newCameraPositionX) * (dt * 4)
     const vy = (this._targetPosition.y - newCameraPositionY) * (dt * 4)
@@ -212,24 +221,42 @@ export default class CameraSystem {
     //   x: this._photoCamera.position.x,
     //   y: this._photoCamera.position.y,
     // })
-    
     // this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
 
     if (this._targetPosition.x > worldBoundsRight) {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = worldBoundsRight
+        if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+          this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+          this._isPullingBorderRight = true
+        }
       }
     }
     if (this._targetPosition.x < worldBoundsLeft) {
       if (!lockHorizontalMovement) {
         this._targetPosition.x = worldBoundsLeft
+        if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+          this._isPullingBorderLeft = true
+          this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+        }
       }
     }
     if (this._targetPosition.y > worldBoundsTop) {
       this._targetPosition.y = worldBoundsTop
+      if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        this._isPullingBorderTop = true
+        this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+      }
     }
     if (this._targetPosition.y < worldBoundsBottom) {
       this._targetPosition.y = worldBoundsBottom
+      if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        this._isPullingBorderBottom = true
+        this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+      }
+    } else {
+      // this._isPullingBorderBottom = false
+      // this._lastMousePosBorderTouch.set(null, null)
     }
 
     this._photoCamera.position.x = newCameraPositionX
@@ -268,12 +295,40 @@ export default class CameraSystem {
     store.dispatch(setWorldBoundsLeft(leftBound))
   }
   _onSceneDrag = ({ diffx, diffy }) => {
-    const { layoutMode } = store.getState()
+    const {
+      mousePositionX,
+      mousePositionY,
+      layoutMode
+    } = store.getState()
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
     if (!lockHorizontalMovement) {
       this._targetPosition.x += diffx * -2 + 1
     }
     this._targetPosition.y += diffy * 2 - 1
+
+    if (this._isPullingBorderTop) {
+      const dragTopBorderDiff = mousePositionY - this._lastMousePosBorderTouch.y
+      eventEmitter.emit(EVT_DRAG_TOP_BORDER, { offsetY: Math.abs(dragTopBorderDiff) })
+    }
+    if (this._isPullingBorderRight) {
+      const dragRightBorderDiff = mousePositionX - this._lastMousePosBorderTouch.x
+      eventEmitter.emit(EVT_DRAG_RIGHT_BORDER, { offsetX: Math.abs(dragRightBorderDiff) })
+    }
+    if (this._isPullingBorderBottom) {
+      const dragBottomBorderDiff = mousePositionY - this._lastMousePosBorderTouch.y
+      eventEmitter.emit(EVT_DRAG_BOTTOM_BORDER, { offsetY: Math.abs(dragBottomBorderDiff) })
+    }
+    if (this._isPullingBorderLeft) {
+      const dragLeftBorderDiff = mousePositionX - this._lastMousePosBorderTouch.x
+      eventEmitter.emit(EVT_DRAG_LEFT_BORDER, { offsetX: Math.abs(dragLeftBorderDiff) })
+    }
+  }
+  _onSceneDragEnd = () => {
+    this._lastMousePosBorderTouch.set(0, 0)
+    this._isPullingBorderTop = false
+    this._isPullingBorderRight = false
+    this._isPullingBorderBottom = false
+    this._isPullingBorderLeft = false
   }
   _onDragZoomOut = () => {
     const { layoutMode } = store.getState()

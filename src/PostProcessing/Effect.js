@@ -31,7 +31,7 @@ export default class Effect extends THREE.Mesh {
     const scaleDeltaX = innerWidth / this._width
     const scaleDeltaY = innerHeight / this._height
     this.scale.set(scaleDeltaX, scaleDeltaY, 1)
-    const dpr = window.devicePixelRatio || 1
+    const dpr = window.devicePixelRatio
     this.material.uniforms.u_resolution.value.set(innerWidth * dpr, innerHeight * dpr)
   }
 }
