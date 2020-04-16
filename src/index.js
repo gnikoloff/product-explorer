@@ -257,7 +257,7 @@ function init () {
     if (!openModelTween && !closeModelTween && !clickedElement && !isInfoSectionOpen) {
       const diffx = layoutMode === LAYOUT_MODE_GRID ? (touch.pageX - mousePositionX) : 0
       const diffy = (touch.pageY - mousePositionY)
-      eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy })
+      eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx, diffy, isTouch: true })
     }
 
     store.dispatch(setMousePosition({ x: touch.pageX, y: touch.pageY }))

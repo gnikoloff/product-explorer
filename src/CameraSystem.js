@@ -295,17 +295,18 @@ export default class CameraSystem {
     store.dispatch(setWorldBoundsBottom(bottomBound))
     store.dispatch(setWorldBoundsLeft(leftBound))
   }
-  _onSceneDrag = ({ diffx, diffy }) => {
+  _onSceneDrag = ({ diffx, diffy, isTouch }) => {
     const {
       mousePositionX,
       mousePositionY,
       layoutMode
     } = store.getState()
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
+    const diffScale = isTouch ? 2.65 : 1.5
     if (!lockHorizontalMovement) {
-      this._targetPosition.x += diffx * -2 + 1
+      this._targetPosition.x += diffx * -diffScale + 1
     }
-    this._targetPosition.y += diffy * 2 - 1
+    this._targetPosition.y += diffy * diffScale - 1
 
     if (this._isPullingBorderTop) {
       const dragTopBorderDiff = mousePositionY - this._lastMousePosBorderTouch.y
@@ -372,7 +373,7 @@ export default class CameraSystem {
     this._isZoomedOut = false
     tween().start(tweenFactor => {
       const zoom = mobileBrowser
-        ? this._zoomFactor + tweenFactor * (CameraSystem.MOBILE_CAMERA_ZOOM * this._zoomFactor)
+        ? mapNumber(tweenFactor, 0, 1, this._zoomFactor, CameraSystem.MOBILE_CAMERA_ZOOM)
         : this._zoomFactor + tweenFactor * 0.125
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
     })

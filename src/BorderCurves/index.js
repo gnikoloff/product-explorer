@@ -22,6 +22,7 @@ import vertexShader from './vertex-shader.glsl'
 import fragmentShader from './fragment-shader.glsl'
 
 export default class BorderCurves extends THREE.Group {
+  static MAX_OFFSET = 300
   static getTriangleOffset () {
     let offset
     if (innerWidth > innerHeight) {
@@ -126,19 +127,19 @@ export default class BorderCurves extends THREE.Group {
     //   appW
   }
   _onDragBorderTop = ({ offsetY }) => {
-    this._topCurveTargetY = innerHeight * 0.5 - clampNumber(mapNumber(offsetY, 0, 300, 0, 150), 0, 150)
+    this._topCurveTargetY = innerHeight * 0.5 - clampNumber(mapNumber(offsetY, 0, 300, 0, BorderCurves.MAX_OFFSET), 0, BorderCurves.MAX_OFFSET)
     this._timeFactor = 3
   }
   _onDragBorderRight = ({ offsetX }) => {
-    this._rightCurveTargetX = innerWidth * 0.5 - clampNumber(mapNumber(offsetX, 0, 300, 0, 150), 0, 150)
+    this._rightCurveTargetX = innerWidth * 0.5 - clampNumber(mapNumber(offsetX, 0, 300, 0, BorderCurves.MAX_OFFSET), 0, BorderCurves.MAX_OFFSET)
     this._timeFactor = 3
   }
   _onDragBorderBottom = ({ offsetY }) => {
-    this._bottomCurveTargetY = -innerHeight * 0.5 + clampNumber(mapNumber(offsetY, 0, 300, 0, 150), 0, 150)
+    this._bottomCurveTargetY = -innerHeight * 0.5 + clampNumber(mapNumber(offsetY, 0, 300, 0, BorderCurves.MAX_OFFSET), 0, BorderCurves.MAX_OFFSET)
     this._timeFactor = 3
   }
   _onDragBorderLeft = ({ offsetX }) => {
-    this._leftCurveTargetX = -innerWidth * 0.5 + clampNumber(mapNumber(offsetX, 0, 300, 0, 150), 0, 150)
+    this._leftCurveTargetX = -innerWidth * 0.5 + clampNumber(mapNumber(offsetX, 0, 300, 0, BorderCurves.MAX_OFFSET), 0, BorderCurves.MAX_OFFSET)
     this._timeFactor = 3
   }
   _onDragEnd = () => {
