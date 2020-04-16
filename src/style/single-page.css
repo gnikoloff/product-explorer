@@ -105,6 +105,33 @@
   border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+.mobile-nav-btn-text {
+  display: inline-block;
+  position: relative;
+  pointer-events: none;
+}
+
+.mobile-nav-btn-text:before {
+  top: -1px;
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-image: url('../assets/icon-right.svg');
+  background-position: 6px 2px;
+  background-repeat: no-repeat;
+  background-size: 7px;
+}
+
+.mobile-nav-btn-left .mobile-nav-btn-text:before {
+  left: -31px;
+  transform: rotate(180deg);
+}
+
+.mobile-nav-btn-right .mobile-nav-btn-text:before {
+  right: -31px;
+}
+
 .single-page-title-wrapper {
   display: flex;
   align-items: center;
@@ -130,6 +157,7 @@
 }
 
 .meta-item {
+  white-space: pre;
   margin-right: 32px;
 }
 .meta-item:last-of-type {

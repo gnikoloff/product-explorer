@@ -130,8 +130,8 @@ export default class SinglePageMobile {
     this._prevModelName = this._projectsData[projectIdx - 1] ? this._projectsData[projectIdx - 1].modelName : this._projectsData[this._projectsData.length - 1].modelName
     this._currModelName = modelName
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
-    this.$els.prevProductButton.textContent = this._prevModelName
-    this.$els.nextProductButton.textContent = this._nextModelName
+    this.$els.prevProductButton.children[0].textContent = this._prevModelName
+    this.$els.nextProductButton.children[0].textContent = this._nextModelName
     this.$els.openLinkBtn.setAttribute('href', project.websiteURL)
     this._observeElementsList.forEach(({ observer, el }) => observer.unobserve(el))
     this._observeElementsList = []
@@ -207,8 +207,8 @@ export default class SinglePageMobile {
     this._setProjectDescList(this.$els.includesList, project.includes)
     this._setProjectDescList(this.$els.interfaceWithList, project.interfaceWith)
 
-    this.$els.prevProductButton.textContent = this._prevModelName
-    this.$els.nextProductButton.textContent = this._nextModelName
+    this.$els.prevProductButton.children[0].textContent = this._prevModelName
+    this.$els.nextProductButton.children[0].textContent = this._nextModelName
     
     this.$els.galleryList.innerHTML = ''
     project.sliderPhotos.forEach(photoSrc => {
