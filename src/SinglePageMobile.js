@@ -22,6 +22,7 @@ export default class SinglePageMobile {
     this._currModelName = null
     this._nextModelName = null
     this._projectsData = []
+    this._observeElementsList = []
 
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
@@ -115,6 +116,8 @@ export default class SinglePageMobile {
       })
       this.stylers.closeBtn.set('pointer-events', null)
       this.stylers.appHeader.set('pointer-events', null)
+      this._observeElementsList.forEach(({ observer, el }) => observer.unobserve(el))
+      this._observeElementsList = []
       eventEmitter.emit(EVT_FADE_OUT_SINGLE_VIEW, this._currModelName)
     })
   }
@@ -130,6 +133,8 @@ export default class SinglePageMobile {
     this.$els.prevProductButton.textContent = this._prevModelName
     this.$els.nextProductButton.textContent = this._nextModelName
     this.$els.openLinkBtn.setAttribute('href', project.websiteURL)
+    this._observeElementsList.forEach(({ observer, el }) => observer.unobserve(el))
+    this._observeElementsList = []
   }
   _onOpen = ({ modelName }) => {
     this._setContentTexts({ modelName })
@@ -207,17 +212,29 @@ export default class SinglePageMobile {
     
     this.$els.galleryList.innerHTML = ''
     project.sliderPhotos.forEach(photoSrc => {
-      const onSliderImageLoad = () => {
-        img.style.setProperty('opacity', '1')
-        img.removeEventListener('load', onSliderImageLoad)  
-      }
       const li = document.createElement('li')
       li.classList.add('gallery-item')
-      const img = document.createElement('img')
-      img.addEventListener('load', onSliderImageLoad)
-      img.src = photoSrc
-      li.appendChild(img)
       this.$els.galleryList.appendChild(li)
+
+      const observer = new IntersectionObserver((changes) => {
+        if (!changes[0].isIntersecting) {
+          return
+        }
+        const onSliderImageLoad = () => {
+          img.style.setProperty('opacity', '1')
+          img.removeEventListener('load', onSliderImageLoad)  
+        }
+        const img = document.createElement('img')
+        img.addEventListener('load', onSliderImageLoad)
+        img.src = photoSrc
+        li.appendChild(img)
+
+        console.log(`${img.src} entered viewport`)
+
+        observer.unobserve(li)
+      }, { threshold: 0.2 })
+      observer.observe(li)
+      this._observeElementsList.push({ observer, el: li })
     })
     
     // this.$els.prevProductButton.children[0].textContent = this._prevModelName
