@@ -647,6 +647,11 @@ function onWebGLSceneMouseMove (e) {
 
 function onWebGLSceneMouseClick (e) {
   e.preventDefault()
+
+  if (isInfoSectionOpen) {
+    return
+  }
+
   raycastMouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1
   raycastMouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1
 
