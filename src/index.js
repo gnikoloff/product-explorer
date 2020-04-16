@@ -25,6 +25,7 @@ import {
 
 import store from './store'
 import {
+  setIsMobile,
   setMousePosition,
   setLayoutMode,
   setLayoutModeTransitioning,
@@ -86,12 +87,13 @@ import './style'
 import labelMaskSource from './assets/mask.png'
 
 const mobileBrowser = isMobileBrowser()
-const isSmartphone = isMobileBrowser() && innerWidth < 800
+const isMobile = isMobileBrowser() && innerWidth < 800
+store.dispatch(setIsMobile(isMobile))
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
 
-const singlePage = isSmartphone ? new SinglePageMobile() : new SinglePage()
+const singlePage = isMobile ? new SinglePageMobile() : new SinglePage()
 const infoPanel = new InfoPanel()
 const cameraSystem = new CameraSystem({
   appWidth,
@@ -382,7 +384,7 @@ function onProjectsLoad (res) {
       // initialOpacity: isVisible ? 0 : 1,
       initialOpacity: 1,
     })
-    const labelPosX = info.posX - PREVIEW_PHOTO_REF_WIDTH * (isSmartphone ? 0 : 0.25)
+    const labelPosX = info.posX - PREVIEW_PHOTO_REF_WIDTH * (isMobile ? 0 : 0.25)
     const labelPosY = info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,
@@ -403,7 +405,7 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
 
   isToggleModelTweenRunning = true
 
-  if (isSmartphone) {
+  if (isMobile) {
     const visibleMeshes = photoMeshContainer.children.filter(mesh => {
       return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
     })
@@ -650,7 +652,7 @@ function onWebGLSceneMouseClick (e) {
       const intersect = intersects[0]
       const { object, object: { modelName } } = intersect
 
-      if (isSmartphone) {
+      if (isMobile) {
         const visibleMeshes = photoMeshContainer.children.filter(mesh => {
           return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
         })

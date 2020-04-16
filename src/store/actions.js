@@ -1,3 +1,9 @@
+export const SET_IS_MOBILE = 'SET_IS_MOBILE'
+export const setIsMobile = isMobile => ({
+  type: SET_IS_MOBILE,
+  isMobile,
+})
+
 export const SET_MOUSE_POSITION = 'SET_MOUSE_POSITION'
 export const setMousePosition = ({ x, y }) => ({
   type: SET_MOUSE_POSITION,

@@ -27,7 +27,6 @@ import vertexShader from './vertexShader.glsl'
 import fragmentShader from './fragmentShader.glsl'
 
 const mobileBrowserDetected = isMobileBrowser()
-const isSmartPhone = isMobileBrowser() && window.innerWidth < 800
 
 export default class PhotoLabel extends THREE.Mesh {
   constructor ({
@@ -35,8 +34,9 @@ export default class PhotoLabel extends THREE.Mesh {
     position,
     initialOpacity,
   }) {
-    const width = isSmartPhone ? 384 / 2.5 : 256 / 2.5
-    const height = isSmartPhone ? 96 / 2.5 : 64 / 2.5
+    const isMobile = store.getState()
+    const width = isMobile ? 384 / 2.5 : 256 / 2.5
+    const height = isMobile ? 96 / 2.5 : 64 / 2.5
     const geometry = new THREE.PlaneBufferGeometry(width, height)
     const material = new THREE.ShaderMaterial({
       uniforms: {
@@ -194,19 +194,19 @@ export default class PhotoLabel extends THREE.Mesh {
     if (this._modelName !== modelName) {
       return
     }
+    const { isMobile, layoutMode } = store.getState()
     if (mobileBrowserDetected) {
       tween().start(tweenFactor => {
         this.material.uniforms.u_maskBlendFactor.value = tweenFactor
       })
     } else {
-      const { layoutMode } = store.getState()
       if (layoutMode === LAYOUT_MODE_OVERVIEW) {
         tween().start(tweenFactor => {
           this.material.uniforms.u_maskBlendFactor.value = tweenFactor
         })
       }
     }
-    const newx = x - PREVIEW_PHOTO_REF_WIDTH * (isSmartPhone ? 0 : 0.25)
+    const newx = x - PREVIEW_PHOTO_REF_WIDTH * (isMobile ? 0 : 0.25)
     const newy = y - PREVIEW_PHOTO_REF_HEIGHT * 0.5
     this.position.set(newx, newy, 0)
   }

@@ -7,6 +7,7 @@ import {
 } from '../constants'
 
 const initialState = {
+  isMobile: false,
   mousePositionX: 0,
   mousePositionY: 0,
   cameraPositionX: 0,
@@ -24,6 +25,9 @@ const initialState = {
 
 const appState = (state = initialState, action) => {
   switch (action.type) {
+    case actions.SET_IS_MOBILE: {
+      return Object.assign(state, { isMobile: action.isMobile })
+    }
     case actions.SET_MOUSE_POSITION: {
       return Object.assign(state, {
         mousePositionX: action.x,
