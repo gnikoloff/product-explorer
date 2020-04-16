@@ -17,6 +17,7 @@ import {
   EVT_OPEN_REQUEST_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
   EVT_CLOSING_INFO_SECTION,
+  EVT_CLOSE_INFO_SECTION_COMPLETE,
 } from './constants'
 
 export default class InfoPanel {
@@ -88,6 +89,7 @@ export default class InfoPanel {
       complete: () => {
         this.stylers.toggleButton.set('pointerEvents', 'auto')
         window.removeEventListener('keydown', this._onKeyDown)
+        eventEmitter.emit(EVT_CLOSE_INFO_SECTION_COMPLETE)
       },
     })
   }

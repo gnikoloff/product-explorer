@@ -70,6 +70,7 @@ import {
   EVT_OPENING_INFO_SECTION,
   EVT_CLOSE_REQUEST_INFO_SECTION,
   EVT_CLOSING_INFO_SECTION,
+  EVT_CLOSE_INFO_SECTION_COMPLETE,
   LAYOUT_MODE_GRID,
   LAYOUT_MODE_OVERVIEW,
   EVT_LAYOUT_MODE_TRANSITION_REQUEST,
@@ -141,6 +142,7 @@ let openModelTween
 let closeModelTween
 let openModelTweenFactor = 1
 let isToggleModelTweenRunning = false
+let blueEnabled = false
 
 const _gl = renderer.getContext()
 store.dispatch(setWebglMaxTexturesSupported(_gl.getParameter(_gl.MAX_TEXTURE_IMAGE_UNITS)))
@@ -283,6 +285,7 @@ function init () {
   eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION, onInfoSectionOpenRequest)
   eventEmitter.on(EVT_OPENING_INFO_SECTION, onInfoSectionOpening)
   eventEmitter.on(EVT_CLOSING_INFO_SECTION, onInfoSectionClosing)
+  eventEmitter.on(EVT_CLOSE_INFO_SECTION_COMPLETE, onInfoSectionCloseComplete)
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
   
   rAf = requestAnimationFrame(updateFrame)
@@ -335,6 +338,7 @@ function onOverviewLayoutMousewheel (e) {
 }
 
 function onInfoSectionOpenRequest () {
+  blueEnabled = true
   document.body.style.setProperty('cursor', 'default')
   isInfoSectionOpen = true
 }
@@ -358,6 +362,10 @@ function onInfoSectionClosing ({ tweenFactor }) {
     opacity,
     pointerEvents: 'auto',
   })
+}
+
+function onInfoSectionCloseComplete () {
+  blueEnabled = false
 }
 
 function onPrevProjectClick ({ modelName }) {
@@ -403,6 +411,8 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
 
   eventEmitter.emit(EVT_SHOW_CURSOR)
 
+  rAf = requestAnimationFrame(updateFrame)
+
   isToggleModelTweenRunning = true
 
   if (isMobile) {
@@ -425,7 +435,7 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
         })
         const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
         layoutModeBtnStyler.set('opacity', opacity)
-        eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor })
+        eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor, duration: 1000 })
       },
       complete: () => {
         // if (rAf) {
@@ -452,7 +462,7 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
     update: tweenFactor => {
       openModelTweenFactor = tweenFactor
       eventEmitter.emit(EVT_CLOSING_SINGLE_PROJECT, { modelName, tweenFactor, reposition })
-      eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor })
+      eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor, duration: 1000 })
       const opacity = mapNumber(tweenFactor, 0.6, 1, 0, 1)
       layoutModeBtnStyler.set('opacity', opacity)
     },
@@ -675,10 +685,10 @@ function onWebGLSceneMouseClick (e) {
             eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
           },
           complete: () => {
-            // if (rAf) {
-            //   cancelAnimationFrame(rAf)
-            //   rAf = null
-            // }
+            if (rAf) {
+              cancelAnimationFrame(rAf)
+              rAf = null
+            }
 
             clickedElement = object
             eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
@@ -797,34 +807,40 @@ function updateFrame(ts) {
   
   renderer.autoClear = false
 
-  renderer.setRenderTarget(postFXRenderTarget)
+  if (blueEnabled) {
+    renderer.setRenderTarget(postFXRenderTarget)
+  } else {
+    renderer.setRenderTarget(null)
+  }
   renderer.render(postFXScene, cameraSystem.postFXCamera)
   
-  let writeBuffer = postFXBlurHorizontalTarget
-  let readBuffer = postFXBlurVerticalTarget
+  if (blueEnabled) {
+    let writeBuffer = postFXBlurHorizontalTarget
+    let readBuffer = postFXBlurVerticalTarget
 
-  for (let i = 0; i < BLUR_ITERATIONS; i++) {
-    renderer.setRenderTarget(writeBuffer)
+    for (let i = 0; i < BLUR_ITERATIONS; i++) {
+      renderer.setRenderTarget(writeBuffer)
 
-    const radius = BLUR_ITERATIONS - i - 1
+      const radius = BLUR_ITERATIONS - i - 1
 
-    if (i === 0) {
-      eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: postFXRenderTarget.texture })
-    } else {
-      eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: readBuffer.texture })
+      if (i === 0) {
+        eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: postFXRenderTarget.texture })
+      } else {
+        eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: readBuffer.texture })
+      }
+
+      postFXMesh.setBlurDirection(i % 2 === 0 ? { x: radius, y: 0} : { x: 0, y: radius })
+
+      renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
+
+      let t = writeBuffer
+      writeBuffer = readBuffer
+      readBuffer = t
     }
 
-    postFXMesh.setBlurDirection(i % 2 === 0 ? { x: radius, y: 0} : { x: 0, y: radius })
-
+    renderer.setRenderTarget(null)
     renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
-
-    let t = writeBuffer
-    writeBuffer = readBuffer
-    readBuffer = t
   }
-
-  renderer.setRenderTarget(null)
-  renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
 
   renderer.render(cursorScene, cameraSystem.cursorCamera)
 
