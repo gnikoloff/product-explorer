@@ -68,7 +68,7 @@ export const getArrowTexture = () => {
   return new THREE.CanvasTexture(canvas)
 }
 
-export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => new Promise(resolve => {
+export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => new Promise((resolve, reject) => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   canvas.width = sizeX
@@ -89,10 +89,11 @@ export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => new P
     patternImg.removeEventListener('load', onLoad)  
   }
   patternImg.addEventListener('load', onLoad)
+  patternImg.addEventListener('error', reject)
   patternImg.src = patternSrc
 })
 
-export const getHoverLabel = () => new Promise(resolve => {
+export const getHoverLabel = () => new Promise((resolve, reject) => {
   const canvas = document.createElement('canvas')
   canvas.width = 114 * 5
   canvas.height = 24 * 5
@@ -112,6 +113,7 @@ export const getHoverLabel = () => new Promise(resolve => {
     patternImg.removeEventListener('load', onLoad)  
   }
   patternImg.addEventListener('load', onLoad)
+  patternImg.addEventListener('error', reject)
   patternImg.src = patternSrc
 })
 
