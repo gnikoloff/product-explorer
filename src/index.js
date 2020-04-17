@@ -339,7 +339,6 @@ function onOverviewLayoutMousewheel (e) {
 
 function onInfoSectionOpenRequest () {
   blueEnabled = true
-  document.body.style.setProperty('cursor', 'default')
   isInfoSectionOpen = true
 }
 
@@ -352,7 +351,6 @@ function onInfoSectionOpening ({ tweenFactor }) {
 }
 
 function onInfoSectionCloseRequest () {
-  document.body.style.setProperty('cursor', 'none')
   isInfoSectionOpen = false
 }
 
