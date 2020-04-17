@@ -117,6 +117,28 @@ export const getHoverLabel = () => new Promise((resolve, reject) => {
   patternImg.src = patternSrc
 })
 
+export const getInfoSectionAlphaCutoffMask = (size = 64) => {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  canvas.width = size
+  canvas.height = size
+  const gradient = ctx.createLinearGradient(0, 0, 0, size)
+  gradient.addColorStop(0, '#eee')
+  gradient.addColorStop(1, '#fff')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, size, size)
+  // canvas.setAttribute('style', `
+  //   position: fixed;
+  //   bottom: 1rem;
+  //   right: 1rem;
+  //   z-index: 11111;
+  // `)
+  // document.body.appendChild(canvas)
+  const texture = new THREE.CanvasTexture(canvas)
+  return texture
+
+}
+
 export const isIPadOS = () => {
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !window.MSStream
 }

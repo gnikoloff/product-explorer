@@ -1,4 +1,4 @@
-import { tween } from 'popmotion'
+import { tween, easing } from 'popmotion'
 import styler from 'stylefire'
 
 import eventEmitter from './event-emitter'
@@ -58,7 +58,10 @@ export default class InfoPanel {
   }
   _onOpenRequest = () => {
     eventEmitter.emit(EVT_OPEN_REQUEST_INFO_SECTION)
-    tween().start({
+    tween({
+      ease: easing.easeIn,
+      // duration: 1000,
+    }).start({
       update: tweenFactor => {
         eventEmitter.emit(EVT_OPENING_INFO_SECTION, { tweenFactor })
         this.stylers.toggleButton.set('opacity', 1 - tweenFactor)
