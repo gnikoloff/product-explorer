@@ -47,6 +47,7 @@ export default class SinglePage {
     this._alreadyReplacedTextures = false
     this._sizerMouseDown = false
     this._startMouseDownX = 0
+    this._isNavigatingToOtherProduct = false
 
     const wrapper = document.getElementsByClassName('single-page-wrapper')[0]
     this.$els = {
@@ -98,14 +99,18 @@ export default class SinglePage {
     eventEmitter.on(EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO, () => {
       this._fadeProjectDescription({ duration: 200, direction: 1 }).then(() => {
         this.$els.singlePageWrapper.classList.remove('non-scrollable')
-        this.$els.prevProductButton.classList.remove('non-interactable')
-        this.$els.nextProductButton.classList.remove('non-interactable')
-        this.$els.prevProductButton.classList.remove('clicked')
-        this.$els.nextProductButton.classList.remove('clicked')
+        // this.$els.prevProductButton.classList.remove('non-interactable')
+        // this.$els.nextProductButton.classList.remove('non-interactable')
+        // this.$els.prevProductButton.classList.remove('clicked')
+        // this.$els.nextProductButton.classList.remove('clicked')
+        this._isNavigatingToOtherProduct = false
       })
     })
 
     this.$els.prevProductButton.addEventListener('click', () => {
+      if (this._isNavigatingToOtherProduct) {
+        return
+      }
       this._nextModelName = this._currModelName
       this._currModelName = this._prevModelName
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._prevModelName)
@@ -114,15 +119,20 @@ export default class SinglePage {
       eventEmitter.emit(EVT_CLICK_PREV_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
       this.$els.singlePageWrapper.classList.add('non-scrollable')
-      this.$els.prevProductButton.classList.add('non-interactable')
-      this.$els.nextProductButton.classList.add('non-interactable')
-      this.$els.prevProductButton.classList.add('clicked')
+      // this.$els.prevProductButton.classList.add('non-interactable')
+      // this.$els.nextProductButton.classList.add('non-interactable')
+      // this.$els.prevProductButton.classList.add('clicked')
+      this._isNavigatingToOtherProduct = true
+
       this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1 }).then(() => {
         this._setContentTexts({ modelName: this._currModelName })
       })
     }, false)
 
     this.$els.nextProductButton.addEventListener('click', () => {
+      if (this._isNavigatingToOtherProduct) {
+        return
+      }
       this._prevModelName = this._currModelName
       this._currModelName = this._nextModelName
       const currNextIdx = this._projectsData.findIndex(item => item.modelName === this._nextModelName)
@@ -131,9 +141,10 @@ export default class SinglePage {
       eventEmitter.emit(EVT_CLICK_NEXT_PROJECT, ({ modelName: this._currModelName }))
       this.stylers.singlePageContainer.set('background-color', SinglePage.pageBackground)
       this.$els.singlePageWrapper.classList.add('non-scrollable')
-      this.$els.prevProductButton.classList.add('non-interactable')
-      this.$els.nextProductButton.classList.add('non-interactable')
-      this.$els.nextProductButton.classList.add('clicked')
+      // this.$els.prevProductButton.classList.add('non-interactable')
+      // this.$els.nextProductButton.classList.add('non-interactable')
+      // this.$els.nextProductButton.classList.add('clicked')
+      this._isNavigatingToOtherProduct = true
       this._fadeProjectDescription({ duration: 100, parralel: true, direction: -1 }).then(() => {
         this._setContentTexts({ modelName: this._currModelName })
       })
