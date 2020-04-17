@@ -26,6 +26,7 @@ import {
 import {
   mapNumber,
   isMobileBrowser,
+  getInfoSectionAlphaCutoffMask,
 } from '../helpers'
 
 import transitionMaskSource from '../assets/mask7.png'
@@ -74,6 +75,7 @@ export default class PostProcessing {
         u_resolution: { value: new THREE.Vector2(width * dpr, height * dpr) },
         u_tDiffuse: { value: null },
         u_blurMixFactor: { value: 0.0 },
+        u_tDiffuseMask: { value: getInfoSectionAlphaCutoffMask() },
         u_direction: { value: new THREE.Vector2() },
       },
       vertexShader,
