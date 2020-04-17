@@ -1,5 +1,6 @@
 uniform vec2 u_resolution;
 uniform sampler2D u_tDiffuse;
+uniform sampler2D u_tDiffuseMask;
 uniform float u_blurMixFactor;
 uniform vec2 u_direction;
 
@@ -23,6 +24,7 @@ vec4 blur13(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 void main () {
   vec4 color = texture2D(u_tDiffuse, v_uv);
   vec4 blurColor = blur13(u_tDiffuse, v_uv, u_resolution, u_direction);
-  gl_FragColor = mix(color, blurColor, u_blurMixFactor);
-  gl_FragColor.a = 1.0 - u_blurMixFactor * 0.1;
+  vec4 maskColor = texture2D(u_tDiffuseMask, v_uv);
+  gl_FragColor = mix(color, blurColor, step(maskColor.r, u_blurMixFactor));
+  gl_FragColor.a = 1.0 - u_blurMixFactor * 0.15;
 }

@@ -34,10 +34,7 @@ void main () {
   vec4 photoColor = texture2D(u_tDiffusePhoto, uv);
   vec4 maskColor = texture2D(u_tDiffuseMask, uv);
 
-  // if (uv.x > 0.5 && maskColor.r < u_cutOffFactor) {
-  if (maskColor.r < u_cutOffFactor) {
-    baseColor = vec4(vec3(0.99), 1.0); 
-  }
+  baseColor = mix(baseColor, vec4(vec3(0.99), 1.0), step(maskColor.r, u_cutOffFactor));
 
   vec4 color = photoColor;
   color = mix(baseColor, color, color.a);
