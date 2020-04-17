@@ -340,6 +340,8 @@ function onOverviewLayoutMousewheel (e) {
 function onInfoSectionOpenRequest () {
   blueEnabled = true
   isInfoSectionOpen = true
+  eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE, { modelName: hoveredElement && hoveredElement.modelName })
+  hoveredElement = null
 }
 
 function onInfoSectionOpening ({ tweenFactor }) {
@@ -520,10 +522,12 @@ function onPageMouseLeave () {
 function onWebGLSceneMouseLeave () {
   cursorArrowOffsetTarget = 0
   isDragging = false
-  console.log('mouseleave')
+
   eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
   eventEmitter.emit(EVT_CAMERA_ZOOM_IN_DRAG_END)
   eventEmitter.emit(EVT_HIDE_CURSOR)
+  eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE, { modelName: hoveredElement && hoveredElement.modelName })
+  hoveredElement = null
 }
 
 function onWebGLSceneMouseEnter () {
