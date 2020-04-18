@@ -57,53 +57,17 @@
   cursor: pointer;
 }
 
-.info-section {
-  width: 500px;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  right: 0;
-  background: red;
-  z-index: 1;
-  /* cursor: initial; */
-  pointer-events: auto;
-  transform: translateX(100%);
-}
-
 .info-btn {
-  position: absolute;
-  left: -80px;
+  position: fixed;
+  right: 30px;
   top: 14px;
+  z-index: 999;
   transition: opacity 0.175s ease;
 }
 
 .info-btn.hidden {
   opacity: 0;
   pointer-events: none;
-}
-
-.info-btn-close {
-  position: fixed;
-  top: 5px;
-  left: 50%;
-  width: 50px;
-  height: 50px;
-  margin-left: -25px;
-  border-radius: 50%;
-  background: #111;
-  pointer-events: auto;
-  cursor: default;
-  border: none;
-  transform: translateY(-100px);
-}
-.info-btn-close:hover { cursor: pointer; }
-.info-btn-close:focus { outline: 0; }
-
-.info-btn-close .close-line:before {
-  background: #cdcdcd;
-}
-.info-btn-close .close-line:after {
-  background: #fff;
 }
 
 @media (min-width: 800px) {

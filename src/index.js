@@ -49,6 +49,7 @@ import {
   EVT_OPEN_SINGLE_PROJECT,
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_FADE_OUT_SINGLE_VIEW,
+  EVT_SET_INFO_PANEL_CONTENT,
   EVT_LOADED_PROJECTS,
   EVT_CAMERA_HANDLE_MOVEMENT_WORLD,
   EVT_CAMERA_ZOOM_OUT_DRAG_START,
@@ -377,6 +378,14 @@ function onNextProjectClick ({ modelName }) {
 }
 
 function onProjectsLoad (res) {
+
+  eventEmitter.emit(EVT_SET_INFO_PANEL_CONTENT, {
+    date: res.date,
+    madeBy: res.madeBy,
+    madeFor: res.madeFor,
+    copyright: res.copyright,
+    text: res.text,
+  })
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
 
   res.projects.forEach((info, i) => {
