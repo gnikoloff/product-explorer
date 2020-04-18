@@ -342,8 +342,7 @@ export default class PhotoPreview extends THREE.Mesh {
       this.position.y -= cameraPositionY
       this._calcOverviewPosition()
     }
-    this._diffVectorTarget.x = 0
-    this._diffVectorTarget.y = 0
+    this._diffVectorTarget.set(0, 0)
 
     eventEmitter.emit(EVT_PHOTO_PREVIEW_RELAYOUTED, {
       modelName: this._modelName,
@@ -379,9 +378,10 @@ export default class PhotoPreview extends THREE.Mesh {
           this.position.x = this._originalGridPosition.x
           this.position.y = this._originalGridPosition.y
         } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-          this.position.x = this._originalOverviewPosition.x
-          this.position.y = this._originalOverviewPosition.y
+          this.position.x = this._originalOverviewPosition.x + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+          this.position.y = this._originalOverviewPosition.y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
         }
+        this._diffVectorTarget.set(0, 0)
         this.scale.set(1, 1, 1)
         this._onOpenComplete({ modelName })
         this._isOpenInSingleView = false

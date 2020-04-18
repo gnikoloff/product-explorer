@@ -96,7 +96,7 @@ export default class PostProcessing {
 
     eventEmitter.on(EVT_CLOSE_SINGLE_PROJECT, this._onCloseSingleProject)
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_CLOSING, this._onClosingSingleProject)
-  eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
+    eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpenSingleProject)
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, this._onOpeningSingleProject)
     eventEmitter.on(EVT_ON_SCENE_DRAG_START, this._onDragStart)
     eventEmitter.on(EVT_ON_SCENE_DRAG_END, this._onDragEnd)
@@ -201,8 +201,8 @@ export default class PostProcessing {
       // this._mainEffect.uniforms.u_mouse.value.x = x
       // this._mainEffect.uniforms.u_mouse.value.y = y
     } else {
-      this._mainEffect.uniforms.u_mouse.value.x += (mousePositionX - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 25)
-      this._mainEffect.uniforms.u_mouse.value.y += (mousePositionY - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 25)
+      this._mainEffect.uniforms.u_mouse.value.x += (mousePositionX * dpr - this._mainEffect.uniforms.u_mouse.value.x) * (dt * 25)
+      this._mainEffect.uniforms.u_mouse.value.y += (mousePositionY * dpr - this._mainEffect.uniforms.u_mouse.value.y) * (dt * 25)
     }
 
     this._mainEffect.uniforms.u_time.value = ts
