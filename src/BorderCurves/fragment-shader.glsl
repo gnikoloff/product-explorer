@@ -13,7 +13,7 @@ float random (vec2 p) {
 void main () {
   float v = v_uv[0];
   float w = v_uv[1];
-  vec4 color = vec4(vec3(0.1), 1.0);
+  vec4 color = vec4(vec3(0.3), 1.0);
   vec2 uvRandom = v_uv;
   uvRandom.y *= random(vec2(uvRandom.y, 0.5));
   color.rgb += random(uvRandom) * 0.1;

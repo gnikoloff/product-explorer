@@ -44,8 +44,8 @@ export default class BorderCurves extends THREE.Group {
     // interleave attributes here
     // const offset = BorderCurves.getTriangleOffset()
     const positionsTopBottom = new Float32Array([
-      -appWidth * 0.5 - 100, -appHeight * 0.5, 0,
-      appWidth * 0.5 + 100, -appHeight * 0.5, 0,
+      -appWidth * 0.5, -appHeight * 0.5, 0,
+      appWidth * 0.5, -appHeight * 0.5, 0,
       0, -appHeight * 0.5, 0
     ])
     const posiitonsLeftRight = new Float32Array([

@@ -1,3 +1,15 @@
+export const SET_CURRENTLY_SCROLLING_OVERVIEW = 'SET_CURRENTLY_SCROLLING_OVERVIEW'
+export const setIsCurrentlyScrollingOverview = isCurrentlyScrollingOverview => ({
+  type: SET_CURRENTLY_SCROLLING_OVERVIEW,
+  isCurrentlyScrollingOverview,
+})
+
+export const SET_SCROLL_Y = 'SET_SCROLL_Y'
+export const setScrollY = scrollY => ({
+  type: SET_SCROLL_Y,
+  scrollY,
+})
+
 export const SET_IS_MOBILE = 'SET_IS_MOBILE'
 export const setIsMobile = isMobile => ({
   type: SET_IS_MOBILE,

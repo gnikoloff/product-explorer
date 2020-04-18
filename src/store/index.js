@@ -5,8 +5,11 @@ import * as actions from './actions'
 import {
   LAYOUT_MODE_GRID,
 } from '../constants'
+import { types } from 'util'
 
 const initialState = {
+  isCurrentlyScrollingOverview: false,
+  scrollY: 0,
   isMobile: false,
   mousePositionX: 0,
   mousePositionY: 0,
@@ -25,6 +28,12 @@ const initialState = {
 
 const appState = (state = initialState, action) => {
   switch (action.type) {
+    case actions.SET_CURRENTLY_SCROLLING_OVERVIEW: {
+      return Object.assign(state, { isCurrentlyScrollingOverview: action.isCurrentlyScrollingOverview })
+    }
+    case actions.SET_SCROLL_Y: {
+      return Object.assign(state, { scrollY: action.scrollY })
+    }
     case actions.SET_IS_MOBILE: {
       return Object.assign(state, { isMobile: action.isMobile })
     }

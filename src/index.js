@@ -25,6 +25,8 @@ import {
 
 import store from './store'
 import {
+  setIsCurrentlyScrollingOverview,
+  setScrollY,
   setIsMobile,
   setMousePosition,
   setLayoutMode,
@@ -134,6 +136,7 @@ let postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHe
 let rAf
 let oldTime = 0
 let lastScrollY = 0
+let scrollStopCheckerTimeout
 let isDragging = false
 let isInfoSectionOpen = false
 let cursorArrowOffset = 0
@@ -334,9 +337,20 @@ function onLayoutModeSelect (e) {
 
 function onOverviewLayoutMousewheel (e) {
   const scrollY = lastScrollY + e.deltaY
-  const diffy = (scrollY - lastScrollY) * -1
-  eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx: 0, diffy })
+  const diffy = scrollY - lastScrollY
+  eventEmitter.emit(EVT_ON_SCENE_DRAG, { diffx: 0, diffy: diffy * -0.1 })
   lastScrollY = scrollY
+
+  store.dispatch(setIsCurrentlyScrollingOverview(true))
+  store.dispatch(setScrollY(scrollY))
+
+  clearTimeout(scrollStopCheckerTimeout)
+  scrollStopCheckerTimeout = setTimeout(() => {
+    eventEmitter.emit(EVT_ON_SCENE_DRAG_END)
+    store.dispatch(setIsCurrentlyScrollingOverview(false))
+    clearTimeout(scrollStopCheckerTimeout)
+  }, 66)
+
 }
 
 function onInfoSectionOpenRequest () {

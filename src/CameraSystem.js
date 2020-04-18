@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { calc, tween, easing, chain, delay } from 'popmotion'
+import { calc, tween, easing, chain, delay, mouse } from 'popmotion'
 
 import store from './store'
 import {
@@ -37,11 +37,15 @@ import {
   EVT_DRAG_BOTTOM_BORDER,
   EVT_DRAG_LEFT_BORDER,
 } from './constants'
+import { Camera } from 'three'
 
 const mobileBrowser = isMobileBrowser() && innerWidth < 800
 
 export default class CameraSystem {
   static MOBILE_CAMERA_ZOOM = 0.5
+  static SCENE_DRAG_END_BORDER_INNER_OFFSET = 60
+  static SCENE_DRAG_DIFF_FACTOR_SCALE_DESKTOP = 0.1
+  static SCENE_DRAG_DIFF_FACTOR_SCALE_MOBILE = 0.5
 
   static resizeCamera ({ camera, appWidth, appHeight }) {
     camera.left = -appWidth / 2
@@ -71,6 +75,7 @@ export default class CameraSystem {
     this._isZoomedOut = false
     this._shouldMove = true
 
+    this._borderDragFactor = 1
     this._isPullingBorderTop = false
     this._isPullingBorderRight = false
     this._isPullingBorderBottom = false
@@ -192,6 +197,9 @@ export default class CameraSystem {
     }
 
     const {
+      isCurrentlyScrollingOverview,
+      scrollY,
+      isMobile,
       mousePositionX,
       mousePositionY,
       worldBoundsTop,
@@ -224,39 +232,71 @@ export default class CameraSystem {
     // this._isDragCameraMoving = dist > CAMERA_MIN_VELOCITY_TO_BE_MOVING
 
     if (this._targetPosition.x > worldBoundsRight) {
+      this._borderDragFactor = isMobile ? CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_MOBILE : CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_DESKTOP
       if (!lockHorizontalMovement) {
         // this._targetPosition.x = worldBoundsRight
-        // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
-        if (!this._isPullingBorderRight) {
-          this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+        if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        // if (!this._isPullingBorderRight) {
+          const x = mousePositionX
+          const y = isCurrentlyScrollingOverview ? scrollY : mousePositionY
+          this._lastMousePosBorderTouch.set(x, y)
           this._isPullingBorderRight = true
         }
       }
+    } else {
+      this._isPullingBorderRight = false
+      if (!this._isPullingBorderTop && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        this._borderDragFactor = 1
+      }
     }
     if (this._targetPosition.x < worldBoundsLeft) {
+      this._borderDragFactor = isMobile ? CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_MOBILE : CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_DESKTOP
       if (!lockHorizontalMovement) {
         // this._targetPosition.x = worldBoundsLeft
         // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
         if (!this._isPullingBorderLeft) {
           this._isPullingBorderLeft = true
-          this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+          const x = mousePositionX
+          const y = isCurrentlyScrollingOverview ? scrollY : mousePositionY
+          this._lastMousePosBorderTouch.set(x, y)
         }
+      }
+    } else {
+      this._isPullingBorderLeft = false
+      if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom) {
+        this._borderDragFactor = 1
       }
     }
     if (this._targetPosition.y > worldBoundsTop) {
+      this._borderDragFactor = isMobile ? CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_MOBILE : CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_DESKTOP
       // this._targetPosition.y = worldBoundsTop
       // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
       if (!this._isPullingBorderTop) {
         this._isPullingBorderTop = true
-        this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+        const x = mousePositionX
+        const y = isCurrentlyScrollingOverview ? scrollY : mousePositionY
+        this._lastMousePosBorderTouch.set(x, y)
+      }
+    } else {
+      this._isPullingBorderTop = false
+      if (!this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
+        this._borderDragFactor = 1
       }
     }
     if (this._targetPosition.y < worldBoundsBottom) {
+      this._borderDragFactor = isMobile ? CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_MOBILE : CameraSystem.SCENE_DRAG_DIFF_FACTOR_SCALE_DESKTOP
       // this._targetPosition.y = worldBoundsBottom
       // if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderBottom && !this._isPullingBorderLeft) {
       if (!this._isPullingBorderBottom) {
         this._isPullingBorderBottom = true
-        this._lastMousePosBorderTouch.set(mousePositionX, mousePositionY)
+        const x = mousePositionX
+        const y = isCurrentlyScrollingOverview ? scrollY : mousePositionY
+        this._lastMousePosBorderTouch.set(x, y)
+      }
+    } else {
+      this._isPullingBorderBottom = false
+      if (!this._isPullingBorderTop && !this._isPullingBorderRight && !this._isPullingBorderLeft) {
+        this._borderDragFactor = 1
       }
     }
 
@@ -302,7 +342,8 @@ export default class CameraSystem {
       layoutMode
     } = store.getState()
     const lockHorizontalMovement = layoutMode === LAYOUT_MODE_OVERVIEW
-    const diffScale = isTouch ? 2.65 : 1.5
+    let diffScale = isTouch ? 2.65 : 1.5
+    diffScale *= this._borderDragFactor
     if (!lockHorizontalMovement) {
       this._targetPosition.x += diffx * -diffScale + 1
     }
@@ -311,16 +352,13 @@ export default class CameraSystem {
     if (this._isPullingBorderTop) {
       const dragTopBorderDiff = mousePositionY - this._lastMousePosBorderTouch.y
       eventEmitter.emit(EVT_DRAG_TOP_BORDER, { offsetY: Math.abs(dragTopBorderDiff) })
-    }
-    if (this._isPullingBorderRight) {
+    } else if (this._isPullingBorderRight) {
       const dragRightBorderDiff = mousePositionX - this._lastMousePosBorderTouch.x
       eventEmitter.emit(EVT_DRAG_RIGHT_BORDER, { offsetX: Math.abs(dragRightBorderDiff) })
-    }
-    if (this._isPullingBorderBottom) {
+    } else if (this._isPullingBorderBottom) {
       const dragBottomBorderDiff = mousePositionY - this._lastMousePosBorderTouch.y
       eventEmitter.emit(EVT_DRAG_BOTTOM_BORDER, { offsetY: Math.abs(dragBottomBorderDiff) })
-    }
-    if (this._isPullingBorderLeft) {
+    } else if (this._isPullingBorderLeft) {
       const dragLeftBorderDiff = mousePositionX - this._lastMousePosBorderTouch.x
       eventEmitter.emit(EVT_DRAG_LEFT_BORDER, { offsetX: Math.abs(dragLeftBorderDiff) })
     }
@@ -333,17 +371,18 @@ export default class CameraSystem {
       worldBoundsLeft,
     } = store.getState()
     if (this._isPullingBorderTop) {
-      this._targetPosition.y = worldBoundsTop
+      this._targetPosition.y = worldBoundsTop - CameraSystem.SCENE_DRAG_END_BORDER_INNER_OFFSET
     }
     if (this._isPullingBorderRight) {
-      this._targetPosition.x = worldBoundsRight
+      this._targetPosition.x = worldBoundsRight - CameraSystem.SCENE_DRAG_END_BORDER_INNER_OFFSET
     }
     if (this._isPullingBorderBottom) {
-      this._targetPosition.y = worldBoundsBottom
+      this._targetPosition.y = worldBoundsBottom + CameraSystem.SCENE_DRAG_END_BORDER_INNER_OFFSET
     }
     if (this._isPullingBorderLeft) {
-      this._targetPosition.x = worldBoundsLeft
+      this._targetPosition.x = worldBoundsLeft + CameraSystem.SCENE_DRAG_END_BORDER_INNER_OFFSET
     }
+    this._borderDragFactor = 1
     this._isPullingBorderTop = false
     this._isPullingBorderRight = false
     this._isPullingBorderBottom = false
