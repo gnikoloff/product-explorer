@@ -38,7 +38,8 @@ import {
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
   TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
   TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_CLOSE,
-  BLUR_ITERATIONS,
+  BLUR_ITERATIONS_MOBILE,
+  BLUR_ITERATIONS_DESKTOP,
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_RAF_UPDATE_APP,
@@ -834,10 +835,11 @@ function updateFrame(ts) {
     let writeBuffer = postFXBlurHorizontalTarget
     let readBuffer = postFXBlurVerticalTarget
 
-    for (let i = 0; i < BLUR_ITERATIONS; i++) {
+    const blurIterations = isMobile ? BLUR_ITERATIONS_MOBILE : BLUR_ITERATIONS_DESKTOP
+    for (let i = 0; i < blurIterations; i++) {
       renderer.setRenderTarget(writeBuffer)
 
-      const radius = (BLUR_ITERATIONS - i - 1) * 1.25
+      const radius = (blurIterations - i - 1) * 1.25
 
       if (i === 0) {
         eventEmitter.emit(EVT_RENDER_PHOTO_POSTFX_FRAME, { texture: postFXRenderTarget.texture })
