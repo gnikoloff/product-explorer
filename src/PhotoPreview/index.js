@@ -88,7 +88,6 @@ export default class PhotoPreview extends THREE.Mesh {
     initialOpacity,
   }) {
     const textureCount = Math.min(store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
-    console.log(`texture count`, textureCount, store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
     const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneBufferGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
@@ -116,6 +115,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._fadeInIdx = fadeInIdx
     this._isLast = isLast
     this.position.copy(gridPosition)
+    this._textureCount = textureCount
 
     this._modelName = modelName
     this._width = width
@@ -554,11 +554,8 @@ export default class PhotoPreview extends THREE.Mesh {
 
     window.addEventListener('keydown', this._onKeyDown)
 
-    const { webglMaxTexturesSupported } = store.getState()
-    const textureCount = Math.min(webglMaxTexturesSupported, this._photos.length)
-
     if (!this._allTexturesLoaded) {
-      const sliderExtraPhotos = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= textureCount)
+      const sliderExtraPhotos = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= this._textureCount)
       Promise
         .all(sliderExtraPhotos.map(LoadManager.loadTexture))
         .then(textures => {
@@ -639,18 +636,17 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _replaceTextures = (direction) => {
     const { webglMaxTexturesSupported } = store.getState()
-    const textureCount = Math.min(this._photos.length, webglMaxTexturesSupported)
     const oldSliderIdx = this._sliderIdx
     this._sliderIdx += direction
     if (direction === 1) {
-      if (this._sliderIdx >= textureCount - 1) {
+      if (this._sliderIdx >= this._textureCount - 1) {
         this._sliderIdx = 0
       }
       this.material.uniforms.u_texIdx0.value = oldSliderIdx
       this.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
       if (this._sliderIdx < 0) {
-        this._sliderIdx = textureCount - 2
+        this._sliderIdx = this._textureCount - 2
       }
       this.material.uniforms.u_texIdx0.value = this._sliderIdx
       this.material.uniforms.u_texIdx1.value = oldSliderIdx
