@@ -726,6 +726,7 @@ function onWebGLSceneMouseClick (e) {
             })
             const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
             layoutModeBtnStyler.set('opacity', opacity)
+            eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
             eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
           },
           complete: () => {
