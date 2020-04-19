@@ -45,6 +45,10 @@
   }
 }
 
+.info-sidebar .fade-in:first-of-type h2 {
+  margin-top: 0;
+}
+
 .info-sidebar h2 {
   font-size: 16px;
   margin-top: 16px;

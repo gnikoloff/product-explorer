@@ -104,15 +104,20 @@ export default class InfoPanel {
         const fadeInsMain = [...main.getElementsByClassName('fade-in')]
         const fadeInEl = (el, i) => {
           const elStyler = styler(el)
-          const offsetY = 225
-          elStyler.set('y', offsetY)
+          // const offsetY = 6
+          // elStyler.set('y', offsetY)
+          elStyler.set('scale', '0.9')
           chain(
             delay(i * 125),
-            tween()
+            tween({
+              duration: 400,
+              ease: easing.easeIn,
+            })
           ).start({
             update: tweenFactor => elStyler.set({
               opacity: tweenFactor,
-              y: mapNumber(tweenFactor, 0, 1, offsetY, 0),
+              scale: mapNumber(0, 1, 0.9, 1),
+              // y: mapNumber(tweenFactor, 0, 1, offsetY, 0),
             }),
             complete: () => elStyler.set('pointer-events', 'auto')
           })
