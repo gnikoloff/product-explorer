@@ -11,7 +11,8 @@ import {
 } from './store/actions'
 
 import {
-  isMobileBrowser, mapNumber,
+  isMobileBrowser,
+  mapNumber,
 } from './helpers'
 
 import eventEmitter from './event-emitter'
@@ -43,7 +44,7 @@ import { Camera } from 'three'
 const mobileBrowser = isMobileBrowser() && innerWidth < 800
 
 export default class CameraSystem {
-  static MOBILE_CAMERA_ZOOM = 0.5
+  static MOBILE_CAMERA_ZOOM = 0.7
   static SCENE_DRAG_END_BORDER_INNER_OFFSET = 60
   static SCENE_DRAG_DIFF_FACTOR_SCALE_DESKTOP = 0.1
   static SCENE_DRAG_DIFF_FACTOR_SCALE_MOBILE = 0.5
@@ -120,6 +121,7 @@ export default class CameraSystem {
     if (mobileBrowser) {
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: CameraSystem.MOBILE_CAMERA_ZOOM })
     }
+    // CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: 0.45 })
   }
   get photoCamera () {
     return this._photoCamera
@@ -324,8 +326,8 @@ export default class CameraSystem {
     let bottomBound
 
     if (layoutMode === LAYOUT_MODE_GRID) {
-      rightBound  =  WOLRD_WIDTH / 2
-      leftBound   = -WOLRD_WIDTH / 2
+      rightBound  =  WOLRD_WIDTH / 2 + (isMobile ? 150 : 0)
+      leftBound   = -WOLRD_WIDTH / 2 - (isMobile ? 150 : 0)
       topBound    =  WORLD_HEIGHT / 2
       bottomBound = -WORLD_HEIGHT / 2
     } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {

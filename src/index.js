@@ -809,8 +809,6 @@ function updateFrame(ts) {
   const dt = Math.min((ts - oldTime) / 1000, 1)
   oldTime = ts
 
-  console.log('update frame')
-
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
 
   if (!clickedElement) {
@@ -902,10 +900,9 @@ function getIsPreviewMeshVisible (x, y, width, height) {
   const bboxRight = x + width + appWidth / 2 - cameraPositionX
   const bboxTop = y - height + appHeight / 2 - cameraPositionY
   const bboxBottom = y + height + appHeight / 2 - cameraPositionY
+  
   return (
-    (bboxRight > 0) &&
-    (bboxLeft < appWidth) &&
-    (bboxBottom > 0) &&
-    (bboxTop < appHeight)
+    (bboxRight > 0 && bboxLeft < appWidth) &&
+    (bboxBottom > 0 && bboxTop < appHeight)
   )
 }

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "client-dev": "parcel index.html",
-    "start": "run-p client-dev"
+    "start": "run-p client-dev",
+    "build": "parcel build index.html"
   },
   "author": "Georgi Nikoloff",
   "license": "ISC",
