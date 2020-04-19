@@ -102,7 +102,7 @@ li {
 
 .open-product-page {
   position: fixed;
-  top: 28px;
+  top: 10px;
   right: 36px;
   width:  47px;
   height: 47px;
@@ -508,7 +508,7 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
     transform: translateX(-50%);
   }
   .close-single-page {
-    top: 28px;
+    top: 10px;
     right: 12px;
     width: 50px;
     height: 50px;

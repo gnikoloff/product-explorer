@@ -3,7 +3,7 @@ export const SERVER_API_ENDPOINT = process.env.NODE_ENV === 'development' ? 'htt
 
 export const PROJECTS_COUNT = 12
 export const WOLRD_WIDTH = 2600
-export const WORLD_HEIGHT = 900
+export const WORLD_HEIGHT = 1200
 export const TOGGLE_SINGLE_PAGE_TRANSITION_DELAY = 75
 export const TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN = 1000
 export const TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_CLOSE = 500

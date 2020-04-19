@@ -48,6 +48,7 @@ export default class InfoPanel {
 
     eventEmitter.on(EVT_SINGLE_PROJECT_MASK_OPENING, ({ tweenFactor }) => {
       const tween = mapNumber(tweenFactor, 0, 0.4, 1, 0)
+      console.log(tween)
       this.stylers.toggleButton.set('opacity', tween)
     })
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, () => {

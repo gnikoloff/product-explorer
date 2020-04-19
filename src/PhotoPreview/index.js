@@ -499,30 +499,47 @@ export default class PhotoPreview extends THREE.Mesh {
     })
   }
   _onOpenRequest = ({ modelName }) => {
-    const { cameraPositionX, cameraPositionY } = store.getState()
+    const {
+      cameraPositionX,
+      cameraPositionY,
+      isMobile,
+    } = store.getState()
     this._isInteractable = false
     if (modelName === this._modelName) {
-      const targetX = cameraPositionX - innerWidth * 0.25
-      const targetY = cameraPositionY
-      this._targetPosition.set(targetX, targetY, 0)
-      this._targetScale = this.scale.x
-      this._onUnhover({ modelName })
+      if (isMobile) {
+        const targetX = cameraPositionX
+        const targetY = cameraPositionY
+        this._targetPosition.set(targetX, targetY, 0)
+        this._onUnhover({ modelName })
+      } else {
+        const targetX = cameraPositionX - innerWidth * 0.25
+        const targetY = cameraPositionY
+        this._targetPosition.set(targetX, targetY, 0)
+        this._targetScale = this.scale.x
+        this._onUnhover({ modelName })
+      }
     }
   }
   _onOpen = ({ modelName, tweenFactor }) => {
     if (modelName === this._modelName) {
-      const { layoutMode } = store.getState()
+      const {
+        isMobile,
+        layoutMode,
+      } = store.getState()
       const targetPosX = this._targetPosition.x
       const targetPosY = this._targetPosition.y
       // tweenFactor = clampNumber(mapNumber(tweenFactor, 0.1, 1, 0, 1), 0, 1)
       // console.log(tweenFactor)
       const newX = calc.getValueFromProgress(this.position.x, targetPosX, tweenFactor)
       const newY = calc.getValueFromProgress(this.position.y, targetPosY, tweenFactor)
-      const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor)
       
       this.position.x = newX
       this.position.y = newY
-      this.scale.set(newScale, newScale, 1)
+      
+      if (!isMobile) {
+        const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor)
+        this.scale.set(newScale, newScale, 1)
+      }
 
       let originalPositionX
       let originalPositionY
@@ -547,10 +564,12 @@ export default class PhotoPreview extends THREE.Mesh {
       this.material.uniforms.u_opacity.value = clampNumber(mapNumber(tweenFactor, 0, 0.4, 1, 0), 0, 1)
     }
   }
-  _onOpenComplete = ({ modelName, diffDuration = 300 }) => {
+  _onOpenComplete = ({ modelName, diffDuration = 300, repositionBack }) => {
     if (modelName !== this._modelName) {
       return
     }
+
+    const { layoutMode } = store.getState()
 
     window.addEventListener('keydown', this._onKeyDown)
 
@@ -567,6 +586,20 @@ export default class PhotoPreview extends THREE.Mesh {
           this.material.needsUpdate = true
           this._allTexturesLoaded = true
         })
+    }
+
+    if (repositionBack) {
+      let x
+      let y
+      if (layoutMode === LAYOUT_MODE_GRID) {
+        x = this._originalGridPosition.x
+        y = this._originalGridPosition.y
+      } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+        x = this._originalOverviewPosition.x
+        y = this._originalOverviewPosition.y
+      }
+      this.position.x = x
+      this.position.y = y
     }
 
     this._diffVectorTarget.x = 0
@@ -609,14 +642,16 @@ export default class PhotoPreview extends THREE.Mesh {
   }
   _onClose = ({ modelName, tweenFactor }) => {
     if (modelName === this._modelName) {
-      const { layoutMode } = store.getState()
+      const {
+        isMobile,
+        layoutMode,
+      } = store.getState()
       const startX = this._targetPosition.x
       const startY = this._targetPosition.y
       const endX = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.x : (this._originalOverviewPosition.x + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2)
       const endY = layoutMode === LAYOUT_MODE_GRID ? this._originalGridPosition.y : (this._originalOverviewPosition.y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2)
       const newX = calc.getValueFromProgress(startX, endX, tweenFactor)
       const newY = calc.getValueFromProgress(startY, endY, tweenFactor)
-      const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
 
       const diffx = (newX - this.position.x) * -1
       const diffy = (newY - this.position.y) * -1
@@ -624,7 +659,11 @@ export default class PhotoPreview extends THREE.Mesh {
 
       this.position.x = newX
       this.position.y = newY
-      this.scale.set(newScale, newScale, 1)
+
+      if (!isMobile) {
+        const newScale = calc.getValueFromProgress(this._targetScale, 1, tweenFactor)
+        this.scale.set(newScale, newScale, 1)
+      }
 
       this._isOpenInSingleView = false
     } else {

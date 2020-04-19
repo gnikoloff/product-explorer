@@ -116,7 +116,7 @@ export default class Loader {
     this.$els.wrapper.style.setProperty('opacity', '0')
     this.$els.wrapper.style.setProperty('transition', 'opacity 0.5s cubic-bezier(0.65, 0, 0.35, 1)')
     this.$els.wrapper.addEventListener('transitionend', onDialogFadeOut)
-    this.$closeBtn.removeEventListener('click', this._onDialogClose)
+    this.$els.closeBtn.removeEventListener('click', this._onDialogClose)
   }
   _showDialog = () => {
     const onGrabIconFadeIn = e => {

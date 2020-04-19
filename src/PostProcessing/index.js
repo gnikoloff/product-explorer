@@ -121,7 +121,6 @@ export default class PostProcessing {
     this._blurEffect.uniforms.u_direction.value.set(x, y)
   }
   _onBlur = ({ tweenFactor }) => {
-    console.log('intercept', tweenFactor)
     this._mainEffect.uniforms.u_blurMixFactor.value = tweenFactor
     this._blurEffect.uniforms.u_blurMixFactor.value = tweenFactor
   }
@@ -145,6 +144,7 @@ export default class PostProcessing {
   _onOpeningSingleProject = ({ tweenFactor }) => {
     this._currCutOffFactor = tweenFactor
     this._mainEffect.uniforms.u_cutOffFactor.value = tweenFactor
+    console.log('cutoff', tweenFactor)
   }
   _onDragStart = () => {
     if (this._isHidden || this._preventClick || mobileDetect) {

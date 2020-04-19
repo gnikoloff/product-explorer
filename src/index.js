@@ -710,12 +710,14 @@ function onWebGLSceneMouseClick (e) {
         const visibleMeshes = photoMeshContainer.children.filter(mesh => {
           return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
         })
-        const visiblePhotos = visibleMeshes.filter(mesh => mesh.isPhoto)
+        const visiblePhotos = visibleMeshes.filter(mesh => mesh.isPhoto && mesh.modelName !== modelName   )
         const visibleLabels = photoMeshContainer.children.filter(mesh => mesh.isLabel)
+
         visibleLabels.forEach(mesh => {
           mesh.visible = false
         })
         eventEmitter.emit(EVT_OPEN_REQUEST_SINGLE_PROJECT, ({ modelName }))
+        
         tween({
           duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
           ease: easing.easeIn,
@@ -726,6 +728,7 @@ function onWebGLSceneMouseClick (e) {
             })
             const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
             layoutModeBtnStyler.set('opacity', opacity)
+
             eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
             eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
           },
@@ -734,9 +737,11 @@ function onWebGLSceneMouseClick (e) {
               cancelAnimationFrame(rAf)
               rAf = null
             }
-
+            photoMeshContainer.children.forEach(mesh => {
+              mesh.opacity = 1
+            })
             clickedElement = object
-            eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName }))
+            eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack: true }))
             layoutModeBtnStyler.set('pointer-events', 'none')
           },
         })
@@ -759,6 +764,7 @@ function onWebGLSceneMouseClick (e) {
         update: tweenFactor => {
           openModelTweenFactor = tweenFactor
           eventEmitter.emit(EVT_OPENING_SINGLE_PROJECT, { modelName, tweenFactor })
+          eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
           const opacity = mapNumber(1 - tweenFactor, 1, 0.6, 1, 0)
           layoutModeBtnStyler.set('opacity', opacity)
         },
@@ -887,9 +893,7 @@ function updateFrame(ts) {
     renderer.setRenderTarget(null)
     renderer.render(postFXBlurScene, cameraSystem.postFXBlurCamera)
   }
-
   renderer.render(cursorScene, cameraSystem.cursorCamera)
-
   renderer.render(openedProjectScene, cameraSystem.openedProjectCamera)
 
   rAf = requestAnimationFrame(updateFrame)
@@ -901,9 +905,10 @@ function getIsPreviewMeshVisible (x, y, width, height) {
   const bboxRight = x + width + appWidth / 2 - cameraPositionX
   const bboxTop = y - height + appHeight / 2 - cameraPositionY
   const bboxBottom = y + height + appHeight / 2 - cameraPositionY
-  
   return (
-    (bboxRight > 0 && bboxLeft < appWidth) &&
-    (bboxBottom > 0 && bboxTop < appHeight)
+    (bboxRight > 0) &&
+    (bboxLeft < appWidth) &&
+    (bboxBottom > 0) &&
+    (bboxTop < appHeight)
   )
 }

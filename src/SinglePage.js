@@ -13,7 +13,6 @@ import {
   PREVIEW_PHOTO_REF_WIDTH,
   PREVIEW_PHOTO_REF_HEIGHT,
   EVT_APP_RESIZE,
-  EVT_OPENING_SINGLE_PROJECT,
   EVT_OPEN_SINGLE_PROJECT,  
   EVT_CLOSING_SINGLE_PROJECT,
   EVT_CLOSE_SINGLE_PROJECT,
@@ -92,7 +91,6 @@ export default class SinglePage {
     
     eventEmitter.on(EVT_LOADED_PROJECTS, this._onProjectsLoaded)
     eventEmitter.on(EVT_OPEN_SINGLE_PROJECT, this._onOpen)
-    eventEmitter.on(EVT_OPENING_SINGLE_PROJECT, this._onOpening)
     eventEmitter.on(EVT_CLOSING_SINGLE_PROJECT, this._onClosing)
     // eventEmitter.on(EVT_RAF_UPDATE_APP, this._onUpdate)
     eventEmitter.on(EVT_NEXT_PROJECT_TRANSITIONED_IN, this._removeBackgroundColor)
@@ -330,15 +328,6 @@ export default class SinglePage {
       })
     })
   })
-
-  _onOpening = ({ tweenFactor }) => {
-    // const closeButtonTweenY = clampNumber(mapNumber(tweenFactor, 0, 0.75, -100, 0), -100, 0)
-    // const closeButtonTweenRotate = clampNumber(mapNumber(tweenFactor, 0, 0.75, -480, 0), -480, 0)
-    // this.stylers.closeButton.set({
-    //   y: closeButtonTweenY,
-    //   rotate: closeButtonTweenRotate,
-    // })
-  }
 
   _onOpen = ({ modelName }) => {
     const projectIdx = this._projectsData.findIndex(project => project.modelName === modelName)

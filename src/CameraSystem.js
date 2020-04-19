@@ -167,7 +167,7 @@ export default class CameraSystem {
         }).start(tweenFactor => {
           if (layoutMode === LAYOUT_MODE_OVERVIEW) {
             const start = CameraSystem.MOBILE_CAMERA_ZOOM
-            this._zoomFactor = start + tweenFactor * 0.25
+            this._zoomFactor = start + tweenFactor * 0.1
             CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
           } else if (layoutMode === LAYOUT_MODE_GRID) {
             const zoom = mapNumber(tweenFactor, 0, 1, this._zoomFactor, CameraSystem.MOBILE_CAMERA_ZOOM)
