@@ -52,6 +52,50 @@ li {
   background: #171717;
 }
 
+#app-splash-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9999998;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.2s ease-out;
+}
+
+#app-splash-screen.faded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-splash-wrapper {
+  max-width: 200px;
+  width: 100%;
+}
+
+@media (min-width: 800px) {
+  .app-splash-wrapper {
+    max-width: 550px;
+  }
+}
+
+.app-splash-wrapper {
+  text-align: center;
+}
+
+.app-splash-wrapper svg {
+  margin-top: 0px;
+}
+
+.app-splash-wrapper text {
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: 13px;
+}
+
 .open-product-page {
   position: fixed;
   top: 28px;
@@ -299,6 +343,14 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
   background-size: 112%;
   background-repeat: no-repeat;
   background-position: 50%;
+  transform: scale(0.75);
+  transform-origin: 50% 50%;
+}
+
+@media (min-width: 800px) {
+  .modal {
+    transform: scale(1);
+  }
 }
 
 .modal:before {
@@ -317,12 +369,20 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
 
 .modal-btn-close {
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 0 !important;
+  left: 50% !important;
   opacity: 1;
-  margin: -25px 0 0 -25px;
   z-index: 2;
   pointer-events: auto;
+  margin-top: -40px;
+  margin-left: -40px;
+}
+
+@media (min-width: 800px) {
+  .modal-btn-close {
+    margin-top: -25px;
+    margin-left: -25px;
+  }
 }
 
 .modal-container {
@@ -366,12 +426,23 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
   animation: grabbing 3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-@keyframes grabbing {
-  0%   { transform: translateX(0px) }
-  25%  { transform: translateX(0px) }
-  50%  { transform: translateX(252px) }
-  75%  { transform: translateX(252px) }
-  100% { transform: translateX(0px) }
+@media (max-width: 800px) {
+  @keyframes grabbing {
+    0%   { transform: translateX(0px) }
+    25%  { transform: translateX(0px) }
+    50%  { transform: translateX(222px) }
+    75%  { transform: translateX(222px) }
+    100% { transform: translateX(0px) }
+  }
+}
+@media (min-width: 800px) {
+  @keyframes grabbing {
+    0%   { transform: translateX(0px) }
+    25%  { transform: translateX(0px) }
+    50%  { transform: translateX(252px) }
+    75%  { transform: translateX(252px) }
+    100% { transform: translateX(0px) }
+  }
 }
 
 .cursor-icon {

@@ -23,8 +23,22 @@
   align-items: center;
   justify-content: space-between;
   user-select: none;
-  padding: 0 16px;
+  padding: 0 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.175s ease-in;
   /* background: #fff; */
+}
+
+@media (min-width: 800px) {
+  .app-header {
+    padding: 0 16px;
+  }
+}
+
+.app-header.faded-in {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .app-logo {
@@ -59,10 +73,16 @@
 
 .info-btn {
   position: fixed;
-  right: 30px;
+  right: 17px;
   top: 14px;
   z-index: 999;
   transition: opacity 0.175s ease;
+}
+
+@media (min-width: 800px) {
+  .info-btn {
+    right: 30px;
+  }
 }
 
 .info-btn.hidden {

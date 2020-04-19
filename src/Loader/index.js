@@ -35,10 +35,12 @@ export default class Loader {
     const wrapper = document.getElementById('intro-modal')
     this.$els = {
       wrapper,
+      appHeader: document.getElementsByClassName('app-header')[0],
       cursor: wrapper.getElementsByClassName('cursor-example')[0],
       cursorIconDefault: wrapper.getElementsByClassName('cursor-icon-default')[0],
       cursorIconGrab: wrapper.getElementsByClassName('cursor-icon-grab')[0],
       closeBtn: wrapper.getElementsByClassName('modal-btn-close')[0],
+      splashScreen: document.getElementById('app-splash-screen'),
     }
 
     this._scene = new THREE.Scene()
@@ -86,7 +88,7 @@ export default class Loader {
         transparent: true,
       })
     )
-    this._labelMesh.position.set(mobileBrowser ? 0 : -innerWidth / 2 + 150, 0, 0)
+    this._labelMesh.position.set(mobileBrowser ? -innerWidth / 2 + 80 : -innerWidth / 2 + 150, 0, 0)
     this._scene.add(this._labelMesh)
     
     parentEl.appendChild(this._renderer.domElement)
@@ -164,11 +166,11 @@ export default class Loader {
   }
   _onUpdate = (ts, dt) => {
     this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * this._dtScale)
-    if (mobileBrowser) {
+    // if (mobileBrowser) {
       
-    } else {
+    // } else {
       this._parentEl.style.transform = `translateX(${this._loadProgress}%)`
-    }
+    // }
     this._labelMesh.material.uniforms.u_time.value = ts
     this._renderProgressTexture()
     this._renderer.render(this._scene, this._camera)
@@ -176,25 +178,53 @@ export default class Loader {
     const sceneFadeTheshold = mobileBrowser ? 98 : 85
 
     if (this._loadProgress > sceneFadeTheshold  && !this._sceneFaded) {
-      eventEmitter.emit(EVT_FADE_IN_SCENE)
+      const timeout = setTimeout(() => {
+        eventEmitter.emit(EVT_FADE_IN_SCENE)
+        this.$els.splashScreen.classList.add('faded')
+        this.$els.appHeader.classList.add('faded-in')
+        clearTimeout(timeout)
+      }, mobileBrowser ? 1000 : 500)
       this._sceneFaded = true
     }
 
     if (this._loadProgress > 99.5 && !this._hasBeenDestroyed) {
-      this._scene.dispose()
-      this._renderer.dispose()
-      this._progressTexture.dispose()
-      this._backgroundMesh.geometry.dispose()
-      this._backgroundMesh.material.dispose()
-      this._labelMesh.geometry.dispose()
-      this._labelMesh.material.dispose()
-
-      eventEmitter.off(EVT_RAF_UPDATE_APP, this._onUpdate)
-      eventEmitter.off(EVT_LOAD_PROGRESS, this._onLoadProgress)
-      eventEmitter.off(EVT_LOAD_COMPLETE, this._onLoadProgressComplete)
-      clearInterval(this._noiseInterval)
       
-      this._parentEl.parentNode.removeChild(this._parentEl)
+      
+      // if (!mobileBrowser) {
+        this._scene.dispose()
+        this._renderer.dispose()
+        this._progressTexture.dispose()
+        this._backgroundMesh.geometry.dispose()
+        this._backgroundMesh.material.dispose()
+        this._labelMesh.geometry.dispose()
+        this._labelMesh.material.dispose()
+
+        eventEmitter.off(EVT_RAF_UPDATE_APP, this._onUpdate)
+        eventEmitter.off(EVT_LOAD_PROGRESS, this._onLoadProgress)
+        eventEmitter.off(EVT_LOAD_COMPLETE, this._onLoadProgressComplete)
+        clearInterval(this._noiseInterval)
+
+        this._parentEl.parentNode.removeChild(this._parentEl)
+      // } else {
+      //   const onTransitionEnd = () => {
+      //     this._scene.dispose()
+      //     this._renderer.dispose()
+      //     this._progressTexture.dispose()
+      //     this._backgroundMesh.geometry.dispose()
+      //     this._backgroundMesh.material.dispose()
+      //     this._labelMesh.geometry.dispose()
+      //     this._labelMesh.material.dispose()
+
+      //     eventEmitter.off(EVT_RAF_UPDATE_APP, this._onUpdate)
+      //     eventEmitter.off(EVT_LOAD_PROGRESS, this._onLoadProgress)
+      //     eventEmitter.off(EVT_LOAD_COMPLETE, this._onLoadProgressComplete)
+      //     this._parentEl.removeEventListener('transitionend', onTransitionEnd)
+      //   }
+      //   this._parentEl.style.setProperty('transition', 'opacity 0.15s ease-out')
+      //   this._parentEl.style.setProperty('opacity', '0')
+      //   this._parentEl.addEventListener('transitionend', onTransitionEnd)
+      // }
+
       this._hasBeenDestroyed = true
     }
   }
