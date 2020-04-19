@@ -78,6 +78,7 @@ export default class PhotoPreview extends THREE.Mesh {
 
   constructor ({
     idx,
+    fadeInIdx,
     isLast = false,
     modelName,
     width,
@@ -112,6 +113,7 @@ export default class PhotoPreview extends THREE.Mesh {
     super(photoGeometry, photoMaterial)
 
     this._idx = idx
+    this._fadeInIdx = fadeInIdx
     this._isLast = isLast
     this.position.copy(gridPosition)
 
@@ -214,8 +216,9 @@ export default class PhotoPreview extends THREE.Mesh {
     if (this.material.uniforms.u_opacity.value === 1) {
       return
     }
+    const { isMobile } = store.getState()
     chain(
-      delay(this._idx * 100),
+      delay(this._fadeInIdx * (isMobile ? 400 : 100)),
       tween({
         ease: easing.easeOut,
         duration: 1000,

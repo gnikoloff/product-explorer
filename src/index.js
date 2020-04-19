@@ -198,9 +198,9 @@ init()
 
 function init () {
 
-  // new Loader({
-  //   parentEl: document.getElementById('app-loader'),
-  // })
+  new Loader({
+    parentEl: document.getElementById('app-loader'),
+  })
   new LoadManager()
 
   const fontsToLoadCount = 1
@@ -403,30 +403,36 @@ function onProjectsLoad (res) {
   })
   eventEmitter.emit(EVT_LOADED_PROJECTS, { projectsData: res.projects })
 
+  let currFadeInIdx = 0
   res.projects.forEach((info, i) => {
     const isVisible = getIsPreviewMeshVisible(info.posX, info.posY, PREVIEW_PHOTO_REF_WIDTH, PREVIEW_PHOTO_REF_HEIGHT)
     const photoPreview = new PhotoPreview({
       idx: i,
+      fadeInIdx: currFadeInIdx,
       isLast: i === res.projects.length - 1,
       modelName: info.modelName,
       width: PREVIEW_PHOTO_REF_WIDTH,
       height: PREVIEW_PHOTO_REF_HEIGHT,
       photos: info.sliderPhotos || [],
       gridPosition: new THREE.Vector3(info.posX, info.posY, 0),
-      // initialOpacity: isVisible ? 0 : 1,
-      initialOpacity: 1,
+      initialOpacity: isVisible ? 0 : 1,
+      // initialOpacity: 1,
     })
     const labelPosX = info.posX - PREVIEW_PHOTO_REF_WIDTH * (isMobile ? 0 : 0.25)
     const labelPosY = info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,
       position: new THREE.Vector3(labelPosX, labelPosY, 25),
-      // initialOpacity: isVisible ? 0 : 1,
-      initialOpacity: 1,
+      initialOpacity: isVisible ? 0 : 1,
+      // initialOpacity: 1,
     })
     previewLabel.position.z = 40
     photoMeshContainer.add(photoPreview)
     photoMeshContainer.add(previewLabel)
+
+    if (isVisible) {
+      currFadeInIdx++
+    }
   })
 }
 
