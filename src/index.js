@@ -72,6 +72,7 @@ import {
   EVT_TRANSITION_OUT_CURRENT_PRODUCT_PHOTO,
   EVT_OPEN_REQUEST_INFO_SECTION,
   EVT_OPENING_INFO_SECTION,
+  EVT_OPEN_REQUEST_INFO_SECTION_COMPLETE,
   EVT_CLOSE_REQUEST_INFO_SECTION,
   EVT_CLOSING_INFO_SECTION,
   EVT_CLOSE_INFO_SECTION_COMPLETE,
@@ -289,6 +290,7 @@ function init () {
   eventEmitter.on(EVT_CLICK_NEXT_PROJECT, onNextProjectClick)
   eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION, onInfoSectionOpenRequest)
   eventEmitter.on(EVT_OPENING_INFO_SECTION, onInfoSectionOpening)
+  eventEmitter.on(EVT_OPEN_REQUEST_INFO_SECTION_COMPLETE, onInfoSectionOpenComplete)
   eventEmitter.on(EVT_CLOSING_INFO_SECTION, onInfoSectionClosing)
   eventEmitter.on(EVT_CLOSE_INFO_SECTION_COMPLETE, onInfoSectionCloseComplete)
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
@@ -358,6 +360,7 @@ function onInfoSectionOpenRequest () {
   isInfoSectionOpen = true
   eventEmitter.emit(EVT_HOVER_SINGLE_PROJECT_LEAVE, { modelName: hoveredElement && hoveredElement.modelName })
   hoveredElement = null
+  rAf = requestAnimationFrame(updateFrame)
 }
 
 function onInfoSectionOpening ({ tweenFactor }) {
@@ -366,6 +369,10 @@ function onInfoSectionOpening ({ tweenFactor }) {
     opacity,
     pointerEvents: 'none',
   })
+}
+
+function onInfoSectionOpenComplete () {
+  cancelAnimationFrame(rAf)
 }
 
 function onInfoSectionCloseRequest () {
@@ -801,6 +808,8 @@ function updateFrame(ts) {
   if (!ts) { ts = 0 }
   const dt = Math.min((ts - oldTime) / 1000, 1)
   oldTime = ts
+
+  console.log('update frame')
 
   eventEmitter.emit(EVT_RAF_UPDATE_APP, ts, dt)
 

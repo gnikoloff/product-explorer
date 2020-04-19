@@ -36,6 +36,7 @@ import {
   EVT_DRAG_RIGHT_BORDER,
   EVT_DRAG_BOTTOM_BORDER,
   EVT_DRAG_LEFT_BORDER,
+  PREVIEW_PHOTO_REF_HEIGHT,
 } from './constants'
 import { Camera } from 'three'
 
@@ -311,7 +312,11 @@ export default class CameraSystem {
     this._getWolrdBounds()
   }
   _getWolrdBounds = () => {
-    const { layoutMode, overviewLayoutHeight } = store.getState()
+    const {
+      isMobile,
+      layoutMode,
+      overviewLayoutHeight
+    } = store.getState()
 
     let rightBound
     let leftBound
@@ -326,7 +331,7 @@ export default class CameraSystem {
     } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
       rightBound = 0
       leftBound  = 0
-      topBound   = 0
+      topBound   = isMobile ? PREVIEW_PHOTO_REF_HEIGHT / 2 : PREVIEW_PHOTO_REF_HEIGHT / 3.25
       bottomBound = overviewLayoutHeight
     }
 

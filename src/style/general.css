@@ -76,18 +76,22 @@ li {
   width: 100%;
 }
 
+.app-splash-wrapper svg {
+  display: block;
+  margin-top: 0px;
+}
+
 @media (min-width: 800px) {
   .app-splash-wrapper {
     max-width: 550px;
+  }
+  .app-splash-wrapper svg {
+    margin-top: 0px;
   }
 }
 
 .app-splash-wrapper {
   text-align: center;
-}
-
-.app-splash-wrapper svg {
-  margin-top: 0px;
 }
 
 .app-splash-wrapper text {
@@ -239,6 +243,12 @@ li {
   left: 0;
   right: 0;
   -webkit-backdrop-filter: blur(6px);
+}
+
+@media (min-width: 800px) {
+  .webgl-scene-hint {
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .hint {

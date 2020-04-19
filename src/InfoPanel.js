@@ -15,6 +15,7 @@ import {
   EVT_CLOSE_SINGLE_PROJECT,
   EVT_OPENING_INFO_SECTION,
   EVT_OPEN_REQUEST_INFO_SECTION,
+  EVT_OPEN_REQUEST_INFO_SECTION_COMPLETE,
   EVT_CLOSE_REQUEST_INFO_SECTION,
   EVT_CLOSING_INFO_SECTION,
   EVT_CLOSE_INFO_SECTION_COMPLETE,
@@ -87,6 +88,11 @@ export default class InfoPanel {
         })
       },
       complete: () => {
+        // const timeout = setTimeout(() => {
+        //   eventEmitter.emit(EVT_OPEN_REQUEST_INFO_SECTION_COMPLETE)
+        //   clearTimeout(timeout)
+        // }, 1500)
+
         this.stylers.toggleButton.set('pointerEvents', 'none')
         this.stylers.closeButton.set('pointer-events', 'auto')
         this.stylers.wrapper.set('pointer-events', 'auto')

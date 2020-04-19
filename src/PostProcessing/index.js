@@ -121,6 +121,7 @@ export default class PostProcessing {
     this._blurEffect.uniforms.u_direction.value.set(x, y)
   }
   _onBlur = ({ tweenFactor }) => {
+    console.log('intercept', tweenFactor)
     this._mainEffect.uniforms.u_blurMixFactor.value = tweenFactor
     this._blurEffect.uniforms.u_blurMixFactor.value = tweenFactor
   }
