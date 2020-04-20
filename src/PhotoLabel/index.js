@@ -117,6 +117,7 @@ export default class PhotoLabel extends THREE.Mesh {
   _onMaskTextureLoad = ({ texture }) => {
     this.material.uniforms.u_mask.value = texture
     this.material.needsUpdate = true
+    //
   }
   _onProjectHover = ({ modelName }) => {
     if (mobileBrowserDetected) {
