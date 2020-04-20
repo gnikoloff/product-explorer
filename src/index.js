@@ -297,8 +297,6 @@ function init () {
   eventEmitter.on(EVT_CLOSING_INFO_SECTION, onInfoSectionClosing)
   eventEmitter.on(EVT_CLOSE_INFO_SECTION_COMPLETE, onInfoSectionCloseComplete)
   eventEmitter.on(EVT_CLOSE_REQUEST_INFO_SECTION, onInfoSectionCloseRequest)
-  
-  rAf = requestAnimationFrame(updateFrame)
 }
 
 function onLayoutModeSelect (e) {
@@ -444,6 +442,7 @@ function onProjectsLoad (res) {
       currFadeInIdx++
     }
   })
+  rAf = requestAnimationFrame(updateFrame)
 }
 
 function onCloseSingleView ({ modelName, reposition = false, duration }) {
