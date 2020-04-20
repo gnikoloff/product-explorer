@@ -132,7 +132,6 @@ export default class SinglePageMobile {
     this._nextModelName = this._projectsData[projectIdx + 1] ? this._projectsData[projectIdx + 1].modelName : this._projectsData[0].modelName
     this.$els.prevProductButton.children[0].textContent = this._prevModelName
     this.$els.nextProductButton.children[0].textContent = this._nextModelName
-    this.$els.openLinkBtn.setAttribute('href', project.websiteURL)
     this._observeElementsList.forEach(({ observer, el }) => observer.unobserve(el))
     this._observeElementsList = []
   }
@@ -200,6 +199,7 @@ export default class SinglePageMobile {
     this.$els.type.innerHTML = `Type  <span class="meta-desc">${project.type}</span>`
     this.$els.generation.innerHTML = `Gen.  <span class="meta-desc">${project.gen}</span>`
     this.$els.style.innerHTML = `Style  <span class="meta-desc">${project.style}</span>`
+    this.$els.openLinkBtn.setAttribute('href', project.websiteURL)
     
     this._setProjectDescList(this.$els.descriptionList, null)
     this._setProjectDescList(this.$els.fabricTechnologyList, project.fabricTechnologies)

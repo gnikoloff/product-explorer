@@ -258,6 +258,9 @@ export default class SinglePage {
     this.$els.type.innerHTML = `Type  <span class="meta-desc">${project.type}</span>`
     this.$els.generation.innerHTML = `Gen.  <span class="meta-desc">${project.gen}</span>`
     this.$els.style.innerHTML = `Style  <span class="meta-desc">${project.style}</span>`
+
+    this.$els.openExternalLink.setAttribute('href', project.websiteURL)
+    console.log(project.websiteURL)
     
     this._setProjectDescList(this.$els.descriptionList, null)
     this._setProjectDescList(this.$els.fabricTechnologyList, project.fabricTechnologies)
@@ -349,8 +352,6 @@ export default class SinglePage {
     this.$els.closeButton.addEventListener('click', this._closeButtonClick, false)
     this.$els.appLogo.classList.add('interactable')
     this.$els.appLogo.addEventListener('click', this._closeButtonClick, false)
-
-    this.$els.openExternalLink.setAttribute('href', project.websiteURL)
 
     const { sliderButtonPrev, sliderButtonNext } = this.$els
     
