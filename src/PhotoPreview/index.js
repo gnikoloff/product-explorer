@@ -62,8 +62,6 @@ import photoFragmentShader from './fragmentShader.glsl'
 let overviewCurrOffsetX = 0
 let overviewCurrOffsetY = 0
 
-const mobileBrowser = isMobileBrowser()
-
 export default class PhotoPreview extends THREE.Mesh {
 
   static SCALE_FACTOR_MAX = 1
@@ -109,6 +107,9 @@ export default class PhotoPreview extends THREE.Mesh {
       vertexShader: photoVertexShader,
       fragmentShader: photoFragmentShader,
     })
+
+    setTimeout(() => eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT), 0)
+
     super(photoGeometry, photoMaterial)
 
     this._idx = idx
@@ -490,7 +491,7 @@ export default class PhotoPreview extends THREE.Mesh {
     LoadManager.loadTexture(this._photos[this._loadedPhotosCounter]).then(texture => {
       onTextureLoaded(texture, true)
       eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
-      if (!mobileBrowser) {
+      if (!isMobileBrowser()) {
         const hoverFlipPhotosToLoad = this._photos.filter((a, i) => i >= this._loadedPhotosCounter && i <= this._loadedPhotosCounter + PhotoPreview.HOVER_IMAGES_FLIP_COUNT)
         Promise.all(hoverFlipPhotosToLoad.map(LoadManager.loadTexture)).then(textures => {
           textures.forEach(texture => onTextureLoaded(texture))
