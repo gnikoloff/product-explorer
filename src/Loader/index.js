@@ -25,7 +25,7 @@ let appWidth = innerWidth
 let appHeight = innerHeight
 
 export default class Loader {
-  static PROGRESS_TIMER_VALUE = 2000
+  static PROGRESS_TIMER_VALUE = 4000
 
   constructor ({
     parentEl,
