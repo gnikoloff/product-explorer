@@ -23,7 +23,13 @@ import {
   mapNumber,
   isMobileBrowser,
   isIPadOS,
+  isInstagram,
 } from './helpers'
+
+if (isInstagram()) {
+  document.body.style.transform = 'scale(0.5)'
+  alert('hey you are in instagram')
+}
 
 import store from './store'
 import {
