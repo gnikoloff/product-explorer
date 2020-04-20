@@ -3,6 +3,7 @@ import styler from 'stylefire'
 
 import eventEmitter from './event-emitter'
 
+import store from './store'
 
 import {
   mapNumber,
@@ -96,34 +97,46 @@ export default class InfoPanel {
         this.stylers.toggleButton.set('pointerEvents', 'none')
         this.stylers.closeButton.set('pointer-events', 'auto')
         this.stylers.wrapper.set('pointer-events', 'auto')
+        
         window.addEventListener('keydown', this._onKeyDown, false)
 
         const sidebar = this.$els.wrapper.getElementsByClassName('info-sidebar')[0]
         const main = this.$els.wrapper.getElementsByClassName('info-main')[0]
         const fadeInsSidebar = [...sidebar.getElementsByClassName('fade-in')]
         const fadeInsMain = [...main.getElementsByClassName('fade-in')]
-        const fadeInEl = (el, i) => {
-          const elStyler = styler(el)
-          // const offsetY = 6
-          // elStyler.set('y', offsetY)
-          elStyler.set('scale', '0.9')
-          chain(
-            delay(i * 125),
-            tween({
-              duration: 400,
-              ease: easing.easeIn,
+
+        if (store.getState().isMobile) {
+          [...fadeInsMain, ...fadeInsSidebar].forEach(el => {
+            const elStyler = styler(el)
+            elStyler.set({
+              'opacity': 1,
+              'pointer-events': 'auto',
             })
-          ).start({
-            update: tweenFactor => elStyler.set({
-              opacity: tweenFactor,
-              scale: mapNumber(0, 1, 0.9, 1),
-              // y: mapNumber(tweenFactor, 0, 1, offsetY, 0),
-            }),
-            complete: () => elStyler.set('pointer-events', 'auto')
           })
+        } else {
+          const fadeInEl = (el, i) => {
+            const elStyler = styler(el)
+            // const offsetY = 6
+            // elStyler.set('y', offsetY)
+            elStyler.set('scale', '0.9')
+            chain(
+              delay(i * 125),
+              tween({
+                duration: 400,
+                ease: easing.easeIn,
+              })
+            ).start({
+              update: tweenFactor => elStyler.set({
+                opacity: tweenFactor,
+                scale: mapNumber(0, 1, 0.9, 1),
+                // y: mapNumber(tweenFactor, 0, 1, offsetY, 0),
+              }),
+              complete: () => elStyler.set('pointer-events', 'auto')
+            })
+          }
+          fadeInsSidebar.forEach(fadeInEl)
+          fadeInsMain.forEach(fadeInEl)
         }
-        fadeInsSidebar.forEach(fadeInEl)
-        fadeInsMain.forEach(fadeInEl)
       }
     })
     
