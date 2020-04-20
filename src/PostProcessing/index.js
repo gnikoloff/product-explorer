@@ -144,7 +144,6 @@ export default class PostProcessing {
   _onOpeningSingleProject = ({ tweenFactor }) => {
     this._currCutOffFactor = tweenFactor
     this._mainEffect.uniforms.u_cutOffFactor.value = tweenFactor
-    console.log('cutoff', tweenFactor)
   }
   _onDragStart = () => {
     if (this._isHidden || this._preventClick || mobileDetect) {

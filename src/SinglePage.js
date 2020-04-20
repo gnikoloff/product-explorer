@@ -7,6 +7,7 @@ import {
   getSiglePagePhotoScale,
   clampNumber,
   mapNumber,
+  isIPadOS,
 } from './helpers'
 
 import {
@@ -71,6 +72,7 @@ export default class SinglePage {
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
       singlePageNav: wrapper.getElementsByClassName('single-page-nav')[0],
       sliderHint: wrapper.getElementsByClassName('slider-hint')[0],
+      sliderHintActionType: document.getElementById('slider-hint-action-type'),
       prevProductButton: wrapper.getElementsByClassName('single-page-prev-button')[0],
       nextProductButton: wrapper.getElementsByClassName('single-page-next-button')[0],
       closeButton: wrapper.getElementsByClassName('close-single-page')[0],
@@ -78,6 +80,8 @@ export default class SinglePage {
       sizer: wrapper.getElementsByClassName('single-page-slider-sizer')[0],
       appLogo: document.body.getElementsByClassName('app-logo')[0],
     }
+
+    this.$els.sliderHintActionType.textContent = isIPadOS() ? 'swipe' : 'drag'
 
     this.stylers = {
       wrapper: styler(this.$els.wrapper),
@@ -187,6 +191,7 @@ export default class SinglePage {
     if (!this._sizerMouseDown) {
       return
     }
+    console.log('move')
     const pointerX = e.changedTouches ? e.changedTouches[0].pageX : e.pageX
     const modelName = this._currModelName
     const diffx = pointerX - this._startMouseDownX

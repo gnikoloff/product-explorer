@@ -21,6 +21,7 @@ import {
   getArrowTexture,
   mapNumber,
   isMobileBrowser,
+  isIPadOS,
 } from './helpers'
 
 import store from './store'
@@ -700,6 +701,9 @@ function onWebGLSceneMouseClick (e) {
   const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
   const intersects = raycaster.intersectObjects(intersectsTests)
   
+  const mobileBrowser = isMobileBrowser()
+
+  console.log('clikck')
   if (intersects.length > 0) {
     if (cameraSystem.isDragCameraMoving) {
       // TODO: is this still relevant? not really sure
@@ -708,7 +712,9 @@ function onWebGLSceneMouseClick (e) {
       const intersect = intersects[0]
       const { object, object: { modelName } } = intersect
 
-      if (isMobile) {
+      const mobileBrowser = isMobileBrowser()
+
+      if (mobileBrowser) {
         const visibleMeshes = photoMeshContainer.children.filter(mesh => {
           return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
         })
@@ -735,15 +741,19 @@ function onWebGLSceneMouseClick (e) {
             eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_OPENING, { tweenFactor })
           },
           complete: () => {
-            if (rAf) {
-              cancelAnimationFrame(rAf)
-              rAf = null
+            if (!isIPadOS()) {
+              if (rAf) {
+                cancelAnimationFrame(rAf)
+                rAf = null
+              }
+              photoMeshContainer.children.forEach(mesh => {
+                mesh.opacity = 1
+              })
+              eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack: true }))
+            } else {
+              eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack: false }))
             }
-            photoMeshContainer.children.forEach(mesh => {
-              mesh.opacity = 1
-            })
             clickedElement = object
-            eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack: true }))
             layoutModeBtnStyler.set('pointer-events', 'none')
           },
         })

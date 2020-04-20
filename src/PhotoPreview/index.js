@@ -249,6 +249,7 @@ export default class PhotoPreview extends THREE.Mesh {
     }
   }
   _onUnhover = ({ modelName }) => {
+    const { mobileBrowser } = store.getState()
     if (modelName === this._modelName && !mobileBrowser) {
       if (this._flipInterval) {
         clearInterval(this._flipInterval)
