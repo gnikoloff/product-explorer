@@ -105,38 +105,39 @@ export default class InfoPanel {
         const fadeInsSidebar = [...sidebar.getElementsByClassName('fade-in')]
         const fadeInsMain = [...main.getElementsByClassName('fade-in')]
 
-        if (store.getState().isMobile) {
-          [...fadeInsMain, ...fadeInsSidebar].forEach(el => {
+        // if (store.getState().isMobile) {
+          const allFadeIns = [...fadeInsMain, ...fadeInsSidebar]
+          allFadeIns.forEach(el => {
             const elStyler = styler(el)
             elStyler.set({
               'opacity': 1,
               'pointer-events': 'auto',
             })
           })
-        } else {
-          const fadeInEl = (el, i) => {
-            const elStyler = styler(el)
-            // const offsetY = 6
-            // elStyler.set('y', offsetY)
-            elStyler.set('scale', '0.9')
-            chain(
-              delay(i * 125),
-              tween({
-                duration: 400,
-                ease: easing.easeIn,
-              })
-            ).start({
-              update: tweenFactor => elStyler.set({
-                opacity: tweenFactor,
-                scale: mapNumber(0, 1, 0.9, 1),
-                // y: mapNumber(tweenFactor, 0, 1, offsetY, 0),
-              }),
-              complete: () => elStyler.set('pointer-events', 'auto')
-            })
-          }
-          fadeInsSidebar.forEach(fadeInEl)
-          fadeInsMain.forEach(fadeInEl)
-        }
+        // } else {
+        //   const fadeInEl = (el, i) => {
+        //     const elStyler = styler(el)
+        //     // const offsetY = 6
+        //     // elStyler.set('y', offsetY)
+        //     elStyler.set('scale', '0.9')
+        //     chain(
+        //       delay(i * 125),
+        //       tween({
+        //         duration: 400,
+        //         ease: easing.easeIn,
+        //       })
+        //     ).start({
+        //       update: tweenFactor => elStyler.set({
+        //         opacity: tweenFactor,
+        //         scale: mapNumber(0, 1, 0.9, 1),
+        //         // y: mapNumber(tweenFactor, 0, 1, offsetY, 0),
+        //       }),
+        //       complete: () => elStyler.set('pointer-events', 'auto')
+        //     })
+        //   }
+        //   fadeInsSidebar.forEach(fadeInEl)
+        //   fadeInsMain.forEach(fadeInEl)
+        // }
       }
     })
     
