@@ -134,8 +134,8 @@ const photoMeshContainer = new THREE.Group()
 
 let photoRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
 let postFXRenderTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-let postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
-let postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr, appHeight * dpr)
+let postFXBlurHorizontalTarget = new THREE.WebGLRenderTarget(appWidth * dpr * 0.7, appHeight * dpr * 0.7)
+let postFXBlurVerticalTarget = new THREE.WebGLRenderTarget(appWidth * dpr * 0.7, appHeight * dpr * 0.7)
 let rAf
 let oldTime = 0
 let lastScrollY = 0
