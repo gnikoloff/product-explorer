@@ -13,7 +13,20 @@
   <meta name="twitter:description" content="Demo product explorer developed as a proof of  concept for ACRONYM® GmbH. Using next-generation realtime rendering to bring products to life.">
   <meta name="twitter:image" content="https://acronym-proto-backend.now.sh/public/social/acronym-demo-og-image.png">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="shortcut icon" type="image/jpg" href="src/assets/favicon.ico"/>
+  <link rel="shortcut icon" type="image/x-icon" href="src/assets/favicon.ico"/>
+
+  <style>
+    #app-loader {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 9999999;
+      background: #171717;
+    }
+  </style>
+
 </head>
 <body class="layout-mode-grid">
   <div id="app-container">
