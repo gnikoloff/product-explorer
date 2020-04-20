@@ -630,7 +630,9 @@ export default class PhotoPreview extends THREE.Mesh {
             y
           })
           if (repositionInOverviewMode) {
-            this.position.set(cameraRepositionX + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2, y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2, 0)
+            if (layoutMode === LAYOUT_MODE_OVERVIEW) {
+              this.position.set(cameraRepositionX + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2, y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2, 0)
+            }
           } else {
             this.position.set(cameraRepositionX, y, 0)
           }
