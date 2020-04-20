@@ -537,7 +537,7 @@ export default class PhotoPreview extends THREE.Mesh {
       this.position.y = newY
       
       if (!isMobile) {
-        const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, tweenFactor)
+        const newScale = calc.getValueFromProgress(this._targetScale, this._openedPageTargetScale, clampNumber(mapNumber(tweenFactor, 0, 0.5, 0, 1), 0, 1))
         this.scale.set(newScale, newScale, 1)
       }
 
