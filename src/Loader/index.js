@@ -165,6 +165,7 @@ export default class Loader {
     }, Loader.PROGRESS_TIMER_VALUE)
   }
   _onUpdate = (ts, dt) => {
+    console.log(dt)
     this._loadProgress += (this._loadProgressTarget - this._loadProgress) * (dt * this._dtScale)
     // if (mobileBrowser) {
       
