@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tween, chain, delay, easing } from 'popmotion'
 import styler from 'stylefire'
+import screenOrientation from 'screen-orientation'
 import WebFont from 'webfontloader'
 
 import eventEmitter from './event-emitter'
@@ -454,6 +455,7 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
 
   isToggleModelTweenRunning = true
 
+  console.log(`isMobile: ${isMobile}`)
   if (isMobile) {
     const visibleMeshes = photoMeshContainer.children.filter(mesh => {
       return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
@@ -463,7 +465,12 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
     visibleLabels.forEach(label => {
       label.visible = true
     })
-    eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, { modelName })
+    if (isIPadOS()) {
+      photoMeshContainer.children.forEach(mesh => {
+        mesh.opacity = 1
+      })
+    }
+    eventEmitter.emit(EVT_CLOSE_REQUEST_SINGLE_PROJECT, { modelName, reposition: true, repositionInOverviewMode: true })
     tween({
       duration: TOGGLE_SINGLE_PAGE_TRANSITION_REF_DURATION_OPEN,
       ease: easing.easeIn,
@@ -477,20 +484,13 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
         eventEmitter.emit(EVT_SINGLE_PROJECT_MASK_CLOSING, { tweenFactor, duration: 1000 })
       },
       complete: () => {
-        // if (rAf) {
-        //   cancelAnimationFrame(rAf)
-        //   rAf = null
-        // }
-
         eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT)
-
         clickedElement = null
         layoutModeBtnStyler.set('pointer-events', 'auto')
       },
     })
     return
   }
-
   closeModelTween = chain(
     delay(TOGGLE_SINGLE_PAGE_TRANSITION_DELAY),
     tween({
@@ -699,10 +699,7 @@ function onWebGLSceneMouseClick (e) {
   raycaster.setFromCamera(raycastMouse, cameraSystem.photoCamera)
   const intersectsTests = photoMeshContainer.children.filter(a => a.isInteractable)
   const intersects = raycaster.intersectObjects(intersectsTests)
-  
-  const mobileBrowser = isMobileBrowser()
 
-  console.log('clikck')
   if (intersects.length > 0) {
     if (cameraSystem.isDragCameraMoving) {
       // TODO: is this still relevant? not really sure
@@ -750,7 +747,9 @@ function onWebGLSceneMouseClick (e) {
               })
               eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack: true }))
             } else {
-              eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack: false }))
+              const repositionBack = screenOrientation().direction === 'landscape' ? false : true
+              console.log(`repositionBack: ${repositionBack}`)
+              eventEmitter.emit(EVT_OPEN_SINGLE_PROJECT, ({ modelName, repositionBack }))
             }
             clickedElement = object
             layoutModeBtnStyler.set('pointer-events', 'none')
@@ -780,6 +779,7 @@ function onWebGLSceneMouseClick (e) {
           layoutModeBtnStyler.set('opacity', opacity)
         },
         complete: () => {
+          // debugger
           clickedElement = object
           openModelTween = null
 

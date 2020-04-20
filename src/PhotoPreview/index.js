@@ -231,6 +231,7 @@ export default class PhotoPreview extends THREE.Mesh {
     })
   }
   _onHover = ({ modelName }) => {
+    const mobileBrowser = isMobileBrowser()
     if (modelName === this._modelName && !mobileBrowser) {
       if (!this._flipInterval) {
         const previewImageCount = 1
@@ -487,7 +488,6 @@ export default class PhotoPreview extends THREE.Mesh {
       this.material.uniforms.u_textures.value[this._loadedPhotosCounter] = texture
       this.material.needsUpdate = true
       this._loadedPhotosCounter++
-      // console.log(`loaded texture with idx: ${this._loadedPhotosCounter} for ${this._modelName}`)
     }
     LoadManager.loadTexture(this._photos[this._loadedPhotosCounter]).then(texture => {
       onTextureLoaded(texture, true)
@@ -530,8 +530,6 @@ export default class PhotoPreview extends THREE.Mesh {
       } = store.getState()
       const targetPosX = this._targetPosition.x
       const targetPosY = this._targetPosition.y
-      // tweenFactor = clampNumber(mapNumber(tweenFactor, 0.1, 1, 0, 1), 0, 1)
-      // console.log(tweenFactor)
       const newX = calc.getValueFromProgress(this.position.x, targetPosX, tweenFactor)
       const newY = calc.getValueFromProgress(this.position.y, targetPosY, tweenFactor)
       
@@ -571,7 +569,7 @@ export default class PhotoPreview extends THREE.Mesh {
       return
     }
 
-    const { layoutMode } = store.getState()
+    const { isMobile, layoutMode } = store.getState()
 
     window.addEventListener('keydown', this._onKeyDown)
 
@@ -597,8 +595,8 @@ export default class PhotoPreview extends THREE.Mesh {
         x = this._originalGridPosition.x
         y = this._originalGridPosition.y
       } else if (layoutMode === LAYOUT_MODE_OVERVIEW) {
-        x = this._originalOverviewPosition.x
-        y = this._originalOverviewPosition.y
+        x = this._originalOverviewPosition.x + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
+        y = this._originalOverviewPosition.y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2
       }
       this.position.x = x
       this.position.y = y
@@ -607,7 +605,7 @@ export default class PhotoPreview extends THREE.Mesh {
     this._diffVectorTarget.x = 0
     this._diffVectorTarget.y = 0
   }
-  _onCloseRequest = ({ modelName, reposition }) => {
+  _onCloseRequest = ({ modelName, reposition, repositionInOverviewMode }) => {
     this._isInteractable = true
     if (modelName === this._modelName) {
       const { layoutMode } = store.getState()
@@ -631,13 +629,18 @@ export default class PhotoPreview extends THREE.Mesh {
             x: layoutMode === LAYOUT_MODE_GRID ? x : 0,
             y
           })
-          this.position.set(cameraRepositionX, y, 0)
+          if (repositionInOverviewMode) {
+            this.position.set(cameraRepositionX + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2, y + PhotoPreview.OVERVIEW_LAYOUT_COLUMN_GUTTER / 2, 0)
+          } else {
+            this.position.set(cameraRepositionX, y, 0)
+          }
         }, 0)
         this.position.set(tempx, tempy, 0)
         this._targetPosition.set(cameraRepositionX, cameraRepositionY)
       } else {
         this._targetPosition.set(this.position.x, this.position.y)
       }
+
       this._targetScale = this.scale.x
       window.removeEventListener('keydown', this._onKeyDown)
     }
