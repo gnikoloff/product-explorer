@@ -214,10 +214,6 @@ function init () {
   // has been initially rendererd to avoid stalling on slower devices
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT * 2)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
-  LoadManager.loadTexture(labelMaskSource).then(texture => {
-    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT, 1)
-    eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
-  }) 
   fetch(`${SERVER_API_ENDPOINT}/get_data`).then(res => res.json()).then(projects => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
     onProjectsLoad(projects)
@@ -443,6 +439,12 @@ function onProjectsLoad (res) {
       currFadeInIdx++
     }
   })
+
+  LoadManager.loadTexture(labelMaskSource).then(texture => {
+    eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT, 1)
+    eventEmitter.emit(EVT_TEXTURE_LABEL_MASK_ONLOAD, { texture })
+  }) 
+  
   rAf = requestAnimationFrame(updateFrame)
 }
 
