@@ -36,6 +36,13 @@
   
 }
 
+@media (min-width: 600px) {
+  .info-container {
+    padding-left: 64px;
+    padding-right: 64px;
+  }
+}
+
 @media (min-width: 800px) {
   .info-container {
     padding-left: 32px;
