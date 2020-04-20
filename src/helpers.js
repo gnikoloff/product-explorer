@@ -167,7 +167,7 @@ export const isMobileBrowser = () => {
   })(navigator.userAgent || navigator.vendor || window.opera)
 }
 
-const isInstagram = () => {
+export const isInstagram = () => {
   const ua = navigator.userAgent || navigator.vendor || window.opera
   return ua.indexOf('Instagram') > -1
 }
