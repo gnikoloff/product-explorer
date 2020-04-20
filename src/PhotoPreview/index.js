@@ -108,7 +108,7 @@ export default class PhotoPreview extends THREE.Mesh {
       fragmentShader: photoFragmentShader,
     })
 
-    setTimeout(() => eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT), 0)
+    // setTimeout(() => eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT), 0)
 
     super(photoGeometry, photoMaterial)
 

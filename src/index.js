@@ -210,9 +210,8 @@ function init () {
   const fetchJSONToLoadCount = 1
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fontsToLoadCount)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fetchJSONToLoadCount)
-  // we multiply by two because we want to fire another load event when a mesh
-  // has been initially rendererd to avoid stalling on slower devices
-  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT * 2)
+  
+  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
   fetch(`${SERVER_API_ENDPOINT}/get_data`).then(res => res.json()).then(projects => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
