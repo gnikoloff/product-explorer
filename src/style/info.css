@@ -10,6 +10,11 @@
   pointer-events: none;
 }
 
+.info-section a {
+  color: #075b92;
+  text-decoration: none;
+}
+
 .info-container {
   padding-left: 24px;
   padding-right: 24px;
@@ -50,7 +55,7 @@
 }
 
 .info-sidebar h2 {
-  font-size: 16px;
+  font-size: 15px;
   margin-top: 16px;
 }
 
