@@ -120,6 +120,7 @@ export default class CameraSystem {
 
     if (mobileBrowser) {
       CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: CameraSystem.MOBILE_CAMERA_ZOOM })
+      CameraSystem.controlCameraZoom({ camera: this._openedProjectCamera, zoom: CameraSystem.MOBILE_CAMERA_ZOOM })
     }
     // CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: 0.45 })
   }
@@ -169,9 +170,11 @@ export default class CameraSystem {
             const start = CameraSystem.MOBILE_CAMERA_ZOOM
             this._zoomFactor = start + tweenFactor * 0.1
             CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom: this._zoomFactor })
+            CameraSystem.controlCameraZoom({ camera: this._openedProjectCamera, zoom: this._zoomFactor })
           } else if (layoutMode === LAYOUT_MODE_GRID) {
             const zoom = mapNumber(tweenFactor, 0, 1, this._zoomFactor, CameraSystem.MOBILE_CAMERA_ZOOM)
             CameraSystem.controlCameraZoom({ camera: this._photoCamera, zoom })
+            CameraSystem.controlCameraZoom({ camera: this._openedProjectCamera, zoom })
           }
         })
       )

@@ -190,6 +190,7 @@ export default class SinglePageMobile {
   _setContentTexts = ({ modelName }) => {
     this.$els.wrapper.scroll(0, 0)
     this.$els.galleryWrapper.scroll(0, 0)
+    this.$els.galleryWrapper.scrolLeft = 0
 
     const project = this._projectsData.find(project => project.modelName === modelName)
     this.$els.title.innerHTML = project.modelName

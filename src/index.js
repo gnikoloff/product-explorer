@@ -455,7 +455,6 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
 
   isToggleModelTweenRunning = true
 
-  console.log(`isMobile: ${isMobile}`)
   if (isMobile) {
     const visibleMeshes = photoMeshContainer.children.filter(mesh => {
       return getIsPreviewMeshVisible(mesh.x, mesh.y, mesh.width, mesh.height)
@@ -485,6 +484,8 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
       },
       complete: () => {
         eventEmitter.emit(EVT_CLOSE_SINGLE_PROJECT)
+        const photoPreviewMesh = mobileBrowser ? openedProjectScene.children[1] : openedProjectScene.children[2]
+        photoMeshContainer.add(photoPreviewMesh)
         clickedElement = null
         layoutModeBtnStyler.set('pointer-events', 'auto')
       },
@@ -717,6 +718,7 @@ function onWebGLSceneMouseClick (e) {
         const visiblePhotos = visibleMeshes.filter(mesh => mesh.isPhoto && mesh.modelName !== modelName   )
         const visibleLabels = photoMeshContainer.children.filter(mesh => mesh.isLabel)
 
+        openedProjectScene.add(object)
         visibleLabels.forEach(mesh => {
           mesh.visible = false
         })
