@@ -507,7 +507,8 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
   }
 }
 
-#landscape-not-supported {
+#landscape-not-supported,
+#instagram-not-supported {
   position: fixed;
   top: 0;
   right: 0;
@@ -519,4 +520,5 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
   padding: 2rem;
   box-sizing: border-box;
   display: none;
+  font-size: 14px;
 }

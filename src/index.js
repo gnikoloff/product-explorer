@@ -27,8 +27,7 @@ import {
 } from './helpers'
 
 if (isInstagram()) {
-  document.body.style.transform = 'scale(0.5)'
-  alert('hey you are in instagram')
+  document.getElementById('instagram-not-supported').style.display = 'block'
 }
 
 import store from './store'
