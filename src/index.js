@@ -529,32 +529,40 @@ function onCloseSingleView ({ modelName, reposition = false, duration }) {
 }
 
 function onResize () {
-  appWidth = window.innerWidth
-  appHeight = window.innerHeight
+  if (!isMobile) {
+    appWidth = window.innerWidth
+    appHeight = window.innerHeight
 
-  renderer.setSize(appWidth, appHeight)
+    renderer.setSize(appWidth, appHeight)
 
-  eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
+    eventEmitter.emit(EVT_APP_RESIZE, { appWidth, appHeight })
 
-  const photoRenderTargetCopy = photoRenderTarget.clone()
-  const postFXRenderTargetCopy = postFXRenderTarget.clone()
-  const postFXBlurHorizontalTargetCopy = postFXBlurHorizontalTarget.clone()
-  const postFXBlurVerticalTargetCopy = postFXBlurVerticalTarget.clone()
-  
-  photoRenderTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
-  postFXRenderTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
-  postFXBlurHorizontalTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
-  postFXBlurVerticalTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+    const photoRenderTargetCopy = photoRenderTarget.clone()
+    const postFXRenderTargetCopy = postFXRenderTarget.clone()
+    const postFXBlurHorizontalTargetCopy = postFXBlurHorizontalTarget.clone()
+    const postFXBlurVerticalTargetCopy = postFXBlurVerticalTarget.clone()
+    
+    photoRenderTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+    postFXRenderTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+    postFXBlurHorizontalTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
+    postFXBlurVerticalTargetCopy.setSize(appWidth * dpr, appHeight * dpr)
 
-  photoRenderTarget.dispose()
-  postFXRenderTarget.dispose()
-  postFXBlurHorizontalTarget.dispose()
-  postFXBlurVerticalTarget.dispose()
+    photoRenderTarget.dispose()
+    postFXRenderTarget.dispose()
+    postFXBlurHorizontalTarget.dispose()
+    postFXBlurVerticalTarget.dispose()
 
-  photoRenderTarget = photoRenderTargetCopy
-  postFXRenderTarget = postFXRenderTargetCopy
-  postFXBlurHorizontalTarget = postFXBlurHorizontalTargetCopy
-  postFXBlurVerticalTarget = postFXBlurVerticalTargetCopy
+    photoRenderTarget = photoRenderTargetCopy
+    postFXRenderTarget = postFXRenderTargetCopy
+    postFXBlurHorizontalTarget = postFXBlurHorizontalTargetCopy
+    postFXBlurVerticalTarget = postFXBlurVerticalTargetCopy
+  } else {
+    if (screenOrientation().direction === 'landscape') {
+      document.getElementById('landscape-not-supported').style.display = 'block'
+    } else {
+      document.getElementById('landscape-not-supported').style.display = 'none'
+    }
+  }
 }
 
 function onPageMouseLeave () {

@@ -516,3 +516,17 @@ body.layout-mode-overview .hint[data-layout-mode="overview"] {
     right: auto;
   }
 }
+
+#landscape-not-supported {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 99999999;
+  background: #111;
+  color: #fff;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: none;
+}
