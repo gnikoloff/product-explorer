@@ -1,4 +1,4 @@
-export const SERVER_API_ENDPOINT = process.env.NODE_ENV === 'development' ? 'http://192.168.0.12:5000' : 'https://product-explorer-backend.now.sh'
+export const SERVER_API_ENDPOINT = process.env.NODE_ENV === 'development' ? 'http://192.168.0.13:5000' : 'https://product-explorer-backend.now.sh'
 // export const SERVER_API_ENDPOINT = 'https://acronym-proto-backend.nikoloffgeorgi.now.sh'
 
 export const PROJECTS_COUNT = 12
