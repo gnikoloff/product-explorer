@@ -42,6 +42,7 @@ import {
 } from './store/actions'
 
 import {
+  USE_LOADER,
   SERVER_API_ENDPOINT,
   PROJECTS_COUNT,
   TOGGLE_SINGLE_PAGE_TRANSITION_DELAY,
@@ -102,6 +103,7 @@ import labelMaskSource from './assets/mask.png'
 const mobileBrowser = isMobileBrowser()
 const isMobile = isMobileBrowser() && innerWidth < 800
 store.dispatch(setIsMobile(isMobile))
+
 
 let appWidth = window.innerWidth
 let appHeight = window.innerHeight
@@ -206,9 +208,19 @@ init()
 
 function init () {
 
-  new Loader({
-    parentEl: document.getElementById('app-loader'),
-  })
+  if (USE_LOADER) {
+    new Loader({
+      parentEl: document.getElementById('app-loader'),
+    })
+  } else {
+    const loaderEl = document.getElementById('app-loader')
+    const splashEl = document.getElementById('app-splash-screen')
+    const introModal = document.getElementById('intro-modal')
+    loaderEl.parentNode.removeChild(loaderEl)
+    splashEl.parentNode.removeChild(splashEl)
+    introModal.parentNode.removeChild(introModal)
+    document.getElementsByClassName('app-header')[0].classList.add('faded-in')
+  }
   new LoadManager()
 
   const fontsToLoadCount = 1
@@ -424,7 +436,7 @@ function onProjectsLoad (res) {
       height: PREVIEW_PHOTO_REF_HEIGHT,
       photos: info.sliderPhotos || [],
       gridPosition: new THREE.Vector3(info.posX, info.posY, 0),
-      initialOpacity: isVisible ? 0 : 1,
+      initialOpacity: USE_LOADER ? (isVisible ? 0 : 1) : 1,
       // initialOpacity: 1,
     })
     const labelPosX = info.posX - PREVIEW_PHOTO_REF_WIDTH * (isMobile ? 0 : 0.25)
@@ -432,7 +444,7 @@ function onProjectsLoad (res) {
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,
       position: new THREE.Vector3(labelPosX, labelPosY, 25),
-      initialOpacity: isVisible ? 0 : 1,
+      initialOpacity: USE_LOADER ? (isVisible ? 0 : 1) : 1,
       // initialOpacity: 1,
     })
     previewLabel.position.z = 40
