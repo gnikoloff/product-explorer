@@ -93,15 +93,36 @@ export default class PhotoPreview extends THREE.Mesh {
         INPUT_TEXTURES_COUNT: textureCount,
       },
       uniforms: {
-        u_dragOffsetVec: { value: diffVector },
-        u_planeSize: { value: new THREE.Vector2(width, height) },
-        u_imageSize: { value: new THREE.Vector2(0, 0) },
-        u_textures: { value: [ new THREE.Texture(), ...new Array(textureCount).fill(null) ] },
-        u_opacity: { value: initialOpacity, },
-        u_photoMixFactor: { value: 0.0 },
-        u_texIdx0: { value: 0 },
-        u_texIdx1: { value: 1 },
-        u_horizontalDirection: { value: 0 },
+        u_dragOffsetVec: {
+          value: diffVector,
+        },
+        u_planeSize: {
+          value: new THREE.Vector2(width, height),
+        },
+        u_imageSize: {
+          value: new THREE.Vector2(0, 0),
+        },
+        u_textures: {
+          value: [
+            new THREE.Texture(),
+            ...new Array(textureCount).fill(new THREE.DataTexture(new Uint8Array([220, 220, 220]), 1, 1, THREE.RGBFormat))
+          ],
+        },
+        u_opacity: {
+          value: initialOpacity,
+        },
+        u_photoMixFactor: {
+          value: 0.0,
+        },
+        u_texIdx0: {
+          value: 0,
+        },
+        u_texIdx1: {
+          value: 1,
+        },
+        u_horizontalDirection: {
+          value: 0,
+        },
       },
       transparent: true,
       vertexShader: photoVertexShader,
