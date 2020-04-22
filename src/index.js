@@ -226,7 +226,8 @@ function init () {
   
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
-  fetch(`${SERVER_API_ENDPOINT}/data-acrnm.json`).then(res => res.json()).then(projects => {
+  const url = process.env.NODE_ENV === 'development' ? `${SERVER_API_ENDPOINT}` : `${SERVER_API_ENDPOINT}/data-acrnm.json`
+  fetch(url, { mode: 'cors' }).then(res => res.json()).then(projects => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
     onProjectsLoad(projects)
   })
