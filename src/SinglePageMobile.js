@@ -31,12 +31,7 @@ export default class SinglePageMobile {
       singlePageWrapper: wrapper.getElementsByClassName('single-page-info-wrapper')[0],
       container: wrapper.getElementsByClassName('single-page-container')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
-      subtitle: wrapper.getElementsByClassName('single-page-subheading')[0],
       pricing: wrapper.getElementsByClassName('single-page-pricing')[0],
-      type: wrapper.getElementsByClassName('single-page-type')[0],
-      generation: wrapper.getElementsByClassName('single-page-gen')[0],
-      style: wrapper.getElementsByClassName('single-page-style')[0],
-      description: wrapper.getElementsByClassName('single-page-description')[0],
       descriptionList: wrapper.getElementsByClassName('single-page-features')[0],
       fabricTechnologyList: wrapper.getElementsByClassName('fabric-technology')[0],
       systemsList: wrapper.getElementsByClassName('systems')[0],
@@ -50,6 +45,8 @@ export default class SinglePageMobile {
       mobileNav: wrapper.getElementsByClassName('mobile-single-page-nav')[0],
       prevProductButton: wrapper.getElementsByClassName('mobile-nav-btn-left')[0],
       nextProductButton: wrapper.getElementsByClassName('mobile-nav-btn-right')[0],
+      sizes: wrapper.getElementsByClassName('sizes')[0],
+      sizesWrapper: wrapper.getElementsByClassName('sizes-wrapper')[0],
     }
 
     this.stylers = {
@@ -108,6 +105,19 @@ export default class SinglePageMobile {
       })
     })
   }
+  _onSizesClick = e => {
+    if (!e.target.classList.contains('size')) {
+      return
+    }
+    for (let i = 0; i < this.$els.sizesWrapper.children.length; i++) {
+      const child = this.$els.sizesWrapper.children[i]
+      if (child === e.target) {
+        child.classList.add('active')
+      } else {
+        child.classList.remove('active')
+      }
+    }
+  }
   _closeView = () => {
     this._fadeProjectDescription({ direction: -1 }).then(() => {
       this.stylers.wrapper.set({
@@ -156,7 +166,10 @@ export default class SinglePageMobile {
     const belowTheFoldEls = animatedEls.filter(item => item.y > innerHeight)
     belowTheFoldEls.forEach(el => {
       const stylerEl = styler(el)
-      stylerEl.set('opacity', direction === -1 ? 0 : 1)
+      stylerEl.set({
+        opacity: direction === -1 ? 0 : 1,
+        pointerEvents: 'auto',
+      })
     })
     fadeInEls.forEach((child, i) => {
       const childStyler = styler(child)
@@ -193,20 +206,27 @@ export default class SinglePageMobile {
 
     const project = this._projectsData.find(project => project.modelName === modelName)
     this.$els.title.innerHTML = project.modelName
-    this.$els.subtitle.innerHTML = project.subheading
-    this.$els.description.innerHTML = project.description
     this.$els.pricing.innerHTML = project.pricing
-    this.$els.type.innerHTML = `Type  <span class="meta-desc">${project.type}</span>`
-    this.$els.generation.innerHTML = `Gen.  <span class="meta-desc">${project.gen}</span>`
-    this.$els.style.innerHTML = `Style  <span class="meta-desc">${project.style}</span>`
     this.$els.openLinkBtn.setAttribute('href', project.websiteURL)
+
+    for (let i = 0; i < this.$els.sizesWrapper.children.length; i++) {
+      const child = this.$els.sizesWrapper.children[i]
+      if (i === 0) {
+        child.classList.add('active')
+      } else {
+        child.classList.remove('active')
+      }
+    }
+    console.log(this.$els.sizes)
+    if (project.hasSizes === false) {
+      this.$els.sizes.style.setProperty('display', 'none')
+    } else {
+      this.$els.sizes.style.setProperty('display', 'block')
+      this.$els.sizesWrapper.removeEventListener('click', this._onSizesClick)
+      this.$els.sizesWrapper.addEventListener('click', this._onSizesClick, false)
+    }
     
-    this._setProjectDescList(this.$els.descriptionList, null)
-    this._setProjectDescList(this.$els.fabricTechnologyList, project.fabricTechnologies)
-    this._setProjectDescList(this.$els.systemsList, project.systems)
-    this._setProjectDescList(this.$els.subsystemsList, project.subsystems)
     this._setProjectDescList(this.$els.includesList, project.includes)
-    this._setProjectDescList(this.$els.interfaceWithList, project.interfaceWith)
 
     this.$els.prevProductButton.children[0].textContent = this._prevModelName
     this.$els.nextProductButton.children[0].textContent = this._nextModelName

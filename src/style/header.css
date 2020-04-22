@@ -41,7 +41,7 @@
 }
 
 .app-logo {
-  max-width: 200px;
+  max-width: 250px;
   width: 100%;
 }
 
@@ -50,6 +50,10 @@
 }
 .app-logo.interactable:hover {
   cursor: pointer;
+}
+
+.app-logo img {
+  width: 100%;
 }
 
 .button {
