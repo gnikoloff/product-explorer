@@ -35,8 +35,8 @@ export default class PhotoLabel extends THREE.Mesh {
     initialOpacity,
   }) {
     const { isMobile } = store.getState()
-    const width = isMobile ? 384 / 2.5 : 470 / 2.5
-    const height = isMobile ? 96 / 2.5 : 114 / 2.5
+    const width = isMobile ? 520 / 2.5 : 470 / 2.5
+    const height = isMobile ? 126 / 2.5 : 114 / 2.5
     const geometry = new THREE.PlaneBufferGeometry(width, height)
     const material = new THREE.ShaderMaterial({
       uniforms: {
