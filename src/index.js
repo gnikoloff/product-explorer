@@ -229,7 +229,7 @@ function init () {
   const url = process.env.NODE_ENV === 'development' ? `${SERVER_API_ENDPOINT}` : `${SERVER_API_ENDPOINT}/data-acrnm.json`
   fetch(url, { mode: 'cors' }).then(res => res.json()).then(projects => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
-    onProjectsLoad(projects)
+    onProjectsLoad(projects.data)
   })
   WebFont.load({
     google: { families: ['Inter:wght@400;500&display=swap&subset'] },
