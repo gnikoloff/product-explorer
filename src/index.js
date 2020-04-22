@@ -23,12 +23,8 @@ import {
   mapNumber,
   isMobileBrowser,
   isIPadOS,
-  isInstagram,
 } from './helpers'
 
-// if (isInstagram()) {
-//   document.getElementById('instagram-not-supported').style.display = 'block'
-// }
 
 import store from './store'
 import {

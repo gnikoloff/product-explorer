@@ -11,6 +11,7 @@ import {
 
 import {
   isMobileBrowser,
+  isInstagram,
 } from '../helpers'
 
 import vertexShader from './vertex-shader.glsl'
@@ -112,6 +113,21 @@ export default class Loader {
       e.preventDefault()
       this.$els.wrapper.parentNode.removeChild(this.$els.wrapper)
       this.$els.wrapper.removeEventListener('transitionend', onDialogFadeOut)
+
+      if (isInstagram()) {
+        setTimeout(() => {
+          const instaMSG = document.getElementById('instagram-browser')
+          instaMSG.classList.add('show')
+          const closeInstaBtn = instaMSG.getElementsByClassName('instagram-browser-close')[0]
+          const onClick = () => {
+            instaMSG.parentNode.removeChild(instaMSG)
+            closeInstaBtn.removeEventListener('click', onClick)
+          }
+          closeInstaBtn.addEventListener('click', onClick, false)
+          docu
+        }, 1000)
+      }
+
     }
     this.$els.wrapper.style.setProperty('opacity', '0')
     this.$els.wrapper.style.setProperty('transition', 'opacity 0.5s cubic-bezier(0.65, 0, 0.35, 1)')
