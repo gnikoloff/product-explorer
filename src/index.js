@@ -26,9 +26,9 @@ import {
   isInstagram,
 } from './helpers'
 
-if (isInstagram()) {
-  document.getElementById('instagram-not-supported').style.display = 'block'
-}
+// if (isInstagram()) {
+//   document.getElementById('instagram-not-supported').style.display = 'block'
+// }
 
 import store from './store'
 import {
