@@ -4,6 +4,16 @@
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
+@font-face {
+  font-family: 'Molde-Regular';
+  src:  url('../assets/molde-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Molde-Bold';
+  src:  url('../assets/molde-bold.woff2') format('woff2');
+}
+
 html,
 body {
   overflow: hidden;
@@ -12,7 +22,7 @@ body {
 
 body {
   background: #e5e5e5;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Molde-Regular', sans-serif;
   font-size: 16px;
   line-height: 24px;
   text-rendering: optimizeLegibility;
@@ -66,6 +76,10 @@ li {
   width: 100%;
 }
 
+.app-splash-wrapper img {
+  width: 440px;
+}
+
 .app-splash-wrapper svg {
   display: block;
   margin-top: 0px;
@@ -76,7 +90,7 @@ li {
     max-width: 550px;
   }
   .app-splash-wrapper svg {
-    margin-top: 0px;
+    margin-top: -20px;
   }
 }
 
@@ -85,7 +99,7 @@ li {
 }
 
 .app-splash-wrapper text {
-  font-size: 24px;
+  font-size: 18px;
   text-transform: uppercase;
   letter-spacing: 13px;
 }
@@ -97,7 +111,7 @@ li {
   width:  47px;
   height: 47px;
   background: none;
-  border: 2px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid #111;
   background: #fcfcfc;
   border-radius: 50%;
   z-index: 1;
@@ -164,7 +178,7 @@ li {
   width: 45px;
   height: 45px;
   margin: -25px 0 0 -25px;
-  border: 2px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid #111;
   background: #fcfcfc;
   border-radius: 50%;
 }
@@ -173,8 +187,8 @@ li {
 
 .close-single-page .close-line {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: calc(50% - 1px);
+  left: calc(50% - 1px);
   width: 14px;
   height: 3px;
 }
@@ -191,11 +205,11 @@ li {
 }
 
 .close-single-page .close-line:before {
-  background: #aaa;
+  background: #111;
 }
 
 .close-single-page .close-line:after {
-  background: #111;
+  background: #000;
   transform: scaleX(0);
   transition-property: transform;
   transition-duration: 0.15s;

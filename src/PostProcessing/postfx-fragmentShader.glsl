@@ -66,5 +66,5 @@ void main () {
   float t = 1.0 + smoothstep(u_cursorSize, u_cursorSize + CURSOR_BORDER, dist) 
                 - smoothstep(u_cursorSize - CURSOR_BORDER, u_cursorSize, dist);
 
-  gl_FragColor = mix(vec4(color.rgb * 0.9, 1.0), color, t);
+  gl_FragColor = mix(vec4(color.rgb * 0.7, 1.0), color, t);
 }

@@ -68,7 +68,7 @@ export const getArrowTexture = () => {
   return new THREE.CanvasTexture(canvas)
 }
 
-export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => new Promise((resolve, reject) => {
+export const getProductLabelTexture = (label, sizeX = 1024, sizeY = 256) => new Promise((resolve, reject) => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   canvas.width = sizeX
@@ -81,7 +81,7 @@ export const getProductLabelTexture = (label, sizeX = 512, sizeY = 128) => new P
     ctx.fillStyle = '#fff'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = 'normal 58px Helvetica'
+    ctx.font = 'normal 59px Molde-Regular'
     ctx.fillText(label, canvas.width / 2, canvas.height / 2)
     const texture = new THREE.CanvasTexture(canvas)
     texture.isFlipped = true
@@ -105,7 +105,7 @@ export const getHoverLabel = () => new Promise((resolve, reject) => {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.fillStyle = '#fff'
     ctx.textBaseline = 'middle'
-    ctx.font = 'normal 64px Helvetica'
+    ctx.font = 'normal 56px Molde-Regular'
     ctx.fillText('Hold to see more', 30, canvas.height / 2)
     const texture = new THREE.CanvasTexture(canvas)
     texture.isFlipped = true

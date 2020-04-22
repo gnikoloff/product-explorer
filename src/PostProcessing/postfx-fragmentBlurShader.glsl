@@ -38,5 +38,5 @@ void main () {
   vec4 blurColor = blur9(u_tDiffuse, v_uv, u_resolution, u_direction);
   vec4 maskColor = texture2D(u_tDiffuseMask, v_uv);
   gl_FragColor = mix(color, blurColor, step(maskColor.r, u_blurMixFactor));
-  // gl_FragColor.a = 1.0 - u_blurMixFactor;
+  gl_FragColor.a = 1.0 - u_blurMixFactor * 0.8;
 }

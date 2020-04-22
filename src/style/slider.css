@@ -19,18 +19,18 @@
   height: 50px;
   background: none;
   border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid #111;
   opacity: 0;
   background-size: 50%;
   background-repeat: no-repeat;
 }
 .slider-btn-prev {
   left: 0;
-  margin-left: -25px;
+  margin-left: -60px;
 }
 .slider-btn-next {
   right: 0;
-  margin-right: -25px;
+  margin-right: -60px;
 }
 .slider-btn:hover { cursor: pointer; }
 .slider-btn:focus { outline: 0; }
@@ -43,7 +43,7 @@
   margin: -1px 0 0 -6px;
   border-radius: 2px;
   overflow: hidden;
-  background: #aaa;
+  background: #111;
 }
 .slider-btn .line:before {
   content: '';
@@ -52,7 +52,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background: #111;
+  background: #000;
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }

@@ -84,6 +84,10 @@
   border: none;
   transform: translateY(-100px);
 }
+.info-btn-close .close-line {
+  top: 50%;
+  left: 50%;
+}
 .info-btn-close:before { content: none; }
 .info-btn-close:hover { cursor: pointer; }
 .info-btn-close:focus { outline: 0; }

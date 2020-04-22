@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { tween, chain, delay, easing } from 'popmotion'
 import styler from 'stylefire'
 import screenOrientation from 'screen-orientation'
-import WebFont from 'webfontloader'
 
 import eventEmitter from './event-emitter'
 
@@ -225,15 +224,11 @@ function init () {
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, fetchJSONToLoadCount)
   
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT)
-  eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
-  const url = process.env.NODE_ENV === 'development' ? `${SERVER_API_ENDPOINT}` : `${SERVER_API_ENDPOINT}/data-acrnm.json`
+  // eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
+  const url = process.env.NODE_ENV === 'development' ? `${SERVER_API_ENDPOINT}` : `${SERVER_API_ENDPOINT}/data-wasted.json`
   fetch(url, { mode: 'cors' }).then(res => res.json()).then(projects => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
-    onProjectsLoad(projects)
-  })
-  WebFont.load({
-    google: { families: ['Inter:wght@400;500&display=swap&subset'] },
-    active: () => eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
+    onProjectsLoad(process.env.NODE_ENV === 'development' ? projects : projects.data)
   })
 
   renderer.setSize(appWidth, appHeight)
@@ -436,7 +431,7 @@ function onProjectsLoad (res) {
       initialOpacity: USE_LOADER ? (isVisible ? 0 : 1) : 1,
       // initialOpacity: 1,
     })
-    const labelPosX = info.posX - PREVIEW_PHOTO_REF_WIDTH * (isMobile ? 0 : 0.25)
+    const labelPosX = info.posX
     const labelPosY = info.posY - PREVIEW_PHOTO_REF_HEIGHT / 2
     const previewLabel = new PhotoLabel({
       modelName: info.modelName,

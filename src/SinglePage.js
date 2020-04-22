@@ -56,18 +56,8 @@ export default class SinglePage {
       singlePageContainer: wrapper.getElementsByClassName('single-page-container')[0],
       singlePageWrapper: wrapper.getElementsByClassName('single-page-info-wrapper')[0],
       title: wrapper.getElementsByClassName('single-page-title')[0],
-      subtitle: wrapper.getElementsByClassName('single-page-subheading')[0],
       pricing: wrapper.getElementsByClassName('single-page-pricing')[0],
-      type: wrapper.getElementsByClassName('single-page-type')[0],
-      generation: wrapper.getElementsByClassName('single-page-gen')[0],
-      style: wrapper.getElementsByClassName('single-page-style')[0],
-      description: wrapper.getElementsByClassName('single-page-description')[0],
-      descriptionList: wrapper.getElementsByClassName('single-page-features')[0],
-      fabricTechnologyList: wrapper.getElementsByClassName('fabric-technology')[0],
-      systemsList: wrapper.getElementsByClassName('systems')[0],
-      subsystemsList: wrapper.getElementsByClassName('subsystems')[0],
       includesList: wrapper.getElementsByClassName('includes')[0],
-      interfaceWithList: wrapper.getElementsByClassName('interface-with')[0],
       sliderButtonPrev: wrapper.getElementsByClassName('slider-btn-prev')[0],
       sliderButtonNext: wrapper.getElementsByClassName('slider-btn-next')[0],
       singlePageNav: wrapper.getElementsByClassName('single-page-nav')[0],
@@ -79,6 +69,8 @@ export default class SinglePage {
       openExternalLink: wrapper.getElementsByClassName('open-product-page')[0],
       sizer: wrapper.getElementsByClassName('single-page-slider-sizer')[0],
       appLogo: document.body.getElementsByClassName('app-logo')[0],
+      sizes: wrapper.getElementsByClassName('sizes')[0],
+      sizesWrapper: wrapper.getElementsByClassName('sizes-wrapper')[0],
     }
 
     this.$els.sliderHintActionType.textContent = isIPadOS() ? 'swipe' : 'drag'
@@ -249,25 +241,44 @@ export default class SinglePage {
     }
   }
 
+  _onSizesClick = e => {
+    if (!e.target.classList.contains('size')) {
+      return
+    }
+    for (let i = 0; i < this.$els.sizesWrapper.children.length; i++) {
+      const child = this.$els.sizesWrapper.children[i]
+      if (child === e.target) {
+        child.classList.add('active')
+      } else {
+        child.classList.remove('active')
+      }
+    }
+  }
+
   _setContentTexts = ({ modelName }) => {
     const project = this._projectsData.find(project => project.modelName === modelName)
     this.$els.title.innerHTML = project.modelName
-    this.$els.subtitle.innerHTML = project.subheading
-    this.$els.description.innerHTML = project.description
     this.$els.pricing.innerHTML = project.pricing
-    this.$els.type.innerHTML = `Type  <span class="meta-desc">${project.type}</span>`
-    this.$els.generation.innerHTML = `Gen.  <span class="meta-desc">${project.gen}</span>`
-    this.$els.style.innerHTML = `Style  <span class="meta-desc">${project.style}</span>`
 
     this.$els.openExternalLink.setAttribute('href', project.websiteURL)
-    console.log(project.websiteURL)
+
+    for (let i = 0; i < this.$els.sizesWrapper.children.length; i++) {
+      const child = this.$els.sizesWrapper.children[i]
+      if (i === 0) {
+        child.classList.add('active')
+      } else {
+        child.classList.remove('active')
+      }
+    }
+    if (project.hasSizes === false) {
+      this.$els.sizes.style.setProperty('display', 'none')
+    } else {
+      this.$els.sizes.style.setProperty('display', 'block')
+      this.$els.sizesWrapper.removeEventListener('click', this._onSizesClick)
+      this.$els.sizesWrapper.addEventListener('click', this._onSizesClick, false)
+    }
     
-    this._setProjectDescList(this.$els.descriptionList, null)
-    this._setProjectDescList(this.$els.fabricTechnologyList, project.fabricTechnologies)
-    this._setProjectDescList(this.$els.systemsList, project.systems)
-    this._setProjectDescList(this.$els.subsystemsList, project.subsystems)
     this._setProjectDescList(this.$els.includesList, project.includes)
-    this._setProjectDescList(this.$els.interfaceWithList, project.interfaceWith)
     
     this.$els.prevProductButton.children[0].textContent = this._prevModelName
     this.$els.nextProductButton.children[0].textContent = this._nextModelName
@@ -429,6 +440,7 @@ export default class SinglePage {
     this.$els.closeButton.removeEventListener('click', this._closeButtonClick, false)
     this.$els.appLogo.classList.remove('interactable')
     this.$els.appLogo.removeEventListener('click', this._closeButtonClick)
+    this.$els.sizesWrapper.removeEventListener('click', this._onSizesClick)
   }
   
 

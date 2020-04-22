@@ -53,6 +53,7 @@
 }
 
 .single-page-wrapper h2 {
+  font-family: 'Molde-Bold', sans-serif;
   font-size: 16px;
   margin-bottom: 16px;
 }
@@ -133,35 +134,33 @@
 }
 
 .single-page-title-wrapper {
+  font-family: 'Molde-Bold', sans-serif;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .single-page-title {
-  /* margin-bottom: 28px; */
+  width: 100%;
+  font-size: 1.3rem;
 }
+/* 
+@media (min-width: 1320px) {
+  .single-page-title {
+    font-size: 2rem;
+  }
+} */
 
 .single-page-subheading {
   font-size: 12px;
 }
 
-.single-page-meta {
-  display: flex;
-  align-items: center;
-}
 
 .single-page-pricing {
-  margin-top: 24px;
-}
-
-.meta-item {
-  white-space: pre;
-  margin-right: 32px;
-}
-.meta-item:last-of-type {
-  margin-right: 0;
+  border-top: 1px solid #111;
+  border-bottom: 1px solid #111;
+  padding: 14px 0 12px 0;
 }
 
 .meta-desc {
@@ -169,7 +168,7 @@
 }
 
 .single-page-section {
-  padding-bottom: 3rem;
+  padding-bottom: 1rem;
   padding-left: 16px;
   padding-right: 16px;
   font-size: 12px;
@@ -244,7 +243,7 @@
   background: none;
   border: none;
   background: #fcfcfc;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  border-top: 1px solid #111;
   transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -257,8 +256,8 @@
 }
 
 .single-page-prev-button {
-  border-left: 1px solid rgba(0, 0, 0, 0.12);
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  border-left: 1px solid #111;
+  border-right: 1px solid #111;
 }
 
 .single-page-btn-label {
@@ -283,10 +282,54 @@
   }
   .single-page-container {
     width: 50%;
-    padding: 150px 15% 24px 42px;
+    padding: 150px 8% 24px 42px;
   }
   .single-page-section {
     padding-left: 0;
     padding-right: 0;
   }
+}
+
+.sizes-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.size {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  border: 1px solid #111;
+  margin-right: 12px;
+  transition: background 0.2s ease,
+              color 0.2s ease;
+}
+
+.size.active {
+  background: #111;
+  color: #fff;
+}
+
+.size:hover {
+  cursor: pointer;
+}
+
+.size:last-of-type {
+  margin-right: 0;
+}
+
+.guides {
+  display: flex;
+}
+
+.guide {
+  width: 50%;
+  padding: 10px 12px;
+  border: 1px solid #111;
+}
+
+.guide:first-of-type {
+  border-right: none;
 }
