@@ -230,7 +230,7 @@ function init () {
   
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, PROJECTS_COUNT)
   eventEmitter.emit(EVT_ADD_TO_INITIAL_RESOURCES_LOAD_COUNT, 1)
-  fetch(`${SERVER_API_ENDPOINT}/get_data`).then(res => res.json()).then(projects => {
+  fetch(`${SERVER_API_ENDPOINT}/data-acrnm.json`).then(res => res.json()).then(projects => {
     eventEmitter.emit(EVT_INCREMENT_INITIAL_RESOURCES_LOAD_COUNT)
     onProjectsLoad(projects)
   })
