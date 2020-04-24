@@ -32,6 +32,10 @@ body.dragging {
   /* cursor: grabbing; */
 }
 
+button {
+  font-family: 'Molde-Regular', sans-serif;
+}
+
 h1,
 h2,
 h3 {
@@ -77,12 +81,12 @@ li {
 }
 
 .app-splash-wrapper img {
-  width: 440px;
+  width: 100%;
 }
 
 .app-splash-wrapper svg {
   display: block;
-  margin-top: 0px;
+  margin-top: -12px;
 }
 
 @media (min-width: 800px) {

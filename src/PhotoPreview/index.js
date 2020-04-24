@@ -86,6 +86,7 @@ export default class PhotoPreview extends THREE.Mesh {
     initialOpacity,
   }) {
     const textureCount = Math.min(store.getState().webglMaxTexturesSupported - 1, photos.length - 1)
+    console.log(textureCount, modelName)
     const diffVector = new THREE.Vector2(0, 0)
     const photoGeometry = new THREE.PlaneBufferGeometry(width, height, 30, 30)
     const photoMaterial = new THREE.ShaderMaterial({
@@ -713,7 +714,7 @@ export default class PhotoPreview extends THREE.Mesh {
       this.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
       if (this._sliderIdx < 0) {
-        this._sliderIdx = this._textureCount - 2
+        this._sliderIdx = this._textureCount - 1
       }
       this.material.uniforms.u_texIdx0.value = this._sliderIdx
       this.material.uniforms.u_texIdx1.value = oldSliderIdx
