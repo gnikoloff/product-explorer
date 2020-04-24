@@ -707,7 +707,7 @@ export default class PhotoPreview extends THREE.Mesh {
     const oldSliderIdx = this._sliderIdx
     this._sliderIdx += direction
     if (direction === 1) {
-      if (this._sliderIdx >= this._textureCount - 1) {
+      if (this._sliderIdx > this._textureCount - 1) {
         this._sliderIdx = 0
       }
       this.material.uniforms.u_texIdx0.value = oldSliderIdx
