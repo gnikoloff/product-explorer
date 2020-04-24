@@ -707,14 +707,14 @@ export default class PhotoPreview extends THREE.Mesh {
     const oldSliderIdx = this._sliderIdx
     this._sliderIdx += direction
     if (direction === 1) {
-      if (this._sliderIdx > this._textureCount - 1) {
+      if (this._sliderIdx > this._textureCount) {
         this._sliderIdx = 0
       }
       this.material.uniforms.u_texIdx0.value = oldSliderIdx
       this.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
       if (this._sliderIdx < 0) {
-        this._sliderIdx = this._textureCount - 1
+        this._sliderIdx = this._textureCount
       }
       this.material.uniforms.u_texIdx0.value = this._sliderIdx
       this.material.uniforms.u_texIdx1.value = oldSliderIdx
