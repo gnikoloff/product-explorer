@@ -67,4 +67,5 @@ void main () {
                 - smoothstep(u_cursorSize - CURSOR_BORDER, u_cursorSize, dist);
 
   gl_FragColor = mix(vec4(color.rgb * 0.7, 1.0), color, t);
+  gl_FragColor = mix(gl_FragColor, vec4(1.0), u_blurMixFactor * 0.75);
 }
