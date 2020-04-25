@@ -703,18 +703,17 @@ export default class PhotoPreview extends THREE.Mesh {
     this._isInteractable = true
   }
   _replaceTextures = (direction) => {
-    const { webglMaxTexturesSupported } = store.getState()
     const oldSliderIdx = this._sliderIdx
     this._sliderIdx += direction
     if (direction === 1) {
-      if (this._sliderIdx > this._textureCount) {
+      if (this._sliderIdx > this._textureCount - 1) {
         this._sliderIdx = 0
       }
       this.material.uniforms.u_texIdx0.value = oldSliderIdx
       this.material.uniforms.u_texIdx1.value = this._sliderIdx
     } else if (direction === -1) {
       if (this._sliderIdx < 0) {
-        this._sliderIdx = this._textureCount
+        this._sliderIdx = this._textureCount - 1
       }
       this.material.uniforms.u_texIdx0.value = this._sliderIdx
       this.material.uniforms.u_texIdx1.value = oldSliderIdx
