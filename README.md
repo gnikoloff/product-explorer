@@ -1,7 +1,7 @@
 # product-explorer
 Customizable WebGL product explorer used as a demo for Acronym GmbH
 
-[acrnm-product-explorer.now.sh/](acrnm-product-explorer.now.sh/)
+[https://acrnm-product-explorer.now.sh/](https://acrnm-product-explorer.now.sh/)
 
 Built with THREE.js and GLSL demo page. All materials on the website property to Acronym GmbH
 
